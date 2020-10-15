@@ -1,3 +1,9 @@
+# Ignores all files without . 
+*
+!*.*
+!*/
+!Makefile
+
 # Prerequisites
 *.d
 

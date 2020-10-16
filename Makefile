@@ -17,9 +17,6 @@ all: $(TARGET)-test #$(EXE)
 $(TARGET)-test: $(TARGET)-test.o $(TARGET).o 
 	$(CC) $(CFLAGS) -o $@ $^
 
-$(TARGET)-test.o: $(TARGET)-test.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 %.o: %.c $(HDR)
 	$(CC) $(CFLAGS) -c $< -o $@
 

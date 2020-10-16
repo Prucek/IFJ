@@ -6,6 +6,7 @@
  */
 
 #include "lexer.h"
+#include "error.h"
 
 void print(Token t)
 {
@@ -22,4 +23,5 @@ int main ()
         print(t);
     }
 
+    return error_value;
 }

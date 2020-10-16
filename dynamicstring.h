@@ -25,7 +25,7 @@ int add_char(dynamic_string *str, char c); //prida znak na prve prazdne miesto v
 
 int add_string(dynamic_string *str, char *str_to_copy); //prida string na koniec stringu napr. keyword, aby sa nemuselo po znakoch
 
-void dyn_string_free(dynamic_string *str); //uvolni alokovanu pamat a umozni opatovne pouzitie buffera
-//je potrebne pouzit vzdy ked chceme pouzit ten isty buffer na nove data
+void dyn_string_free(dynamic_string *str); //uvolni alokovanu pamat a umozni opatovne pouzitie buffera; je potrebne pouzit vzdy ked chceme pouzit ten isty buffer na nove data
+
 
 #endif

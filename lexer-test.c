@@ -10,7 +10,7 @@
 void print(Token t)
 {
     printf("Token type: %d\n",t.type);
-    printf("Token data: %p\n",t.data);
+    printf("Token data: %p\n",t.data.s);
 }
 
 int main ()

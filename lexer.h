@@ -82,10 +82,19 @@ typedef enum
 } State;
 
 
+typedef union 
+{
+    Keyword k;
+    char *s;
+    int i;
+    double d;
+} Data;
+
+
 typedef struct token
 {
     Token_type type;
-    char* data;     // data reperesented as string, if int token.data = "55"...., if no data needed token.data = NULL
+    Data data;     // data reperesented as string, if int token.data = "55"...., if no data needed token.data = NULL
 
 } Token;
 

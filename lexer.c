@@ -35,25 +35,25 @@ Token get_next_token(FILE *f)
                 if (c == '+')
                 {
                     t.type = ADD;
-                    t.data = NULL;
+                    t.data.s = NULL;
                     return t;
                 }
                 else if (c == '-')
                 {
                     t.type = SUB;
-                    t.data = NULL;
+                    t.data.s = NULL;
                     return t;
                 }
                 else if (c == '*')
                 {
                     t.type = MUL;
-                    t.data = NULL;
+                    t.data.s = NULL;
                     return t;
                 }
                 else if (c == ',')
                 {
                     t.type = COMMA;
-                    t.data = NULL;
+                    t.data.s = NULL;
                     return t;
                 }
                 // if (c == '/') can be comment
@@ -70,13 +70,13 @@ Token get_next_token(FILE *f)
                 else if (c == '\n')
                 {
                     t.type = EOL;
-                    t.data = NULL;
+                    t.data.s = NULL;
                     return t;
                 }
                 else if (c == EOF)
                 {
                     t.type = EoF;
-                    t.data = NULL;
+                    t.data.s = NULL;
                     return t;
                 }
                 else if (isspace(c))

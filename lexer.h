@@ -42,10 +42,10 @@ typedef enum
     FLOAT64,
     KEYWORD,
 
-    PARENTHESIS_LEFT,   // {
-    PARENTHESIS_RIGHT,  // }
-    BRACKET_LEFT,       // (
-    BRACKET_RIGHT,      // )
+    PARENTHESIS_LEFT,   // (
+    PARENTHESIS_RIGHT,  // )
+    BRACKET_LEFT,       // {
+    BRACKET_RIGHT,      // }
 
     SUB,
     DIV,
@@ -56,15 +56,15 @@ typedef enum
     DEF_OF_VAR, // :=
     VAR_ASSIGN, // =
 
-    GTH,        // >
-    LTH,        // <
-    NEQ,        // !=
-    LTE,        // <=
-    GTE,        // >=
-    EQA,        // ==
+    GT,        // >
+    LT,        // <
+    NE,        // !=
+    LE,        // <=
+    GE,        // >=
+    EQ,        // ==
 
     EOL,
-    EoF,
+    EoF,       // ??
     //TODO
 
 } Token_type;

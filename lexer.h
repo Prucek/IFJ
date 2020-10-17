@@ -94,7 +94,7 @@ typedef union
 typedef struct token
 {
     Token_type type;
-    Data data;     // data reperesented as string, if int token.data = "55"...., if no data needed token.data = NULL
+    Data data;
 
 } Token;
 
@@ -105,4 +105,4 @@ Keyword is_keyword(char *str);
 //TODO
 
 
-#endif //_LEXER_H_
+#endif

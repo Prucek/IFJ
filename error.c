@@ -1,10 +1,9 @@
-
 /**
  * @file error.c
  * @authors Marek Micek ....
  * @date 16 OCT 2020
  * @brief Error functions
- **/
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

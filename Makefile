@@ -4,7 +4,7 @@ CC=gcc
 CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 EXE= go_compiler
-TARGET= lexer
+TARGET= dynamicstring #here only one :(
 SRC=$(wildcard *.c)
 HDR=$(wildcard *.h)
 OBJ=$(SRC:%.c=%.o)

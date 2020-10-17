@@ -1,12 +1,12 @@
 /**
- * @file buffer.h
+ * @file dynamicstring.h
  * @authors Rebeka Cernianska ...
  * @date 16 Oct 2020
- * @brief inteface for buffer.c program
+ * @brief Inteface for buffer.c program
  */
 
-#ifndef _BUFFERH_
-#define _BUFFERH_
+#ifndef _DYNAMICSTRING_H_
+#define _DYNAMICSTRING_H_
 
 #include "lexer.h"
 #define BLOCK 8

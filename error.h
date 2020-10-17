@@ -1,13 +1,12 @@
-
 /**
  * @file error.h
  * @authors Marek Micek ....
  * @date 16 OCT 2020
  * @brief Interface for the error program
- **/
+ */
 
-#ifndef _ERRORH_
-#define _ERRORH_
+#ifndef _ERROR_H_
+#define _ERROR_H_
 
 #include "lexer.h"
 

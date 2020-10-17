@@ -1,8 +1,8 @@
 /**
- * @file buffer.c
+ * @file dynamicstring.c
  * @authors Rebeka Cernianska ...
  * @date 16 Oct 2020
- * @brief flexible buffer for saving token data
+ * @brief Flexible buffer for saving token data
  */
 
 #include <stdio.h>
@@ -96,4 +96,3 @@ void dyn_string_free(dynamic_string *str)
     str->len = 0;
     str->alloc_len = 0;
 }
-

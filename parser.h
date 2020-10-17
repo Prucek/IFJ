@@ -1,7 +1,7 @@
 /**
- * @file pareser.h
+ * @file parser.h
  * @authors Peter Rucek ...
- * @date 15 Oct 2020
+ * @date 17 Oct 2020
  * @brief Interface for the parser
  */
 
@@ -53,5 +53,15 @@ void func();
      return   --> "return" -> expression           
 */
 void statement();
+
+void definition_s();
+
+void if_s();
+
+void assignment_s();
+
+void for_s();
+
+void return_s();
 
 #endif  

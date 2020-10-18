@@ -9,6 +9,7 @@
 #define _DYNAMICSTRING_H_
 
 #include "lexer.h"
+#include "error.h"
 #define BLOCK 8
 
 typedef struct dynamic_string
@@ -27,5 +28,6 @@ int add_string(dynamic_string *str, char *str_to_copy); //prida string na koniec
 
 void dyn_string_free(dynamic_string *str); //uvolni alokovanu pamat a umozni opatovne pouzitie buffera; je potrebne pouzit vzdy ked chceme pouzit ten isty buffer na nove data
 
+int cmp_dyn_and_const(dynamic_string *dyn_str, const char *const_str); //na porovnavanie s klucovymi slovami, a pod.; vrati 0 ked sa stringy rovnaju, vrati -1 ak su pouzite pointre s hodnotou NULL
 
 #endif

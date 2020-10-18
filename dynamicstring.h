@@ -2,7 +2,7 @@
  * @file dynamicstring.h
  * @authors Rebeka Cernianska ...
  * @date 16 Oct 2020
- * @brief Inteface for buffer.c program
+ * @brief Inteface for dynamicstring.c program
  */
 
 #ifndef _DYNAMICSTRING_H_
@@ -14,11 +14,13 @@
 
 typedef struct dynamic_string
 {
- int len; //pocet znakov ulozenych v stringu
- int alloc_len; //pocet znakov kolko moze byt ulozenych v stringu
- char *buff;
-
+    int len; //pocet znakov ulozenych v stringu
+    int alloc_len; //pocet znakov kolko moze byt ulozenych v stringu
+    char *buff;
 } dynamic_string;
+
+//!< Wimko:
+//!< Presun dokumentaciu do .c suboru - dokumentacia pri definicii (prehlad)
 
 void dynamic_string_init(dynamic_string *str); //inicializuje string pred prvym pouzitim
 

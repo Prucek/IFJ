@@ -5,7 +5,7 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 UNAME_S := $(shell uname -s)
 
-all : lexer-test dynamicstring-test
+all: lexer-test dynamicstring-test
 
 test: lexer-test
 
@@ -16,19 +16,21 @@ else
 	./lexer-test
 endif
 
-lexer-test: lexer.o lexer-test.o dynamicstring.o
+lexer-test: lexer.o lexer-test.o dynamicstring.o error.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 dynamicstring-test: dynamicstring-test.o dynamicstring.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-lexer.o : lexer.c lexer.h
+lexer.o: lexer.c lexer.h 
 
-lexer-test.o : lexer.h lexer-test.c
+lexer-test.o: lexer.h lexer-test.c
 
-dynamicstring.o : dynamicstring.c dynamicstring.h
+dynamicstring.o: dynamicstring.c dynamicstring.h
 
-dynamicstring-test.o : dynamicstring.h dynamicstring-test.c
+dynamicstring-test.o: dynamicstring.h dynamicstring-test.c
+
+error.o: error.c error.h  
 
 clean:
 	rm -rf *.o

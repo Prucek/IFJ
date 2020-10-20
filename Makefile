@@ -3,23 +3,34 @@
 CC=gcc
 CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
-EXE= go_compiler
-TARGET= dynamicstring #here only one :(
-SRC=$(wildcard *.c)
-HDR=$(wildcard *.h)
-OBJ=$(SRC:%.c=%.o)
+UNAME_S := $(shell uname -s)
 
-all: $(TARGET)-test #$(EXE)
 
-# $(EXE): $(OBJ)
-# 	$(CC) $(CFLAGS) -o $@ $^
+all : lexer-test dynamicstring-test
 
-$(TARGET)-test: $(TARGET)-test.o $(TARGET).o 
+test: lexer-test
+
+testrun:
+ifeq ($(UNAME_S),Linux)
+	@if setarch `uname -m` -R true 2>/dev/null; then setarch `uname -m` -R ./lexer-test; else ./lexer-test; fi
+else
+	./lexer-test
+endif
+
+lexer-test: lexer.o lexer-test.o dynamicstring.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-%.o: %.c $(HDR)
-	$(CC) $(CFLAGS) -c $< -o $@
+dynamicstring-test: dynamicstring-test.o dynamicstring.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+lexer.o : lexer.c lexer.h
+
+lexer-test.o : lexer.h lexer-test.c
+
+dynamicstring.o : dynamicstring.c dynamicstring.h
+
+dynamicstring-test.o : dynamicstring.h dynamicstring-test.c
 
 clean:
 	rm -rf *.o
-	rm -rf $(TARGET)-test
+	rm -rf lexer-test dynamicstring-test

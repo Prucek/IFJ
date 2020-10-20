@@ -96,3 +96,13 @@ void dyn_string_free(dynamic_string *str)
     str->len = 0;
     str->alloc_len = 0;
 }
+
+
+int cmp_dyn_and_const(dynamic_string *dyn_str, const char *const_str)
+{
+    if (dyn_str->buff == NULL || const_str == NULL)
+    {
+        return -1;
+    }
+    return strcmp(dyn_str->buff, const_str);
+}

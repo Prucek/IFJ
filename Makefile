@@ -5,7 +5,6 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 UNAME_S := $(shell uname -s)
 
-
 all : lexer-test dynamicstring-test
 
 test: lexer-test

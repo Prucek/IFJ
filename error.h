@@ -9,12 +9,12 @@
 #define _ERROR_H_
 
 #include "lexer.h"
-
+#include "dynamicstring.h"
 
 int error_value;    //< represents exit code of compiler
 
 
-void lexical_error();
+void lexical_error(char *str, int line);
 void syntax_error();
 void no_defination_error();
 void re_defination_error();

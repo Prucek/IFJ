@@ -77,7 +77,9 @@ typedef enum
 typedef enum
 {
     S_START,
-    S_COMMENT,
+    S_B_COMMENT,
+    S_B_COMMENT_END,
+    S_L_COMMENT,
     S_NUM,
     S_INT,
     S_STRING,
@@ -87,6 +89,7 @@ typedef enum
     S_EXPO_3,
     S_ERROR,
     S_ID_OR_KEY,
+    S_COM_OR_DIV,
     // TODO
 } State;
 

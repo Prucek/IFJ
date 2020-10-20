@@ -60,13 +60,10 @@ Token get_next_token(FILE *f)
                     t.data.s = NULL;
                     return t;
                 }
-                // if (c == '/') can be comment
-                // {
-                //     t.type = ADD;
-                //     t.data.s = NULL;
-                //     return t;
-                // }
-                
+                else if (c == '/')
+                {
+                    state = S_COM_OR_DIV;
+                }      
                 else if (isalpha(c) || c == '_')
                 {
                     state = S_ID_OR_KEY;
@@ -96,7 +93,6 @@ Token get_next_token(FILE *f)
                 }
                 //TODO
                 break;
-            //TODO BUFFER
             case S_ID_OR_KEY:
                 break;
             case S_STRING:
@@ -210,7 +206,61 @@ Token get_next_token(FILE *f)
                 }
                 break;
 
-            case S_COMMENT:
+            case S_COM_OR_DIV:
+                if (c == '/')
+                {
+                    state = S_L_COMMENT;
+                }
+                else if (c == '*')
+                {
+                    state = S_B_COMMENT;
+                }   
+                else
+                {
+                    ungetc(c,f); //< division probably
+                    state = S_START;
+                } 
+                break;
+
+            case S_L_COMMENT: 
+                if (c == '\n' || c == EOF)
+                {
+                    ungetc(c,f);
+                    state = S_START;
+                }
+                else
+                {
+                    state = S_L_COMMENT;
+                }
+                break;
+
+            case S_B_COMMENT: 
+                if (c == '*')
+                {
+                    state = S_B_COMMENT_END;
+                }
+                else if (c == EOF)
+                {
+                    //TODO /* .....EOF
+                }
+                else
+                {
+                    state = S_B_COMMENT;
+                }
+                break;
+            case S_B_COMMENT_END:
+                if (c == '/')
+                {
+                    state = S_START;
+                }
+                else if (c == EOF)
+                {
+                    //TODO /* .....EOF
+                }
+                else
+                {
+                    state = S_B_COMMENT;
+                }
                 break;
 
             case S_ERROR:

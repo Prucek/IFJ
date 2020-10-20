@@ -5,12 +5,7 @@
  * @brief Lexer implementation
  */
 
-#include <string.h>
-#include <stdlib.h>
-
 #include "lexer.h"
-#include "dynamicstring.h"
-#include "error.h"
 
 const char *keywords[] = {"int", "string", "float64", "if", "else",
 "for", "func", "package", "return"};

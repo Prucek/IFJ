@@ -13,7 +13,7 @@
 #include "error.h"
 
 
-error_value = 0;    //< in case of no error
+int error_value = 0;    //< in case of no error
 
 
 // TODO doplnit parametre funckii na zaklade implementacie scanera a parsera

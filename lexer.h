@@ -13,6 +13,10 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
+
+#include "dynamicstring.h"
+#include "error.h"
 
 extern const char *keywords[];
 

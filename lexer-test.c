@@ -8,9 +8,40 @@
 #include "lexer.h"
 #include "error.h"
 
+ char *arr[] = {
+    "ID",
+    "INT",
+    "STRING",
+    "FLOAT64",
+    "KEYWORD",
+
+    "PARENTHESIS_LEFT",   // (
+    "PARENTHESIS_RIGHT",  // )
+    "BRACKET_LEFT",       // {
+    "BRACKET_RIGHT",      // }
+
+    "SUB",
+    "DIV",
+    "ADD",
+    "MUL",
+
+    "COMMA",      // ,
+    "DEF_OF_VAR", // :=
+    "VAR_ASSIGN", // =
+
+    "GT",        // >
+    "LT",        // <
+    "NE",        // !=
+    "LE",        // <=
+    "GE",        // >=
+    "EQ",        // ==
+
+    "EOL",
+    "EoF",      
+ };
 void print(Token t)
 {
-    printf("Token type: %d\n",t.type);
+    printf("Token type: %s\n",arr[t.type]);
     printf("Token data: %p\n",t.data.s);
 }
 

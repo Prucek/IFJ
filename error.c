@@ -18,9 +18,9 @@ error_value = 0;    //< in case of no error
 
 // TODO doplnit parametre funckii na zaklade implementacie scanera a parsera
 
-void lexical_error()
+void lexical_error(char *str, int line)
 {
-    fprintf(stderr, "****  Lexical error: lexem, line !  ****\n");
+    fprintf(stderr, "****  Lexical error: lexem which caused error = '%s', on line = '%d' !  ****\n", str, line);
     error_value = 1;
 }
 

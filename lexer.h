@@ -36,6 +36,7 @@ typedef enum
 
 typedef enum
 {
+    ERROR = -1,     // in case of lexical error
     ID,
     INT,
     STRING,
@@ -73,9 +74,13 @@ typedef enum
 {
     S_START,
     S_COMMENT,
+    S_NUM,
     S_INT,
     S_STRING,
     S_DOUBLE,
+    S_EXPO_1,
+    S_EXPO_2,
+    S_EXPO_3,
     S_ERROR,
     S_ID_OR_KEY,
     // TODO

@@ -17,7 +17,7 @@ void dynamic_string_init(dynamic_string *str) //prepares the structure before us
     str->buff = NULL;
 }
 
-int add_char(dynamic_string *str, char c)
+int add_char(dynamic_string *str, char c) //adds char to the first empty spot in the buffer
 {
     if (str->len == 0) //when the buffer is empty, we allocate memory
     {
@@ -49,7 +49,7 @@ int add_char(dynamic_string *str, char c)
     return 0;
 }
 
-int add_string(dynamic_string *str, char *str_to_copy)
+int add_string(dynamic_string *str, char *str_to_copy) //adds string to the buffer, starting on the first empty position
 {
     if (str->len == 0) //if the buffer is empty, we allocate memory
     {
@@ -87,7 +87,7 @@ int add_string(dynamic_string *str, char *str_to_copy)
     return 0;
 }
 
-void dyn_string_free(dynamic_string *str)
+void dyn_string_free(dynamic_string *str) //allows to re-use buffer, needs to be used before a buffer is used again
 {
     if (str->buff != NULL)
     {
@@ -98,7 +98,7 @@ void dyn_string_free(dynamic_string *str)
 }
 
 
-int cmp_dyn_and_const(dynamic_string *dyn_str, const char *const_str)
+int cmp_dyn_and_const(dynamic_string *dyn_str, const char *const_str) //compares a dyn_str with a string, returns 0 if strings are equal
 {
     if (dyn_str->buff == NULL || const_str == NULL)
     {

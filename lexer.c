@@ -8,7 +8,7 @@
 #include "lexer.h"
 
 const char *keywords[] = {"int", "string", "float64", "if", "else",
-"for", "func", "package", "return"};
+"for", "func", "package", "return", "inputs", "inputf", "inputi", "print", "int2float", "float2int", "len", "substr", "ord", "chr"};
 
 dynamic_string buffer, error_buffer;    //< buffers for correct and incorrect lexems
 
@@ -30,6 +30,10 @@ Token get_next_token(FILE *f)
     assert(f != NULL);
     Token t;
     State state = S_START;
+
+    dynamic_string_init(&buffer);
+    dynamic_string_init(&error_buffer);
+
     while(true)
     {
         int c = fgetc(f);
@@ -63,15 +67,16 @@ Token get_next_token(FILE *f)
                 else if (c == '/')
                 {
                     state = S_COM_OR_DIV;
-                }      
-                else if (isalpha(c) || c == '_')
+                }
+                else if (isalpha(c) || c == '_') //the first char of id must be a char or '_'
                 {
                     state = S_ID_OR_KEY;
+                    add_char(&buffer, c);
                 }
-                else if (isdigit(c)) 
+                else if (isdigit(c))
                 {
                     dynamic_string_init(&buffer);
-                    add_char(&buffer, c); 
+                    add_char(&buffer, c);
                     state = S_NUM;
                 }
                 else if (c == '\n')
@@ -94,6 +99,39 @@ Token get_next_token(FILE *f)
                 //TODO
                 break;
             case S_ID_OR_KEY:
+                if (isalnum(c) || c == '_')
+                {
+                    state = S_ID_OR_KEY;
+                    add_char(&buffer, c);
+                }
+                else
+                {
+                    ungetc(c, f);
+                    state = S_START;
+                    int kw = -1;
+
+                    for (int i = K_ERROR; i <= K_CHR; i++) //iterates through enum Keywords
+                    {
+                        if (cmp_dyn_and_const(&buffer, keywords[i]) == 0)
+                        {
+                            kw = i;
+                        }
+                    }
+
+                    if (kw == -1)
+                    {
+                        t.type = ID;
+                        t.data.s = buffer.buff; //need to properly add data
+                    }
+                    else
+                    {
+                        t.type = KEYWORD;
+                        t.data.k = kw;
+                    }
+                    
+                    dyn_string_free(&buffer);
+                    return t;
+                }
                 break;
             case S_STRING:
                 break;
@@ -191,7 +229,7 @@ Token get_next_token(FILE *f)
                     add_char(&buffer, c);
                     state = S_EXPO_3;
                 }
-                else 
+                else
                 {
                     state = S_ERROR;
                 }
@@ -207,7 +245,7 @@ Token get_next_token(FILE *f)
                 {
                     state = S_ERROR;
                 }
-                else 
+                else
                 {
                     ungetc(c, f);
                     t.type = FLOAT64;
@@ -225,15 +263,15 @@ Token get_next_token(FILE *f)
                 else if (c == '*')
                 {
                     state = S_B_COMMENT;
-                }   
+                }
                 else
                 {
                     ungetc(c,f); //< division probably
                     state = S_START;
-                } 
+                }
                 break;
 
-            case S_L_COMMENT: 
+            case S_L_COMMENT:
                 if (c == '\n' || c == EOF)
                 {
                     ungetc(c,f);
@@ -245,7 +283,7 @@ Token get_next_token(FILE *f)
                 }
                 break;
 
-            case S_B_COMMENT: 
+            case S_B_COMMENT:
                 if (c == '*')
                 {
                     state = S_B_COMMENT_END;
@@ -280,9 +318,9 @@ Token get_next_token(FILE *f)
                 if (!(add_string(&error_buffer, buffer.buff)))  //< in order to print full lexem, not only incorrect part
                 {
                     if (c != '\n')
-                    {    
+                    {
                         add_char(&error_buffer, c);                 //< we add last scanned char
-                        
+
                         while (!(isspace(c = fgetc(f))))
                             add_char(&error_buffer, c);
                     }

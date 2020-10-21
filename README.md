@@ -3,7 +3,7 @@
 Implementation of IFJ20 compiler.
 IFJ20 is a simplified version of the programming language Go.
 
-## Authors: 
+## Authors:
 
 *    Rebeka Cernianska, xcerni13
 *    Matej Jurik, xjurik12
@@ -18,6 +18,7 @@ ____________
     * Lexer identifiers
     * Lexer keywords
     * Note in dynamicstring.h
+    * Built-in functions
 * xjurik12:
     * Lexer strings
     * Lexer operators
@@ -29,5 +30,3 @@ ____________
 
 ## Job Pool
 
-* Whitespace
-* Built-in functions

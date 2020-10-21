@@ -10,7 +10,7 @@
 const char *keywords[] = {"int", "string", "float64", "if", "else",
 "for", "func", "package", "return"};
 
-dynamic_string buffer, error_buffer;    //< buffers for correct an incorrect lexems
+dynamic_string buffer, error_buffer;    //< buffers for correct and incorrect lexems
 
 Keyword is_keyword(char *str)
 {
@@ -25,7 +25,7 @@ Keyword is_keyword(char *str)
 
 Token get_next_token(FILE *f)
 {
-    int line = 1;       //< counter of actual line
+    static int line = 1;       //< counter of actual line
 
     assert(f != NULL);
     Token t;
@@ -99,7 +99,7 @@ Token get_next_token(FILE *f)
                 break;
 
             case S_NUM:
-                if (c == '0' && buffer.buff[0] == '0')  //< useless zero at the beginning is forbidden
+                if ((isdigit(c)) && buffer.buff[0] == '0')  //< useless zero at the beginning is forbidden
                 {
                     state = S_ERROR;
                 }
@@ -124,11 +124,13 @@ Token get_next_token(FILE *f)
                 else
                 {
                     state = S_INT;
-                    ungetc(c,stdin);
+                    ungetc(c, f);
                 }
                 break;
 
             case S_INT:
+
+                ungetc(c, f);   //< returns last scanned char cause not included in this token
                 t.type = INT;
                 t.data.i = atoi(buffer.buff);
                 dyn_string_free(&buffer);
@@ -136,6 +138,7 @@ Token get_next_token(FILE *f)
                 break;
 
             case S_DOUBLE:
+
                 if (c == '.')   //< only one decimal point is possible
                 {
                     state = S_ERROR;
@@ -146,6 +149,7 @@ Token get_next_token(FILE *f)
                 }
                 else if (c == 'e' || c == 'E')
                 {
+                    add_char(&buffer, c);
                     state = S_EXPO_1;
                 }
                 else if (isalpha(c))
@@ -154,7 +158,7 @@ Token get_next_token(FILE *f)
                 }
                 else
                 {
-                    ungetc(c, stdin);
+                    ungetc(c, f);
                     t.type = FLOAT64;
                     t.data.d = atof(buffer.buff);
                     dyn_string_free(&buffer);
@@ -163,6 +167,7 @@ Token get_next_token(FILE *f)
                 break;
 
             case S_EXPO_1:
+
                 if (isdigit(c))
                 {
                     add_char(&buffer, c);
@@ -180,6 +185,7 @@ Token get_next_token(FILE *f)
                 break;
 
             case S_EXPO_2:
+
                 if (isdigit(c))
                 {
                     add_char(&buffer, c);
@@ -192,13 +198,18 @@ Token get_next_token(FILE *f)
                 break;
 
             case S_EXPO_3:
+
                 if (isdigit(c))
                 {
                     add_char(&buffer, c);
                 }
+                else if ((isalpha(c)) || c == '.' || c == '_' || c == ':')
+                {
+                    state = S_ERROR;
+                }
                 else 
                 {
-                    ungetc(c, stdin);
+                    ungetc(c, f);
                     t.type = FLOAT64;
                     t.data.d = atof(buffer.buff);
                     dyn_string_free(&buffer);
@@ -264,13 +275,22 @@ Token get_next_token(FILE *f)
                 break;
 
             case S_ERROR:
+
                 dynamic_string_init(&error_buffer);             //< init the buffer for incorrect lexem
                 if (!(add_string(&error_buffer, buffer.buff)))  //< in order to print full lexem, not only incorrect part
-                    while (!(isspace(c)))
-                    {
-                        add_char(&error_buffer, c);
+                {
+                    if (c != '\n')
+                    {    
+                        add_char(&error_buffer, c);                 //< we add last scanned char
+                        
+                        while (!(isspace(c = fgetc(f))))
+                            add_char(&error_buffer, c);
                     }
-                    
+                }
+
+                if (c == '\n')      //< we return eol if this was the whitespace
+                    ungetc(c, f);
+
                 lexical_error(error_buffer.buff, line);
                 dyn_string_free(&buffer);
                 dyn_string_free(&error_buffer);
@@ -282,5 +302,8 @@ Token get_next_token(FILE *f)
             default:
                 break;
         }
+
+        if (state == S_ERROR)       //< we return last char which caused error state, in order to make correct error output
+            ungetc(c, f);
     }
 }

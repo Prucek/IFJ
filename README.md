@@ -15,18 +15,17 @@ ____________
 ## Assignments
 
 * xcerni13:
-    * Lexer identifiers
-    * Lexer keywords
-    * Note in dynamicstring.h
-    * Built-in functions
-* xjurik12:
-    * Lexer strings
+
+* xjurik12:  
     * Lexer operators
 * xmicek08:
-    * Lexer integers
-    * Lexer float64
+
 * xrucek00:
-    * Lexer comments
+
 
 ## Job Pool
-
+   * Finish lexer
+      * Lexer strings (depends on symbol table)
+      * Uniformity
+   * Symbol table (for 2 people ?)
+   * Start parser implementation

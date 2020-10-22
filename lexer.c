@@ -108,11 +108,11 @@ Token get_next_token(FILE *f)
                 {
                     ungetc(c, f);
                     state = S_START;
-                    int kw = -1;
+                    int kw = -1; // Petrik change to Keyword kw = K_ERROR
 
-                    for (int i = K_ERROR; i <= K_CHR; i++) //iterates through enum Keywords
+                    for (int i = K_ERROR; i <= K_CHR; i++) //iterates through enum Keywords  // Petrik Keyword i =...
                     {
-                        if (cmp_dyn_and_const(&buffer, keywords[i]) == 0)
+                        if (cmp_dyn_and_const(&buffer, keywords[i]) == 0) // Petrik Keyword[-1] ???
                         {
                             kw = i;
                         }
@@ -126,7 +126,7 @@ Token get_next_token(FILE *f)
                     else
                     {
                         t.type = KEYWORD;
-                        t.data.k = kw;
+                        t.data.k = kw; // Petrik Does not work -> check by testing
                     }
                     
                     dyn_string_free(&buffer);

@@ -39,10 +39,49 @@
     "EOL",
     "EoF",      
  };
+char *k_arr[] = 
+ {
+    "K_ERROR",
+    "K_INT",
+    "K_STRING",
+    "K_FLOAT64",
+    "K_IF",
+    "K_ELSE",
+    "K_FOR",
+    "K_FUNC",
+    "K_PACKAGE",
+    "K_RETURN",
+    "K_INPUTS",
+    "K_INPUTF",
+    "K_INPUTI",
+    "K_PRINT",
+    "K_INT2FLOAT",
+    "K_FLOAT2INT",
+    "K_LEN",
+    "K_SUBSTR",
+    "K_ORD",
+    "K_CHR",
+
+};
 void print(Token t)
 {
     printf("Token type: %s\n",arr[t.type]);
-    printf("Token data: %p\n",t.data.s);
+    if (t.type == INT )
+    {
+       printf("Token data: %d\n",t.data.i);
+    }
+    else if (t.type == FLOAT64)
+    {
+       printf("Token data: %f\n",t.data.d);
+    }
+    else if (t.type == KEYWORD)
+    {
+       printf("Token data: %s\n",k_arr[t.data.k]);
+    }
+    else
+    {
+        printf("Token data: %s\n",t.data.s);
+    }
 }
 
 int main ()

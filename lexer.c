@@ -31,9 +31,6 @@ Token get_next_token(FILE *f)
     Token t;
     State state = S_START;
 
-    dynamic_string_init(&buffer);
-    dynamic_string_init(&error_buffer);
-
     while(true)
     {
         int c = fgetc(f);
@@ -68,9 +65,10 @@ Token get_next_token(FILE *f)
                 {
                     state = S_COM_OR_DIV;
                 }
-                else if (isalpha(c) || c == '_') //the first char of id must be a char or '_'
+                else if (isalpha(c) || c == '_')
                 {
                     state = S_ID_OR_KEY;
+                    dynamic_string_init(&buffer);
                     add_char(&buffer, c);
                 }
                 else if (isdigit(c))
@@ -108,11 +106,11 @@ Token get_next_token(FILE *f)
                 {
                     ungetc(c, f);
                     state = S_START;
-                    int kw = -1; // Petrik change to Keyword kw = K_ERROR
+                    Keyword kw = -1;
 
-                    for (int i = K_ERROR; i <= K_CHR; i++) //iterates through enum Keywords  // Petrik Keyword i =...
+                    for (Keyword i = K_INT; i <= K_CHR; i++) //iterates through enum Keywords
                     {
-                        if (cmp_dyn_and_const(&buffer, keywords[i]) == 0) // Petrik Keyword[-1] ???
+                        if (cmp_dyn_and_const(&buffer, keywords[i]) == 0)
                         {
                             kw = i;
                         }
@@ -126,9 +124,9 @@ Token get_next_token(FILE *f)
                     else
                     {
                         t.type = KEYWORD;
-                        t.data.k = kw; // Petrik Does not work -> check by testing
+                        t.data.k = kw;
                     }
-                    
+
                     dyn_string_free(&buffer);
                     return t;
                 }

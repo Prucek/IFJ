@@ -37,11 +37,10 @@
     "EQ",        // ==
 
     "EOL",
-    "EoF",      
+    "EoF",
  };
-char *k_arr[] = 
+char *k_arr[] =
  {
-    "K_ERROR",
     "K_INT",
     "K_STRING",
     "K_FLOAT64",

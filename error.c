@@ -32,14 +32,14 @@ void syntax_error()
 }
 
 
-void no_defination_error()      //< mozno zlucit s re_defination_error, zavisi na implementacii
+void no_definition_error()      //< mozno zlucit s re_definition_error, zavisi na implementacii
 {
     fprintf(stderr, "****  Semantic error : Identifier was not defined yet !  ****\n");
     error_value = 3;
 }
 
 
-void re_defination_error()
+void re_definition_error()
 {
     fprintf(stderr, "****  Semantic error : Tried to define identifier : ID, but identifier : ID is already defined !  ****\n");
     error_value = 3;
@@ -53,9 +53,9 @@ void type_error()
 }
 
 
-void compability_error()
+void compatibility_error()
 {
-    fprintf(stderr, "****  Semantic error : Compability error: token, line !  ****\n");
+    fprintf(stderr, "****  Semantic error : compatibility error: token, line !  ****\n");
     error_value = 5;
 }
 

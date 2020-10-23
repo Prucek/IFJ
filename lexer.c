@@ -82,11 +82,13 @@ Token get_next_token(FILE *f)
                     state = S_NE;
                 }
 
-                else if (c == '=') {
+                else if (c == '=')
+                {
                     state = S_ASGN_OR_EQ;
                 }
 
-                else if (c == ':') {
+                else if (c == ':')
+                {
                     state = S_DEF;
                 }
 
@@ -445,7 +447,7 @@ Token get_next_token(FILE *f)
             case S_ERROR:
 
                 dynamic_string_init(&error_buffer);             //< init the buffer for incorrect lexem
-                if (!(add_string(&error_buffer, buffer.buff)))  //< in order to print full lexem, not only incorrect part
+                if (add_string(&error_buffer, buffer.buff))  //< in order to print full lexem, not only incorrect part
                 {
                     if (c != '\n')
                     {

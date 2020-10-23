@@ -58,7 +58,7 @@ int add_string(dynamic_string *str, char *str_to_copy) //adds string to the buff
         if (str->buff == NULL)
         {
             fprintf(stderr, "Error allocating dynamic string\n");
-            return 1;
+            return 0;
         }
 
         str->alloc_len = strlen(str_to_copy); //set how much space is available in the buffer currently
@@ -70,7 +70,7 @@ int add_string(dynamic_string *str, char *str_to_copy) //adds string to the buff
         if (str->buff == NULL)
         {
             fprintf(stderr, "Error reallocating dynamic string\n");
-            return 1;
+            return 0;
         }
 
         str->alloc_len += strlen(str_to_copy);
@@ -84,7 +84,7 @@ int add_string(dynamic_string *str, char *str_to_copy) //adds string to the buff
     str->len = strlen(str_to_copy)+str->len;
     str->buff[str->len] = '\0';
 
-    return 0;
+    return 1;
 }
 
 void dyn_string_free(dynamic_string *str) //allows to re-use buffer, needs to be used before a buffer is used again

@@ -16,10 +16,10 @@ int error_value;    //< represents exit code of compiler
 
 void lexical_error(char *str, int line);
 void syntax_error();
-void no_defination_error();
-void re_defination_error();
+void no_definition_error();
+void re_definition_error();
 void type_error();
-void compabiliy_error();
+void compatibility_error();
 void param_error();
 void other_error();
 void div_zero_error();

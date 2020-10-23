@@ -1,6 +1,6 @@
 /**
  * @file lexer.h
- * @authors Peter Rucek ...
+ * @authors Peter Rucek, Rebeka Cernianska, Marek Micek, Matej Jurik
  * @date 15 Oct 2020
  * @brief Interface for the lexer
  */
@@ -100,6 +100,13 @@ typedef enum
     S_ERROR,
     S_ID_OR_KEY,
     S_COM_OR_DIV,
+    S_LT,
+    S_GT,
+    // S_NE_OR_NEG, ???
+    S_NE,
+    S_ASGN_OR_EQ,
+    S_DEF
+
     // TODO
 } State;
 

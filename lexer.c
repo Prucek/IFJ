@@ -1,6 +1,6 @@
 /**
  * @file lexer.c
- * @authors Peter Rucek, Marek Micek ...
+ * @authors Peter Rucek, Marek Micek, Rebeka Cernianska, Matej Jurik
  * @date 15 Oct 2020
  * @brief Lexer implementation
  */
@@ -37,6 +37,7 @@ Token get_next_token(FILE *f)
         switch (state)
         {
             case S_START:
+                // Operators & comments
                 if (c == '+')
                 {
                     t.type = ADD;
@@ -65,18 +66,47 @@ Token get_next_token(FILE *f)
                 {
                     state = S_COM_OR_DIV;
                 }
+
+                else if (c == '<') 
+                {
+                    state = S_LT;
+                }
+
+                else if (c == '>')
+                {
+                    state = S_GT;
+                }
+
+                else if (c == '!')
+                {
+                    state = S_NE;
+                }
+
+                else if (c == '=') {
+                    state = S_ASGN_OR_EQ;
+                }
+
+                else if (c == ':') {
+                    state = S_DEF;
+                }
+
+                // Identifiers, keywords
                 else if (isalpha(c) || c == '_')
                 {
                     state = S_ID_OR_KEY;
                     dynamic_string_init(&buffer);
                     add_char(&buffer, c);
                 }
+
+                // Numbers
                 else if (isdigit(c))
                 {
                     dynamic_string_init(&buffer);
                     add_char(&buffer, c);
                     state = S_NUM;
                 }
+
+                // End of Line
                 else if (c == '\n')
                 {
                     line++;
@@ -84,18 +114,110 @@ Token get_next_token(FILE *f)
                     t.data.s = NULL;
                     return t;
                 }
+
+                // End of File
                 else if (c == EOF)
                 {
                     t.type = EoF;
                     t.data.s = NULL;
                     return t;
                 }
+
+                // Whitespace
                 else if (isspace(c))
                 {
                     state = S_START;
                 }
+
                 //TODO
                 break;
+
+            case S_LT: 
+                if (c == '=')
+                {
+                    t.type = LE;
+                    t.data.s = NULL;
+
+                    return t;
+                }
+                else
+                {
+                    ungetc(c, f);
+                    t.type = LT;
+                    t.data.s = NULL;
+
+                    return t;
+                }
+
+                break;
+
+            case S_GT:
+                if (c == '=')
+                {
+                    t.type = GE;
+                    t.data.s = NULL;
+
+                    return t;
+                }
+                else
+                {
+                    ungetc(c, f);
+                    t.type = GT;
+                    t.data.s = NULL;
+
+                    return t;
+                }
+                break;
+
+            case S_NE:
+                if (c == '=')
+                {
+                    t.type = NE;
+                    t.data.s = NULL;
+
+                    return t;
+                }
+                else 
+                {
+                    state = S_ERROR;
+                }
+
+                break;
+
+            case S_ASGN_OR_EQ:
+                if (c == '=')
+                {
+                    t.type = EQ;
+                    t.data.s = NULL;
+
+                    return t;
+                }
+                else
+                {
+                    ungetc(c, f);
+                    t.type = VAR_ASSIGN;
+                    t.data.s = NULL;
+                    
+                    return t;
+                }
+
+                break;
+
+            case S_DEF:
+                if (c == '=')
+                {
+                    t.type = DEF_OF_VAR;
+                    t.data.s = NULL;
+
+                    return t;
+                }
+                else
+                {
+                    state = S_ERROR;
+                }
+
+                break;
+
             case S_ID_OR_KEY:
                 if (isalnum(c) || c == '_')
                 {
@@ -131,9 +253,11 @@ Token get_next_token(FILE *f)
                     return t;
                 }
                 break;
+
             case S_STRING:
                 break;
 
+            // Classification for INTs, FLOATs and FLOAT Exponentials
             case S_NUM:
                 if ((isdigit(c)) && buffer.buff[0] == '0')  //< useless zero at the beginning is forbidden
                 {
@@ -202,8 +326,9 @@ Token get_next_token(FILE *f)
                 }
                 break;
 
+            // Exponential classification - first phase
             case S_EXPO_1:
-
+                // Expect either sign (pos, neg) or exponential number
                 if (isdigit(c))
                 {
                     add_char(&buffer, c);
@@ -220,8 +345,9 @@ Token get_next_token(FILE *f)
                 }
                 break;
 
+            // Exponential classification - second phase
             case S_EXPO_2:
-
+                // Sign was specified - accept exponential numbers only
                 if (isdigit(c))
                 {
                     add_char(&buffer, c);
@@ -233,8 +359,10 @@ Token get_next_token(FILE *f)
                 }
                 break;
 
+            // Exponential classification - last phase
             case S_EXPO_3:
-
+                // Accept more numbers if sign was not specified 
+                // or accept exponential as FLOAT64
                 if (isdigit(c))
                 {
                     add_char(&buffer, c);
@@ -253,6 +381,7 @@ Token get_next_token(FILE *f)
                 }
                 break;
 
+            // Distinguish div operator from comments
             case S_COM_OR_DIV:
                 if (c == '/')
                 {
@@ -262,10 +391,13 @@ Token get_next_token(FILE *f)
                 {
                     state = S_B_COMMENT;
                 }
-                else
+                else // Division operator
                 {
-                    ungetc(c,f); //< division probably
-                    state = S_START;
+                    ungetc(c,f);
+                    t.type = DIV;
+                    t.data.s = NULL; 
+                    
+                    return t;
                 }
                 break;
 

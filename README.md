@@ -17,7 +17,7 @@ ____________
 * xcerni13:
 
 * xjurik12:  
-    * Lexer operators
+
 * xmicek08:
 
 * xrucek00:

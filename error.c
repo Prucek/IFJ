@@ -1,6 +1,6 @@
 /**
  * @file error.c
- * @authors Marek Micek ....
+ * @authors Marek Micek, Peter Rucek ....
  * @date 16 OCT 2020
  * @brief Error functions
  */

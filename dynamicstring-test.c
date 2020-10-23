@@ -1,6 +1,6 @@
 /**
  * @file dynamicstring-test.c
- * @authors Rebeka Cernianska ...
+ * @authors Rebeka Cernianska, Peter Rucek ...
  * @date 16 Oct 2020
  * @brief Dynamic string tests
  */

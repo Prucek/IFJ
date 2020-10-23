@@ -1,6 +1,6 @@
 /**
  * @file dynamicstring.c
- * @authors Rebeka Cernianska ...
+ * @authors Rebeka Cernianska, Peter Rucek...
  * @date 16 Oct 2020
  * @brief Flexible buffer for saving token data
  */
@@ -33,7 +33,7 @@ int add_char(dynamic_string *str, char c) //adds char to the first empty spot in
     }
     else if (str->len+1 >= str->alloc_len) //reallocating memory when more is needed
     {
-        str->buff = realloc(str->buff, str->alloc_len+8);
+        str->buff = realloc(str->buff, str->alloc_len+BLOCK);
 
         if (str->buff == NULL)
         {

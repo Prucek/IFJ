@@ -56,15 +56,44 @@ Token get_next_token(FILE *f)
                     t.data.s = NULL;
                     return t;
                 }
+                else if (c == '/')
+                {
+                    state = S_COM_OR_DIV;
+                }
+
                 else if (c == ',')
                 {
                     t.type = COMMA;
                     t.data.s = NULL;
                     return t;
                 }
-                else if (c == '/')
+
+                else if (c == '(')
                 {
-                    state = S_COM_OR_DIV;
+                    t.type = PARENTHESIS_LEFT;
+                    t.data.s = NULL;
+                    return t;
+                }
+
+                else if (c == ')')
+                {
+                    t.type = PARENTHESIS_RIGHT;
+                    t.data.s = NULL;
+                    return t;
+                }
+
+                else if (c == '{')
+                {
+                    t.type = BRACKET_LEFT;
+                    t.data.s = NULL;
+                    return t;
+                }
+
+                else if (c == '}')
+                {
+                    t.type = BRACKET_RIGHT;
+                    t.data.s = NULL;
+                    return t;
                 }
 
                 else if (c == '<') 

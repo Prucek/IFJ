@@ -1,7 +1,7 @@
 /**
  * @file parser.h
  * @authors Peter Rucek ...
- * @date 17 Oct 2020
+ * @date 25 Oct 2020
  * @brief Interface for the parser
  */
 
@@ -15,7 +15,7 @@
     ^^^^^^^                     |               |
                                 ----- func --------> EOF
 */
-void program();
+void program(FILE *f);
 
 /*
     func -> "func" -> ID -> "(" -----------------> ")" --------------------------------------> "{" -> EOL -> statement -> "}"
@@ -33,7 +33,7 @@ void program();
         ...
     }
 */
-void func();
+bool func(FILE *f);
 
 /*
     statement --> EOL
@@ -52,6 +52,15 @@ void func();
               |
      return   --> "return" -> expression           
 */
+
+void functions(FILE *f);
+
+bool func_header(FILE *f);
+
+void prolog(FILE *f);
+
+bool expect_token(FILE *f, Token_type t_type, Keyword k);
+
 void statement();
 
 void definition_s();

@@ -10,12 +10,21 @@
 
 #include "lexer.h"
 
+
+typedef struct
+{
+    Token actual_token;
+    int actual_line;
+
+}Metadata;
+
+
 /*
     program -> "package main" ->|<---------------
     ^^^^^^^                     |               |
                                 ----- func --------> EOF
 */
-void program(FILE *f);
+int program();
 
 /*
     func -> "func" -> ID -> "(" -----------------> ")" --------------------------------------> "{" -> EOL -> statement -> "}"
@@ -33,7 +42,7 @@ void program(FILE *f);
         ...
     }
 */
-bool func(FILE *f);
+bool func();
 
 /*
     statement --> EOL
@@ -53,13 +62,17 @@ bool func(FILE *f);
      return   --> "return" -> expression           
 */
 
-void functions(FILE *f);
+void header_arg();
 
-bool func_header(FILE *f);
+void header_ret();
 
-void prolog(FILE *f);
+void functions();
 
-bool expect_token(FILE *f, Token_type t_type, Keyword k);
+bool func_header();
+
+void prolog();
+
+bool expect_token(Token_type t_type, Keyword k);
 
 void statement();
 

@@ -9,6 +9,6 @@
 
 int main()
 {
-    program(stdin);
+    program();
     return 0;
 }

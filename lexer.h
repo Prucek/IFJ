@@ -70,6 +70,7 @@ typedef enum
     COMMA,      // ,
     DEF_OF_VAR, // :=
     VAR_ASSIGN, // =
+    SEMICLN,    // ;
 
     GT,        // >
     LT,        // <
@@ -80,7 +81,6 @@ typedef enum
 
     EOL,
     EoF,       // ??
-    //TODO
 
 } Token_type;
 
@@ -93,6 +93,9 @@ typedef enum
     S_NUM,
     S_INT,
     S_STRING,
+    S_ESC, // "\n", "\"", "\t", "\\", "\xhh"
+    S_ESCHEX_1, // "\x--"
+    S_ESCHEX_2, // "\xh-"
     S_DOUBLE,
     S_EXPO_1,
     S_EXPO_2,
@@ -102,12 +105,10 @@ typedef enum
     S_COM_OR_DIV,
     S_LT,
     S_GT,
-    // S_NE_OR_NEG, ???
     S_NE,
     S_ASGN_OR_EQ,
     S_DEF
 
-    // TODO
 } State;
 
 
@@ -117,6 +118,7 @@ typedef union
     char *s;
     int i;
     double d;
+    
 } Data;
 
 
@@ -128,10 +130,8 @@ typedef struct token
 } Token;
 
 
-//prototypes
+// Lexer interface
 Token get_next_token(FILE *f);
-Keyword is_keyword(char *str);
-//TODO
-
+Keyword get_keywordID(char *str);
 
 #endif

@@ -5,7 +5,7 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 UNAME_S := $(shell uname -s)
 
-all: lexer-test dynamicstring-test symtable-test
+all: lexer-test dynamicstring-test symtable-test parser-test
 
 test: lexer-test
 
@@ -15,6 +15,9 @@ ifeq ($(UNAME_S),Linux)
 else
 	./lexer-test
 endif
+
+parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o
+	$(CC) $(CFLAGS) -o $@ $^
 
 lexer-test: lexer.o lexer-test.o dynamicstring.o error.o symtable.o
 	$(CC) $(CFLAGS) -o $@ $^
@@ -28,6 +31,10 @@ symtable-test: symtable-test.o symtable.o error.o
 lexer.o: lexer.c lexer.h 
 
 lexer-test.o: lexer.h lexer-test.c
+
+parser.o: parser.c parser.h lexer.h
+
+parser-test.o: parser.h parser-test.c
 
 dynamicstring.o: dynamicstring.c dynamicstring.h
 

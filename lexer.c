@@ -3,16 +3,28 @@
  * @authors Peter Rucek, Marek Micek, Rebeka Cernianska, Matej Jurik
  * @date 15 Oct 2020
  * @brief Lexer implementation
+ * 
+ * @todo * Decide on what FMS should behave like in S_ERROR state
+ *       * Handle EOL requested/optional/required problem
  */
 
 #include "lexer.h"
 
+#define IS_ESCCHAR(c) \
+    ((c) == 'n' || (c) == '"' || (c) == 't' || (c) == '\\' || (c) == 'x')
+
 const char *keywords[] = {"int", "string", "float64", "if", "else",
 "for", "func", "package", "return", "inputs", "inputf", "inputi", "print", "int2float", "float2int", "len", "substr", "ord", "chr"};
 
-dynamic_string buffer, error_buffer;    //< buffers for correct and incorrect lexems
+dynamic_string buffer, error_buffer; //< buffers for correct and incorrect lexems
 
-Keyword is_keyword(char *str)
+/**
+ * @brief Determine whether the passed string is a keyword
+ * @param str String to check against keyword list
+ * @return Keyword enumerated ID if str is a keyword,
+ *         K_ERROR otherwise
+ */
+Keyword get_keywordID(char *str)
 {
     int size = sizeof(keywords) / sizeof(keywords[0]);
     for(int i = 0; i < size; i++)
@@ -23,10 +35,19 @@ Keyword is_keyword(char *str)
     return K_ERROR;
 }
 
+/**
+ * This function implements a Finite State Machine crafted to tokenize 
+ * IFJ20 language's specific code structures
+ *
+ * @brief Parse input stream from source file into exactly one token
+ * @param f File opened for reading (.go source code)
+ * @return Parsed token
+ * 
+ */
 Token get_next_token(FILE *f)
 {
-    static int line = 1;       //< counter of actual line
-
+    static int line = 1; //< counter of current line
+    
     assert(f != NULL);
     Token t;
     State state = S_START;
@@ -37,7 +58,7 @@ Token get_next_token(FILE *f)
         switch (state)
         {
             case S_START:
-                // Operators & comments
+                // Arithmetic operators & comments
                 if (c == '+')
                 {
                     t.type = ADD;
@@ -74,21 +95,18 @@ Token get_next_token(FILE *f)
                     t.data.s = NULL;
                     return t;
                 }
-
                 else if (c == ')')
                 {
                     t.type = PARENTHESIS_RIGHT;
                     t.data.s = NULL;
                     return t;
                 }
-
                 else if (c == '{')
                 {
                     t.type = BRACKET_LEFT;
                     t.data.s = NULL;
                     return t;
                 }
-
                 else if (c == '}')
                 {
                     t.type = BRACKET_RIGHT;
@@ -96,26 +114,23 @@ Token get_next_token(FILE *f)
                     return t;
                 }
 
+                // Logical operators
                 else if (c == '<') 
                 {
                     state = S_LT;
                 }
-
                 else if (c == '>')
                 {
                     state = S_GT;
                 }
-
                 else if (c == '!')
                 {
                     state = S_NE;
                 }
-
                 else if (c == '=')
                 {
                     state = S_ASGN_OR_EQ;
                 }
-
                 else if (c == ':')
                 {
                     state = S_DEF;
@@ -124,9 +139,9 @@ Token get_next_token(FILE *f)
                 // Identifiers, keywords
                 else if (isalpha(c) || c == '_')
                 {
-                    state = S_ID_OR_KEY;
                     dynamic_string_init(&buffer);
                     add_char(&buffer, c);
+                    state = S_ID_OR_KEY;
                 }
 
                 // Numbers
@@ -135,6 +150,22 @@ Token get_next_token(FILE *f)
                     dynamic_string_init(&buffer);
                     add_char(&buffer, c);
                     state = S_NUM;
+                }
+    
+                // Strings
+                else if (c == '"')
+                {
+                    dynamic_string_init(&buffer);
+                    add_char(&buffer, c);
+                    state = S_STRING;
+                }
+
+                // Semicolon
+                else if (c == ';')
+                {
+                    t.type = SEMICLN;
+                    t.data.s = NULL;
+                    return t;
                 }
 
                 // End of Line
@@ -146,6 +177,12 @@ Token get_next_token(FILE *f)
                     return t;
                 }
 
+                // Whitespace
+                else if (isspace(c))
+                {
+                    state = S_START;
+                }
+
                 // End of File
                 else if (c == EOF)
                 {
@@ -154,21 +191,18 @@ Token get_next_token(FILE *f)
                     return t;
                 }
 
-                // Whitespace
-                else if (isspace(c))
-                {
-                    state = S_START;
+                // Any other character
+                else {
+                    state = S_ERROR;
                 }
-
-                //TODO
                 break;
 
+            // Two-part logical operators
             case S_LT: 
                 if (c == '=')
                 {
                     t.type = LE;
                     t.data.s = NULL;
-
                     return t;
                 }
                 else
@@ -176,10 +210,8 @@ Token get_next_token(FILE *f)
                     ungetc(c, f);
                     t.type = LT;
                     t.data.s = NULL;
-
                     return t;
                 }
-
                 break;
 
             case S_GT:
@@ -187,7 +219,6 @@ Token get_next_token(FILE *f)
                 {
                     t.type = GE;
                     t.data.s = NULL;
-
                     return t;
                 }
                 else
@@ -195,7 +226,6 @@ Token get_next_token(FILE *f)
                     ungetc(c, f);
                     t.type = GT;
                     t.data.s = NULL;
-
                     return t;
                 }
                 break;
@@ -205,14 +235,12 @@ Token get_next_token(FILE *f)
                 {
                     t.type = NE;
                     t.data.s = NULL;
-
                     return t;
                 }
                 else 
                 {
                     state = S_ERROR;
                 }
-
                 break;
 
             case S_ASGN_OR_EQ:
@@ -220,20 +248,19 @@ Token get_next_token(FILE *f)
                 {
                     t.type = EQ;
                     t.data.s = NULL;
-
                     return t;
                 }
+                // Assignment
                 else
                 {
                     ungetc(c, f);
                     t.type = VAR_ASSIGN;
                     t.data.s = NULL;
-                    
                     return t;
                 }
-
                 break;
 
+            // Variable definition
             case S_DEF:
                 if (c == '=')
                 {
@@ -246,9 +273,9 @@ Token get_next_token(FILE *f)
                 {
                     state = S_ERROR;
                 }
-
                 break;
 
+            // Keywords or identifiers
             case S_ID_OR_KEY:
                 if (isalnum(c) || c == '_')
                 {
@@ -259,23 +286,17 @@ Token get_next_token(FILE *f)
                 {
                     ungetc(c, f);
                     state = S_START;
-                    Keyword kw = -1;
-
-                    for (Keyword i = K_INT; i <= K_CHR; i++) //iterates through enum Keywords
+                    
+                    Keyword kw = get_keywordID(buffer.buff);
+                    if (kw == K_ERROR)
                     {
-                        if (cmp_dyn_and_const(&buffer, keywords[i]) == 0)
-                        {
-                            kw = i;
-                        }
-                    }
-
-                    if (kw == -1)
-                    {
+                        // Identifier
                         t.type = ID;
-                        t.data.s = buffer.buff; //need to properly add data
+                        t.data.s = buffer.buff;
                     }
                     else
                     {
+                        // Keyword
                         t.type = KEYWORD;
                         t.data.k = kw;
                     }
@@ -285,12 +306,9 @@ Token get_next_token(FILE *f)
                 }
                 break;
 
-            case S_STRING:
-                break;
-
-            // Classification for INTs, FLOATs and FLOAT Exponentials
+            // INTs, FLOATs and FLOAT Exponentials
             case S_NUM:
-                if ((isdigit(c)) && buffer.buff[0] == '0')  //< useless zero at the beginning is forbidden
+                if ((isdigit(c)) && buffer.buff[0] == '0') //< useless zero at the beginning is forbidden
                 {
                     state = S_ERROR;
                 }
@@ -320,8 +338,7 @@ Token get_next_token(FILE *f)
                 break;
 
             case S_INT:
-
-                ungetc(c, f);   //< returns last scanned char cause not included in this token
+                ungetc(c, f);
                 t.type = INT;
                 t.data.i = atoi(buffer.buff);
                 dyn_string_free(&buffer);
@@ -329,8 +346,7 @@ Token get_next_token(FILE *f)
                 break;
 
             case S_DOUBLE:
-
-                if (c == '.')   //< only one decimal point is possible
+                if (c == '.') //< Multiple decimal points detection (allow only one)
                 {
                     state = S_ERROR;
                 }
@@ -412,6 +428,80 @@ Token get_next_token(FILE *f)
                 }
                 break;
 
+            // Strings
+            case S_STRING:
+                if (isprint(c))
+                {
+                    add_char(&buffer, c);
+
+                    if (c != '"') //< Add string contents
+                    {
+                        if (c == '\\')
+                        {
+                            state = S_ESC;
+                        }
+                    }
+                    else //< Enclosed string - return str token
+                    {
+                        t.type = STRING;
+                        t.data.s = buffer.buff;
+                        dyn_string_free(&buffer);
+                        return t;
+                    }
+                }
+                // Non printable character cannot be added to str literal
+                else
+                {
+                    state = S_ERROR;
+                }    
+                break;
+
+            // String's valid escape characters
+            case S_ESC:
+                if (IS_ESCCHAR(c))
+                {
+                    add_char(&buffer, c);
+                    if (c == 'x') // Handle hexadecimal num escape
+                    {
+                        state = S_ESCHEX_1;
+                    }
+                    else 
+                    {
+                        state = S_STRING;
+                    }
+                }
+                else
+                {
+                    state = S_ERROR;
+                }
+                break;
+
+            // String's escaped hex number - hex 1 of 2
+            case S_ESCHEX_1:
+                if (isxdigit(c))
+                {
+                    add_char(&buffer, c);
+                    state = S_ESCHEX_2;
+                }
+                else
+                {
+                    state = S_ERROR;
+                }
+                break;
+
+            // String's escaped hex number - hex 2 of 2
+            case S_ESCHEX_2:
+                if (isxdigit(c))
+                {
+                    add_char(&buffer, c);
+                    state = S_STRING;
+                }
+                else
+                {
+                    state = S_ERROR;
+                }
+                break;
+
             // Distinguish div operator from comments
             case S_COM_OR_DIV:
                 if (c == '/')
@@ -422,12 +512,11 @@ Token get_next_token(FILE *f)
                 {
                     state = S_B_COMMENT;
                 }
-                else // Division operator
+                else //< Division operator
                 {
                     ungetc(c,f);
                     t.type = DIV;
                     t.data.s = NULL; 
-                    
                     return t;
                 }
                 break;
@@ -451,13 +540,14 @@ Token get_next_token(FILE *f)
                 }
                 else if (c == EOF)
                 {
-                    //TODO /* .....EOF
+                    state = S_ERROR;
                 }
                 else
                 {
                     state = S_B_COMMENT;
                 }
                 break;
+
             case S_B_COMMENT_END:
                 if (c == '/')
                 {
@@ -465,7 +555,7 @@ Token get_next_token(FILE *f)
                 }
                 else if (c == EOF)
                 {
-                    //TODO /* .....EOF
+                    state = S_ERROR;
                 }
                 else
                 {
@@ -473,36 +563,52 @@ Token get_next_token(FILE *f)
                 }
                 break;
 
+            // Unwanted lexeme
             case S_ERROR:
 
-                dynamic_string_init(&error_buffer);             //< init the buffer for incorrect lexem
-                if (add_string(&error_buffer, buffer.buff))  //< in order to print full lexem, not only incorrect part
-                {
-                    if (c != '\n')
-                    {
-                        add_char(&error_buffer, c);                 //< we add last scanned char
+                /** DISABLED ERROR MSG OUTPUTING UNTIL NEXT MEETING */
 
-                        while (!(isspace(c = fgetc(f))))
-                            add_char(&error_buffer, c);
-                    }
-                }
+                // dynamic_string_init(&error_buffer);
 
-                if (c == '\n')      //< we return eol if this was the whitespace
-                    ungetc(c, f);
+                // // Error caught while tokenizing string or number
+                // if (buffer.alloc_len != 0) {
+                //     // Store token data buf into error buf so it contains the whole 'error causing' string
+                //     if (add_string(&error_buffer, buffer.buff))
+                //     {
+                //         // Store the rest of the line being tokenized
+                //         if (c != '\n')
+                //         {
+                //             add_char(&error_buffer, c); //< Add last scanned char
 
-                lexical_error(error_buffer.buff, line);
-                dyn_string_free(&buffer);
-                dyn_string_free(&error_buffer);
-                t.type = ERROR;
-                t.data.s = NULL;
-                return t;   //< mozno lepsie vraciat NULL, no treba zmenit implementaciu
+                //             while (!(isspace(c = fgetc(f))))
+                //                 add_char(&error_buffer, c);
+                //         }
+                //     }
+                //     dyn_string_free(&buffer);
+                // }
+                // // Error caught by tokenizing an unsupported character
+                // else 
+                // {
+                //     add_char(&error_buffer, c);
+                // }
+
+                // if (c == '\n') //< Return EoL back to be tokenized
+                //     ungetc(c, f);
+
+                // lexical_error(error_buffer.buff, line);
+                // dyn_string_free(&buffer);
+                // dyn_string_free(&error_buffer);
+
+                t.type = ERROR; //< (null)
+                t.data.i = 1;   //< E_LEXICAL
+                return t;       //< mozno lepsie vraciat NULL, no treba zmenit implementaciu
                 break;
 
             default:
                 break;
         }
 
-        if (state == S_ERROR)       //< we return last char which caused error state, in order to make correct error output
+        if (state == S_ERROR) //< Return last char which caused error state, in order to make correct error output
             ungetc(c, f);
     }
 }

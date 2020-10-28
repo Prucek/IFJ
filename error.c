@@ -13,6 +13,38 @@
 #include "error.h"
 
 
+char *array[] = {
+    "ID",
+    "INT",
+    "STRING",
+    "FLOAT64",
+    "KEYWORD",
+
+    "PARENTHESIS_LEFT",   // (
+    "PARENTHESIS_RIGHT",  // )
+    "BRACKET_LEFT",       // {
+    "BRACKET_RIGHT",      // }
+
+    "SUB",
+    "DIV",
+    "ADD",
+    "MUL",
+
+    "COMMA",      // ,
+    "DEF_OF_VAR", // :=
+    "VAR_ASSIGN", // =
+
+    "GT",        // >
+    "LT",        // <
+    "NE",        // !=
+    "LE",        // <=
+    "GE",        // >=
+    "EQ",        // ==
+
+    "EOL",
+    "EoF",
+ };
+
 int error_value = 0;    //< in case of no error
 
 
@@ -25,10 +57,13 @@ void lexical_error(char *str, int line)
 }
 
 
-void syntax_error()
+void syntax_error(Token_type t, int line)
 {
-    fprintf(stderr, "****  Syntax error: token, line !  ****\n");
+    static int _line = 0; //print only one mistake on single line
+    if (line != _line)
+        fprintf(stderr, "****  Syntax error: token type %s, line %d!  ****\n",array[t], line);
     error_value = 2;
+    _line = line;
 }
 
 

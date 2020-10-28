@@ -1,7 +1,7 @@
 /**
  * @file parser.h
  * @authors Peter Rucek ...
- * @date 17 Oct 2020
+ * @date 25 Oct 2020
  * @brief Interface for the parser
  */
 
@@ -10,12 +10,21 @@
 
 #include "lexer.h"
 
+
+typedef struct
+{
+    Token actual_token;
+    int actual_line;
+
+}Metadata;
+
+
 /*
     program -> "package main" ->|<---------------
     ^^^^^^^                     |               |
                                 ----- func --------> EOF
 */
-void program();
+int program();
 
 /*
     func -> "func" -> ID -> "(" -----------------> ")" --------------------------------------> "{" -> EOL -> statement -> "}"
@@ -33,7 +42,7 @@ void program();
         ...
     }
 */
-void func();
+bool func();
 
 /*
     statement --> EOL
@@ -52,6 +61,19 @@ void func();
               |
      return   --> "return" -> expression           
 */
+
+void header_arg();
+
+void header_ret();
+
+void functions();
+
+bool func_header();
+
+void prolog();
+
+bool expect_token(Token_type t_type, Keyword k);
+
 void statement();
 
 void definition_s();

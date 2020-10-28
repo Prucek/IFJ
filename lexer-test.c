@@ -28,6 +28,7 @@
     "COMMA",      // ,
     "DEF_OF_VAR", // :=
     "VAR_ASSIGN", // =
+    "SEMICLN",    // ;
 
     "GT",        // >
     "LT",        // <
@@ -65,7 +66,7 @@ char *k_arr[] =
 void print(Token t)
 {
     printf("Token type: %s\n",arr[t.type]);
-    if (t.type == INT )
+    if (t.type == INT  || t.type == ERROR)
     {
        printf("Token data: %d\n",t.data.i);
     }

@@ -25,8 +25,7 @@ int add_char(dynamic_string *str, char c) //adds char to the first empty spot in
 
         if (str->buff == NULL)
         {
-            fprintf(stderr, "Error allocating dynamic string\n");
-            return 1;
+            intern_error();
         }
 
         str->alloc_len = BLOCK;
@@ -37,8 +36,7 @@ int add_char(dynamic_string *str, char c) //adds char to the first empty spot in
 
         if (str->buff == NULL)
         {
-            fprintf(stderr, "Error reallocating dynamic string\n");
-            return 1;
+            intern_error();
         }
 
         str->alloc_len += BLOCK;
@@ -57,8 +55,7 @@ int add_string(dynamic_string *str, char *str_to_copy) //adds string to the buff
 
         if (str->buff == NULL)
         {
-            fprintf(stderr, "Error allocating dynamic string\n");
-            return 0;
+            intern_error();
         }
 
         str->alloc_len = strlen(str_to_copy); //set how much space is available in the buffer currently
@@ -69,8 +66,7 @@ int add_string(dynamic_string *str, char *str_to_copy) //adds string to the buff
 
         if (str->buff == NULL)
         {
-            fprintf(stderr, "Error reallocating dynamic string\n");
-            return 0;
+            intern_error();
         }
 
         str->alloc_len += strlen(str_to_copy);

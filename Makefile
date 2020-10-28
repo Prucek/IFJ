@@ -22,7 +22,7 @@ parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o
 lexer-test: lexer.o lexer-test.o dynamicstring.o error.o symtable.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-dynamicstring-test: dynamicstring-test.o dynamicstring.o
+dynamicstring-test: dynamicstring-test.o dynamicstring.o error.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 symtable-test: symtable-test.o symtable.o error.o
@@ -48,4 +48,4 @@ symtable.o: symtable.c symtable.h
 
 clean:
 	rm -rf *.o
-	rm -rf lexer-test dynamicstring-test symtable-test
+	rm -rf lexer-test dynamicstring-test symtable-test parser-test

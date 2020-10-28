@@ -10,13 +10,13 @@
 int main()
 {
     dynamic_string str;
-    dynamic_string_init(&str);
+    dynstr_init(&str);
     char *tocopy = "int";
     const char *copy = "func";
 
     add_string(&str, tocopy);
 
-    printf("%d\n", cmp_dyn_and_const(&str, copy));
+    printf("%d\n", dynstr_cmp(&str, copy));
 
     for (int i = 0; i < 10; i++)
     {
@@ -26,9 +26,9 @@ int main()
     printf("pocet alokovanych miest:%d, pocet znakov:%d\n", str.alloc_len, str.len);
     printf("%s\n",str.buff);
 
-    dyn_string_free(&str);
+    dynstr_free(&str);
 
-    dynamic_string_init(&str);
+    dynstr_init(&str);
     add_string(&str, tocopy);
 
     add_char(&str, ' ');
@@ -44,7 +44,7 @@ int main()
     printf("pocet alokovanych miest:%d, pocet znakov:%d\n", str.alloc_len, str.len);
     printf("%s\n", str.buff);
     
-    dyn_string_free(&str);
+    dynstr_free(&str);
 
 
 }

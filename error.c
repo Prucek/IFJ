@@ -3,15 +3,11 @@
  * @authors Marek Micek, Peter Rucek ....
  * @date 16 OCT 2020
  * @brief Error functions
+ * 
+ * @todo Doplnit parametre funckii na zaklade implementacie scanera a parsera
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-
-
-#include "lexer.h"
 #include "error.h"
-
 
 char *array[] = {
     "ID",
@@ -33,6 +29,7 @@ char *array[] = {
     "COMMA",      // ,
     "DEF_OF_VAR", // :=
     "VAR_ASSIGN", // =
+    "SEMICLN",    // ;
 
     "GT",        // >
     "LT",        // <
@@ -45,11 +42,17 @@ char *array[] = {
     "EoF",
  };
 
-int error_value = 0;    //< in case of no error
+int error_value = 0; //< in case of no error
 
 
-// TODO doplnit parametre funckii na zaklade implementacie scanera a parsera
-
+/**
+ * PLACEHOLDER - Documentation may not be necessary here!
+ * 
+ * @brief Inform about lexical error occurrence
+ * @param str Error causing lexeme
+ * @param line Line of error causing lexeme
+ * @post error_value = 1
+ */
 void lexical_error(char *str, int line)
 {
     fprintf(stderr, "****  Lexical error: lexem which caused error = '%s', on line = '%d' !  ****\n", str, line);

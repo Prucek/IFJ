@@ -139,7 +139,7 @@ Token get_next_token(FILE *f)
                 // Identifiers, keywords
                 else if (isalpha(c) || c == '_')
                 {
-                    dynamic_string_init(&buffer);
+                    dynstr_init(&buffer);
                     add_char(&buffer, c);
                     state = S_ID_OR_KEY;
                 }
@@ -147,7 +147,7 @@ Token get_next_token(FILE *f)
                 // Numbers
                 else if (isdigit(c))
                 {
-                    dynamic_string_init(&buffer);
+                    dynstr_init(&buffer);
                     add_char(&buffer, c);
                     state = S_NUM;
                 }
@@ -155,7 +155,7 @@ Token get_next_token(FILE *f)
                 // Strings
                 else if (c == '"')
                 {
-                    dynamic_string_init(&buffer);
+                    dynstr_init(&buffer);
                     add_char(&buffer, c);
                     state = S_STRING;
                 }
@@ -301,7 +301,7 @@ Token get_next_token(FILE *f)
                         t.data.k = kw;
                     }
 
-                    dyn_string_free(&buffer);
+                    dynstr_free(&buffer);
                     return t;
                 }
                 break;
@@ -341,7 +341,7 @@ Token get_next_token(FILE *f)
                 ungetc(c, f);
                 t.type = INT;
                 t.data.i = atoi(buffer.buff);
-                dyn_string_free(&buffer);
+                dynstr_free(&buffer);
                 return t;
                 break;
 
@@ -368,7 +368,7 @@ Token get_next_token(FILE *f)
                     ungetc(c, f);
                     t.type = FLOAT64;
                     t.data.d = atof(buffer.buff);
-                    dyn_string_free(&buffer);
+                    dynstr_free(&buffer);
                     return t;
                 }
                 break;
@@ -423,7 +423,7 @@ Token get_next_token(FILE *f)
                     ungetc(c, f);
                     t.type = FLOAT64;
                     t.data.d = atof(buffer.buff);
-                    dyn_string_free(&buffer);
+                    dynstr_free(&buffer);
                     return t;
                 }
                 break;
@@ -445,7 +445,7 @@ Token get_next_token(FILE *f)
                     {
                         t.type = STRING;
                         t.data.s = buffer.buff;
-                        dyn_string_free(&buffer);
+                        dynstr_free(&buffer);
                         return t;
                     }
                 }
@@ -568,7 +568,7 @@ Token get_next_token(FILE *f)
 
                 /** DISABLED ERROR MSG OUTPUTING UNTIL NEXT MEETING */
 
-                // dynamic_string_init(&error_buffer);
+                // dynstr_init(&error_buffer);
 
                 // // Error caught while tokenizing string or number
                 // if (buffer.alloc_len != 0) {
@@ -584,7 +584,7 @@ Token get_next_token(FILE *f)
                 //                 add_char(&error_buffer, c);
                 //         }
                 //     }
-                //     dyn_string_free(&buffer);
+                //     dynstr_free(&buffer);
                 // }
                 // // Error caught by tokenizing an unsupported character
                 // else 
@@ -596,8 +596,8 @@ Token get_next_token(FILE *f)
                 //     ungetc(c, f);
 
                 // lexical_error(error_buffer.buff, line);
-                // dyn_string_free(&buffer);
-                // dyn_string_free(&error_buffer);
+                // dynstr_free(&buffer);
+                // dynstr_free(&error_buffer);
 
                 t.type = ERROR; //< (null)
                 t.data.i = 1;   //< E_LEXICAL

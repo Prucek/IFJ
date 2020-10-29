@@ -42,7 +42,6 @@ Keyword get_keywordID(char *str)
  * @brief Parse input stream from source file into exactly one token
  * @param f File opened for reading (.go source code)
  * @return Parsed token
- * 
  */
 Token get_next_token(FILE *f)
 {

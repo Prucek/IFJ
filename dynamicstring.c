@@ -81,7 +81,7 @@ int add_string(dynamic_string *str, char *str_to_copy)
     }
     else if (str->len+strlen(str_to_copy) >= (unsigned)str->alloc_len) //< Not enough space ?
     {
-        str->buff = realloc(str->buff, str->alloc_len+strlen(str_to_copy)+1); // Only realloc the amount of space needed
+        str->buff = realloc(str->buff, str->alloc_len+strlen(str_to_copy)+1); //< Only realloc the amount of space needed
 
         if (str->buff == NULL)
         {
@@ -122,14 +122,15 @@ void dynstr_free(dynamic_string *str)
  * @brief Compare dyn_str's buffer to passed string
  * @param str Valid pointer to initialized dynstr
  * @param const_str String to compare the dyn_str's buffer against
- * @return 0 on match,
- *        -1 on mismatch
+ * @return 1 on match,
+ *         0 on mismatch
  */
-int dynstr_cmp(dynamic_string *str, const char *const_str) //
+int dynstr_cmp(dynamic_string *str, const char *const_str)
 {
     if (str->buff == NULL || const_str == NULL)
     {
-        return -1;
+        return 0;
     }
-    return strcmp(str->buff, const_str);
+    // strcmp returns 0 on match, however, return 1 on match for convenience
+    return (strcmp(str->buff, const_str) == 0) ? 1 : 0;
 }

@@ -3,7 +3,7 @@
  * @authors Peter Rucek, Marek Micek, Rebeka Cernianska, Matej Jurik
  * @date 15 Oct 2020
  * @brief Lexer implementation
- * 
+ *
  * @todo * Decide on what FMS should behave like in S_ERROR state
  *       * Handle EOL requested/optional/required problem
  */
@@ -35,19 +35,33 @@ Keyword get_keywordID(char *str)
     return K_ERROR;
 }
 
+void copy_token_string(Token *token, char *string)
+{
+    token->data.s = malloc(sizeof(char) * strlen(string));
+    if (token->data.s == NULL)
+    {
+        intern_error();
+        return;
+    }
+    for (unsigned int i = 0; i < strlen(string); i++)
+    {
+        token->data.s[i] = string[i];
+    }
+}
+
 /**
- * This function implements a Finite State Machine crafted to tokenize 
+ * This function implements a Finite State Machine crafted to tokenize
  * IFJ20 language's specific code structures
  *
  * @brief Parse input stream from source file into exactly one token
  * @param f File opened for reading (.go source code)
  * @return Parsed token
- * 
+ *
  */
 Token get_next_token(FILE *f)
 {
     static int line = 1; //< counter of current line
-    
+
     assert(f != NULL);
     Token t;
     State state = S_START;
@@ -115,7 +129,7 @@ Token get_next_token(FILE *f)
                 }
 
                 // Logical operators
-                else if (c == '<') 
+                else if (c == '<')
                 {
                     state = S_LT;
                 }
@@ -151,7 +165,7 @@ Token get_next_token(FILE *f)
                     add_char(&buffer, c);
                     state = S_NUM;
                 }
-    
+
                 // Strings
                 else if (c == '"')
                 {
@@ -198,7 +212,7 @@ Token get_next_token(FILE *f)
                 break;
 
             // Two-part logical operators
-            case S_LT: 
+            case S_LT:
                 if (c == '=')
                 {
                     t.type = LE;
@@ -237,7 +251,7 @@ Token get_next_token(FILE *f)
                     t.data.s = NULL;
                     return t;
                 }
-                else 
+                else
                 {
                     state = S_ERROR;
                 }
@@ -286,13 +300,13 @@ Token get_next_token(FILE *f)
                 {
                     ungetc(c, f);
                     state = S_START;
-                    
+
                     Keyword kw = get_keywordID(buffer.buff);
                     if (kw == K_ERROR)
                     {
                         // Identifier
                         t.type = ID;
-                        t.data.s = buffer.buff;
+                        copy_token_string(&t, buffer.buff);
                     }
                     else
                     {
@@ -408,7 +422,7 @@ Token get_next_token(FILE *f)
 
             // Exponential classification - last phase
             case S_EXPO_3:
-                // Accept more numbers if sign was not specified 
+                // Accept more numbers if sign was not specified
                 // or accept exponential as FLOAT64
                 if (isdigit(c))
                 {
@@ -444,7 +458,7 @@ Token get_next_token(FILE *f)
                     else //< Enclosed string - return str token
                     {
                         t.type = STRING;
-                        t.data.s = buffer.buff;
+                        copy_token_string(&t, buffer.buff);
                         dyn_string_free(&buffer);
                         return t;
                     }
@@ -453,7 +467,7 @@ Token get_next_token(FILE *f)
                 else
                 {
                     state = S_ERROR;
-                }    
+                }
                 break;
 
             // String's valid escape characters
@@ -465,7 +479,7 @@ Token get_next_token(FILE *f)
                     {
                         state = S_ESCHEX_1;
                     }
-                    else 
+                    else
                     {
                         state = S_STRING;
                     }
@@ -516,7 +530,7 @@ Token get_next_token(FILE *f)
                 {
                     ungetc(c,f);
                     t.type = DIV;
-                    t.data.s = NULL; 
+                    t.data.s = NULL;
                     return t;
                 }
                 break;
@@ -587,7 +601,7 @@ Token get_next_token(FILE *f)
                 //     dyn_string_free(&buffer);
                 // }
                 // // Error caught by tokenizing an unsupported character
-                // else 
+                // else
                 // {
                 //     add_char(&error_buffer, c);
                 // }

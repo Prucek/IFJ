@@ -5,74 +5,94 @@
  * @brief Flexible buffer for saving token data
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "dynamicstring.h"
 
-void dynamic_string_init(dynamic_string *str) //prepares the structure before use
+/**
+ * @brief Initialize dynstr before use
+ * @param str Valid pointer to declared dynstr to be initalized
+ */
+void dynstr_init(dynamic_string *str)
 {
     str->len = 0;
     str->alloc_len = 0;
     str->buff = NULL;
 }
 
-int add_char(dynamic_string *str, char c) //adds char to the first empty spot in the buffer
+/**
+ * @brief Append character to dynstr's buffer
+ * @param str Valid pointer to initialized dynstr
+ * @param c Char to be appended
+ * @return 1 if append was successfull,
+ *         0 if allocation error occured
+ */
+int add_char(dynamic_string *str, char c)
 {
-    if (str->len == 0) //when the buffer is empty, we allocate memory
+    if (str->len == 0) //< Allocate memory if buffer is empty
     {
         str->buff = malloc(BLOCK);
 
         if (str->buff == NULL)
         {
             intern_error();
+            return 0;
         }
 
         str->alloc_len = BLOCK;
     }
-    else if (str->len+1 >= str->alloc_len) //reallocating memory when more is needed
+    else if (str->len+1 >= str->alloc_len) //< Reallocate memory when more is needed
     {
         str->buff = realloc(str->buff, str->alloc_len+BLOCK);
 
         if (str->buff == NULL)
         {
             intern_error();
+            return 0;
         }
 
         str->alloc_len += BLOCK;
     }
 
-    str->buff[str->len++] = c; //set new data and ending char of string
-    str->buff[str->len] = '\0';
-    return 0;
+    str->buff[str->len++] = c; //< Append character 
+    str->buff[str->len] = '\0'; //< Nullchar-terminate the buffer
+    return 1;
 }
 
-int add_string(dynamic_string *str, char *str_to_copy) //adds string to the buffer, starting on the first empty position
+
+/**
+ * @brief Append a string to dynstr's buffer
+ * @param str Valid pointer to initialized dynstr
+ * @param str_to_copy String to be appended
+ * @return 1 if append was successfull,
+ *         0 if allocation error occured
+ */
+int add_string(dynamic_string *str, char *str_to_copy) 
 {
-    if (str->len == 0) //if the buffer is empty, we allocate memory
+    if (str->len == 0) //< If the buffer is empty, allocate memory
     {
-        str->buff = malloc(strlen(str_to_copy)+1); //we only allocate the needed space
+        str->buff = malloc(strlen(str_to_copy)+1); //< Only allocate the needed space
 
         if (str->buff == NULL)
         {
             intern_error();
+            return 0;
         }
 
-        str->alloc_len = strlen(str_to_copy); //set how much space is available in the buffer currently
+        str->alloc_len = strlen(str_to_copy); //< Update how much space is available in the buffer currently
     }
-    else if (str->len+strlen(str_to_copy) >= (unsigned)str->alloc_len) //if we need more space than is available
+    else if (str->len+strlen(str_to_copy) >= (unsigned)str->alloc_len) //< Not enough space ?
     {
-        str->buff = realloc(str->buff, str->alloc_len+strlen(str_to_copy)+1); //we only realloc the amount of space we need
+        str->buff = realloc(str->buff, str->alloc_len+strlen(str_to_copy)+1); //< Only realloc the amount of space needed
 
         if (str->buff == NULL)
         {
             intern_error();
+            return 0;
         }
 
         str->alloc_len += strlen(str_to_copy);
     }
 
-    for (unsigned int i = 0; i < strlen(str_to_copy); i++) //transfering data to the target buffer
+    for (unsigned int i = 0; i < strlen(str_to_copy); i++) //< Transfer data to the target buffer
     {
         str->buff[i+str->len] = str_to_copy[i];
     }
@@ -83,7 +103,12 @@ int add_string(dynamic_string *str, char *str_to_copy) //adds string to the buff
     return 1;
 }
 
-void dyn_string_free(dynamic_string *str) //allows to re-use buffer, needs to be used before a buffer is used again
+/** 
+ * @brief Destruct dynstr - Free used memory and reset other members to default values.
+ *        Allows to re-use buffer, needs to be used before a buffer is used again.
+ * @param str Valid pointer to initialized dynstr
+ */
+void dynstr_free(dynamic_string *str) 
 {
     if (str->buff != NULL)
     {
@@ -93,12 +118,19 @@ void dyn_string_free(dynamic_string *str) //allows to re-use buffer, needs to be
     str->alloc_len = 0;
 }
 
-
-int cmp_dyn_and_const(dynamic_string *dyn_str, const char *const_str) //compares a dyn_str with a string, returns 0 if strings are equal
+/**
+ * @brief Compare dyn_str's buffer to passed string
+ * @param str Valid pointer to initialized dynstr
+ * @param const_str String to compare the dyn_str's buffer against
+ * @return 1 on match,
+ *         0 on mismatch
+ */
+int dynstr_cmp(dynamic_string *str, const char *const_str)
 {
-    if (dyn_str->buff == NULL || const_str == NULL)
+    if (str->buff == NULL || const_str == NULL)
     {
-        return -1;
+        return 0;
     }
-    return strcmp(dyn_str->buff, const_str);
+    // strcmp returns 0 on match, however, return 1 on match for convenience
+    return (strcmp(str->buff, const_str) == 0) ? 1 : 0;
 }

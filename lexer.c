@@ -35,17 +35,17 @@ Keyword get_keywordID(char *str)
     return K_ERROR;
 }
 
-void copy_token_string(Token *token, char *string)
+void copy_token_string(Token *token, dynamic_string *string)
 {
-    token->data.s = malloc(sizeof(char) * strlen(string));
+    token->data.s = malloc(sizeof(char) * string->len);
     if (token->data.s == NULL)
     {
         intern_error();
         return;
     }
-    for (unsigned int i = 0; i < strlen(string); i++)
+    for (int i = 0; i < string->len; i++)
     {
-        token->data.s[i] = string[i];
+        token->data.s[i] = string->buff[i];
     }
 }
 
@@ -305,7 +305,7 @@ Token get_next_token(FILE *f)
                     {
                         // Identifier
                         t.type = ID;
-                        copy_token_string(&t, buffer.buff);
+                        copy_token_string(&t, &buffer);
                     }
                     else
                     {
@@ -457,7 +457,7 @@ Token get_next_token(FILE *f)
                     else //< Enclosed string - return str token
                     {
                         t.type = STRING;
-                        copy_token_string(&t, buffer.buff);
+                        copy_token_string(&t, &buffer);
                         dynstr_free(&buffer);
                         return t;
                     }

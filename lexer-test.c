@@ -1,6 +1,6 @@
 /**
  * @file lexer-test.c
- * @authors Peter Rucek, Marek Micek, Rebeka Cernianska ...
+ * @authors Peter Rucek ...
  * @date 15 Oct 2020
  * @brief Lexer tests
  */

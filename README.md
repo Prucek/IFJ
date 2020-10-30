@@ -10,22 +10,30 @@ IFJ20 is a simplified version of the programming language Go.
 * Marek Micek, xmicek08
 * Peter Rucek, xrucek00
 
+## Bugs
+
+* Allocated memory for tokens of type STR or ID is never freed -  a good solution  
+  should be freeing the mem when parser receives it and finishes it's work with it
+
+* (MINOR) Common occurence of uninitialized variable usage (`valgrind --track-origins=yes ./lexer-test`)
+  
 ____________
 
 ## Assignments
 
 * xcerni13:
-  * Implement stack
+  * Study semantic analysis
+
 * xjurik12:
-  * Finish lexer
-    * Lexer strings (dependant on symbol table)
-    * Ensure uniform code style
-    * Full scale lexer testing on input files
+  * Lexer module test (t.data.s)
+  * Lexical errors & errors enum
+  * Expression analysis
+
 * xmicek08:
-  * Symbol table (for 2 people ?)
+  * Study semantic analysis
 
 * xrucek00:
-  * Start implementing parser
+  * Finish syntactic analysis
 
 ## Job Pool
 

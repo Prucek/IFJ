@@ -4,7 +4,7 @@
  * @date 15 Oct 2020
  * @brief Lexer implementation
  *
- * @todo * Decide on what FMS should behave like in S_ERROR state
+ * @todo * Decide on what FSM should behave like in S_ERROR state
  *       * Handle EOL requested/optional/required problem
  */
 
@@ -458,7 +458,7 @@ Token get_next_token(FILE *f)
                     {
                         t.type = STRING;
                         copy_token_string(&t, buffer.buff);
-                        dyn_string_free(&buffer);
+                        dynstr_free(&buffer);
                         return t;
                     }
                 }

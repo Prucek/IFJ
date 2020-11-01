@@ -52,7 +52,7 @@ int add_char(dynamic_string *str, char c)
         str->alloc_len += BLOCK;
     }
 
-    str->buff[str->len++] = c; //< Append character 
+    str->buff[str->len++] = c; //< Append character
     str->buff[str->len] = '\0'; //< Nullchar-terminate the buffer
     return 1;
 }
@@ -65,7 +65,7 @@ int add_char(dynamic_string *str, char c)
  * @return 1 if append was successfull,
  *         0 if allocation error occured
  */
-int add_string(dynamic_string *str, char *str_to_copy) 
+int add_string(dynamic_string *str, char *str_to_copy)
 {
     if (str->len == 0) //< If the buffer is empty, allocate memory
     {
@@ -103,12 +103,12 @@ int add_string(dynamic_string *str, char *str_to_copy)
     return 1;
 }
 
-/** 
+/**
  * @brief Destruct dynstr - Free used memory and reset other members to default values.
  *        Allows to re-use buffer, needs to be used before a buffer is used again.
  * @param str Valid pointer to initialized dynstr
  */
-void dynstr_free(dynamic_string *str) 
+void dynstr_free(dynamic_string *str)
 {
     if (str->buff != NULL)
     {
@@ -133,4 +133,13 @@ int dynstr_cmp(dynamic_string *str, const char *const_str)
     }
     // strcmp returns 0 on match, however, return 1 on match for convenience
     return (strcmp(str->buff, const_str) == 0) ? 1 : 0;
+}
+
+void copy_token_string(char *token_string, dynamic_string *string)
+{
+    for (int i = 0; i < string->len; i++)
+    {
+        token_string[i] = string->buff[i];
+    }
+    token_string[string->len] = '\0';
 }

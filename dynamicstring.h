@@ -33,4 +33,6 @@ void dynstr_free(dynamic_string *str);
 
 int dynstr_cmp(dynamic_string *dyn_str, const char *const_str);
 
+void copy_token_string(char *token_string, dynamic_string *string);
+
 #endif

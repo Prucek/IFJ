@@ -35,19 +35,7 @@ Keyword get_keywordID(char *str)
     return K_ERROR;
 }
 
-void copy_token_string(Token *token, dynamic_string *string)
-{
-    token->data.s = malloc(sizeof(char) * string->len);
-    if (token->data.s == NULL)
-    {
-        intern_error();
-        return;
-    }
-    for (int i = 0; i < string->len; i++)
-    {
-        token->data.s[i] = string->buff[i];
-    }
-}
+
 
 /**
  * This function implements a Finite State Machine crafted to tokenize
@@ -305,7 +293,14 @@ Token get_next_token(FILE *f)
                     {
                         // Identifier
                         t.type = ID;
-                        copy_token_string(&t, &buffer);
+                        t.data.s = malloc(sizeof(char) * (strlen(buffer.buff) + 1));
+                        if (t.data.s == NULL)
+                        {
+                            intern_error();
+                        }
+                        copy_token_string(t.data.s, &buffer);
+
+                        //copy_token_string(&t.data.s, &buffer);
                     }
                     else
                     {
@@ -457,7 +452,13 @@ Token get_next_token(FILE *f)
                     else //< Enclosed string - return str token
                     {
                         t.type = STRING;
-                        copy_token_string(&t, &buffer);
+                        //t.data.s = NULL;
+                        t.data.s = malloc(sizeof(char) * (strlen(buffer.buff) + 1));
+                        if (t.data.s == NULL)
+                        {
+                            intern_error();
+                        }
+                        copy_token_string(t.data.s, &buffer);
                         dynstr_free(&buffer);
                         return t;
                     }

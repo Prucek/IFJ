@@ -28,7 +28,7 @@ dynamicstring-test: dynamicstring-test.o dynamicstring.o error.o
 symtable-test: symtable-test.o symtable.o error.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-lexer.o: lexer.c lexer.h 
+lexer.o: lexer.c lexer.h dynamicstring.h error.h
 
 lexer-test.o: lexer.h lexer-test.c
 
@@ -36,7 +36,7 @@ parser.o: parser.c parser.h lexer.h
 
 parser-test.o: parser.h parser-test.c
 
-dynamicstring.o: dynamicstring.c dynamicstring.h
+dynamicstring.o: dynamicstring.c dynamicstring.h error.h
 
 dynamicstring-test.o: dynamicstring.h dynamicstring-test.c
 
@@ -44,7 +44,7 @@ symtable-test.o: symtable.h symtable-test.c
 
 error.o: error.c error.h
 
-symtable.o: symtable.c symtable.h
+symtable.o: symtable.c symtable.h error.h
 
 clean:
 	rm -rf *.o

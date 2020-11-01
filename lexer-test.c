@@ -87,6 +87,7 @@ void print(Token t)
 int main ()
 {
     Token t;
+    t.type = -1; //porovnavanie s neinicializovanou premennou 
     while(t.type != EoF)
     {
         t = get_next_token(stdin);

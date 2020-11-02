@@ -7,7 +7,7 @@
 
 #include "parser.h"
 
-#define GET_TOKEN()  m.actual_token = get_next_token(stdin)
+#define GET_TOKEN()  m.actual_token = get_next_token(stdin); (m.actual_token.type == ERROR)? lexical_error(m.actual_line), 1 : 0
 #define CHECK_TOKEN(Type) ((m.actual_token.type == Type)? true : \
         (syntax_error(Type,m.actual_line),false))
 #define CHECK_NO_ERROR(Type) ((m.actual_token.type == Type)? true : false)
@@ -20,19 +20,20 @@
 //global
 Metadata m = {.actual_line = 1};
 
+/**
+ * @brief Syntax of program
+ */
 int program()
 {
-    prolog(); // if wrong only lex error ??????
-    functions();
+    prolog();
+    while(func());
+    CHECK_TOKEN(EoF);
     return error_value;
 }
 
-void functions()
-{
-    while(func());
-    CHECK_TOKEN(EoF);
-}
-
+/**
+ * @brief Checks syntax of function
+ */
 bool func()
 {
     if(!func_header())
@@ -41,19 +42,23 @@ bool func()
     }
 
     //TODO...body 
-    statement();
+    while(statement());
 
-    if (!expect_token(BRACKET_RIGHT,K_ERROR))
-    {
-        syntax_error(BRACKET_RIGHT,m.actual_line);
-    }
+    // if (!expect_token(BRACKET_RIGHT,K_ERROR))
+    // {
+    //     syntax_error(BRACKET_RIGHT,m.actual_line);
+    // }
 
     func();
     return true;
 }
 
+/**
+ * @brief Checks syntax of function header
+ */
 bool func_header()
 {
+    // checking EOF
     if (!expect_token(KEYWORD,K_FUNC))
     {
         if(!CHECK_NO_ERROR(EoF))
@@ -62,13 +67,20 @@ bool func_header()
         }
         return false;
     }
+
+    // function id
     GET_AND_CHECK(ID);
+    // HERE add m.actual_token to symtable function id
+
+    // function parameters
     GET_AND_CHECK(PARENTHESIS_LEFT);
     GET_TOKEN();
     if (!CHECK_NO_ERROR(PARENTHESIS_RIGHT))
-    {
+    { 
         header_arg();
     }
+
+    // function return values
     GET_TOKEN();
     bool inside = false;
     if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
@@ -76,6 +88,8 @@ bool func_header()
         header_ret();
         inside = true;
     }
+
+    // chcecking {EOL at the end of function header
     if (!inside)
     {
         CHECK_TOKEN(BRACKET_LEFT);
@@ -90,6 +104,9 @@ bool func_header()
     return true;
 }
 
+/**
+ * @brief Checks syntax of seqeunce <data type> , <data type> ,...)
+ */
 void header_ret()
 {
     GET_TOKEN();
@@ -98,6 +115,7 @@ void header_ret()
         return;
     }
     IS_DATA_TYPE();
+    // HERE add return value of function to symtable
     GET_TOKEN();
     
     if (CHECK_NO_ERROR(COMMA))
@@ -115,7 +133,7 @@ void header_ret()
 }
 
 /**
- * @brief Reading seqeunce ID <data type> , ID <data type> ,... )
+ * @brief Checks syntax of seqeunce ID <data type> , ID <data type> ,... )
  */
 void header_arg()
 {
@@ -127,6 +145,7 @@ void header_arg()
     //     GET_TOKEN();
     // }
     CHECK_TOKEN(ID);
+    // HERE add parameters of function to symtable
     GET_TOKEN();
     IS_DATA_TYPE();
     GET_TOKEN();
@@ -147,14 +166,163 @@ void header_arg()
     }
 }
 
-void statement()
+/**
+ * @brief Checks what statement has come
+ * @return False if } was read, else true
+ */
+bool statement()
+{
+    // skip EOL's
+    GET_TOKEN();
+    while(CHECK_NO_ERROR(EOL))
+    {
+        m.actual_line++;
+        GET_TOKEN();
+    }
+
+    if (CHECK_NO_ERROR(BRACKET_RIGHT))
+    {
+        return false;
+    }
+    else if (CHECK_NO_ERROR(KEYWORD))
+    {
+        if (m.actual_token.data.k == K_IF)
+        {
+            if_s();
+        }
+        else if (m.actual_token.data.k == K_FOR)
+        {
+            for_s();
+        }
+        else if (m.actual_token.data.k == K_RETURN)
+        {
+            return_s();
+        }
+        else
+        {
+            syntax_error(m.actual_token.type,m.actual_line);
+        }   
+    }
+    else if (CHECK_TOKEN(ID))
+    {
+        // HERE add m.actual_token to symtable
+        GET_TOKEN();
+        int number_of_id = 1;
+
+        if (CHECK_NO_ERROR(COMMA))
+        {
+            while(!CHECK_NO_ERROR(VAR_ASSIGN))
+            {
+                CHECK_TOKEN(COMMA);
+                GET_AND_CHECK(ID);
+                // HERE add m.actual_token to symtable
+                number_of_id++;
+                GET_TOKEN();
+            }
+
+            assignment_s(number_of_id);
+        }
+        else if (CHECK_NO_ERROR(DEF_OF_VAR))
+        {
+            definition_s();
+        }
+        else if (CHECK_NO_ERROR(VAR_ASSIGN))
+        {
+            assignment_s(number_of_id);
+        }
+        else
+        {
+            syntax_error(m.actual_token.type,m.actual_line);
+        }
+    }
+
+    return true;
+}
+
+/**
+ * @brief Checks syntax of definition of var statement
+ */
+void definition_s()
+{
+    expression();
+    GET_AND_CHECK(EOL);
+    m.actual_line++;
+}
+
+/**
+ * @brief Checks syntax of if statement
+ */
+void if_s()
 {
 
 }
 
+/**
+ * @brief Checks syntax of assignment to var statement
+ */
+void assignment_s(int number_of_id)
+{
+    for (int i = 1; i <= number_of_id; i++)
+    {
+        expression();
+        if (i == number_of_id)
+        {
+            break;
+        }
+        GET_AND_CHECK(COMMA);
+    }
+    GET_AND_CHECK(EOL);
+    m.actual_line++;
+}
 
+/**
+ * @brief Checks syntax of for statement
+ */
+void for_s()
+{
+
+}
+
+/**
+ * @brief Checks syntax of return statement
+ */
+void return_s()
+{
+    while (true)
+    {
+        expression();
+        GET_TOKEN();
+        if (CHECK_NO_ERROR(COMMA))
+        {
+            continue;
+        }
+        else if (CHECK_NO_ERROR(EOL))
+        {
+            break;
+        }
+        else
+        {
+            syntax_error(m.actual_token.type,m.actual_line);
+        }
+    }
+}
+
+/**
+ * @brief Checks syntax of expressions
+ */
+void expression()
+{
+    // Wimko TODO
+}
+
+/**
+ * @brief Checks syntax of the prolog
+ */ 
 void prolog()
 {
+    // ZO ZADANIA, NEROZUMIEM
+    // 9) Prolog mohou prokládat komentáře a prázdné řádky a slouží především kvůli kompatibilitě s programy jazyka Go.
+
     if (!expect_token(KEYWORD, K_PACKAGE))
     {
         syntax_error(KEYWORD,m.actual_line);
@@ -167,7 +335,11 @@ void prolog()
     }
 }
 
-bool expect_token(Token_type t_type, Keyword k) //to lexer.c ????????
+/**
+ * @brief Skip EOL's and expect certain token to come
+ * @return true if token came, else false
+ */
+bool expect_token(Token_type t_type, Keyword k)
 {
     while(true)
     {

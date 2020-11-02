@@ -9,7 +9,7 @@
 #define _PARSER_H_
 
 #include "lexer.h"
-
+#include "error.h"
 
 typedef struct
 {
@@ -66,24 +66,24 @@ void header_arg();
 
 void header_ret();
 
-void functions();
-
 bool func_header();
 
 void prolog();
 
 bool expect_token(Token_type t_type, Keyword k);
 
-void statement();
+bool statement();
 
 void definition_s();
 
 void if_s();
 
-void assignment_s();
+void assignment_s(int number_of_id);
 
 void for_s();
 
 void return_s();
+
+void expression();
 
 #endif  

@@ -74,8 +74,6 @@ bool expect_token(Token_type t_type, Keyword k);
 
 bool statement();
 
-void definition_s();
-
 void if_s();
 
 void assignment_s(int number_of_id);

@@ -9,7 +9,7 @@
 
 #define GET_TOKEN()  m.actual_token = get_next_token(stdin); (m.actual_token.type == ERROR)? lexical_error(m.actual_line), 1 : 0
 #define CHECK_TOKEN(Type) ((m.actual_token.type == Type)? true : \
-        (syntax_error(Type,m.actual_line),false))
+        (fprintf(stderr,"In function %s on line %d\n ",__func__, __LINE__) , syntax_error(Type,m.actual_line) , false))
 #define CHECK_NO_ERROR(Type) ((m.actual_token.type == Type)? true : false)
 #define GET_AND_CHECK(Type) do {GET_TOKEN(); CHECK_TOKEN(Type);}while(0)
 #define IS_DATA_TYPE() (m.actual_token.type == KEYWORD && \
@@ -41,13 +41,8 @@ bool func()
         return false;
     }
 
-    //TODO...body 
+    // body 
     while(statement());
-
-    // if (!expect_token(BRACKET_RIGHT,K_ERROR))
-    // {
-    //     syntax_error(BRACKET_RIGHT,m.actual_line);
-    // }
 
     func();
     return true;
@@ -204,11 +199,12 @@ bool statement()
         }   
     }
     else if (CHECK_TOKEN(ID))
-    {
+    {   
         // HERE add m.actual_token to symtable
         GET_TOKEN();
         int number_of_id = 1;
 
+        // assignment to var statement with multiple ID
         if (CHECK_NO_ERROR(COMMA))
         {
             while(!CHECK_NO_ERROR(VAR_ASSIGN))
@@ -222,10 +218,14 @@ bool statement()
 
             assignment_s(number_of_id);
         }
+        // definition of var statement
         else if (CHECK_NO_ERROR(DEF_OF_VAR))
         {
-            definition_s();
+            expression();
+            GET_AND_CHECK(EOL);
+            m.actual_line++;
         }
+        // assignment to var statement
         else if (CHECK_NO_ERROR(VAR_ASSIGN))
         {
             assignment_s(number_of_id);
@@ -240,21 +240,29 @@ bool statement()
 }
 
 /**
- * @brief Checks syntax of definition of var statement
- */
-void definition_s()
-{
-    expression();
-    GET_AND_CHECK(EOL);
-    m.actual_line++;
-}
-
-/**
  * @brief Checks syntax of if statement
  */
 void if_s()
 {
+    // if 
+    expression();
+    GET_AND_CHECK(BRACKET_LEFT);
+    GET_AND_CHECK(EOL);
+    m.actual_line++;
+    while(statement());
 
+    // else
+    GET_AND_CHECK(KEYWORD);
+    if (m.actual_token.data.k != K_ELSE)
+    {
+        syntax_error(m.actual_token.type,m.actual_line);
+    }
+    GET_AND_CHECK(BRACKET_LEFT);
+    GET_AND_CHECK(EOL);
+    m.actual_line++;
+    while(statement());
+    GET_AND_CHECK(EOL);
+    m.actual_line++;
 }
 
 /**
@@ -280,7 +288,35 @@ void assignment_s(int number_of_id)
  */
 void for_s()
 {
+    // inicialization (can be epmty)
+    GET_TOKEN();
+    if(CHECK_NO_ERROR(ID))
+    {
+        GET_AND_CHECK(DEF_OF_VAR);
+        expression();
+        GET_AND_CHECK(SEMICLN);
+    }
+    else if (CHECK_TOKEN(SEMICLN)){;}
+    
+    // condition
+    expression();
+    GET_AND_CHECK(SEMICLN);
 
+    // increment / decrement (can be epmty)
+    GET_TOKEN();
+    if(CHECK_NO_ERROR(ID))
+    {
+        GET_AND_CHECK(VAR_ASSIGN);
+        expression(); //only one ???
+        GET_AND_CHECK(BRACKET_LEFT);
+    }
+    else if (CHECK_TOKEN(BRACKET_LEFT)){;}
+
+    GET_AND_CHECK(EOL);
+    m.actual_line++;
+
+    // body
+    while(statement());
 }
 
 /**
@@ -298,6 +334,7 @@ void return_s()
         }
         else if (CHECK_NO_ERROR(EOL))
         {
+            m.actual_line++;
             break;
         }
         else
@@ -313,6 +350,10 @@ void return_s()
 void expression()
 {
     // Wimko TODO
+    // for now
+    GET_TOKEN();
+    if (CHECK_NO_ERROR(ID));
+    else (CHECK_TOKEN(INT));
 }
 
 /**

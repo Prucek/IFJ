@@ -34,17 +34,7 @@ typedef enum
     K_FOR,
     K_FUNC,
     K_PACKAGE,
-    K_RETURN,
-    K_INPUTS,
-    K_INPUTF,
-    K_INPUTI,
-    K_PRINT,
-    K_INT2FLOAT,
-    K_FLOAT2INT,
-    K_LEN,
-    K_SUBSTR,
-    K_ORD,
-    K_CHR,
+    K_RETURN
 
 } Keyword;
 

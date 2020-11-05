@@ -3,18 +3,7 @@
 CC=gcc
 CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
-UNAME_S := $(shell uname -s)
-
 all: lexer-test dynamicstring-test symtable-test parser-test
-
-test: lexer-test
-
-testrun:
-ifeq ($(UNAME_S),Linux)
-	@if setarch `uname -m` -R true 2>/dev/null; then setarch `uname -m` -R ./lexer-test; else ./lexer-test; fi
-else
-	./lexer-test
-endif
 
 parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o
 	$(CC) $(CFLAGS) -o $@ $^
@@ -28,23 +17,24 @@ dynamicstring-test: dynamicstring-test.o dynamicstring.o error.o
 symtable-test: symtable-test.o symtable.o error.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-lexer.o: lexer.c lexer.h dynamicstring.h error.h
+# No need
+# lexer.o: lexer.c lexer.h dynamicstring.h error.h
 
-lexer-test.o: lexer.h lexer-test.c
+# lexer-test.o: lexer.h lexer-test.c
 
-parser.o: parser.c parser.h lexer.h
+# parser.o: parser.c parser.h lexer.h error.h
 
-parser-test.o: parser.h parser-test.c
+# parser-test.o: parser.h parser-test.c
 
-dynamicstring.o: dynamicstring.c dynamicstring.h error.h
+# dynamicstring.o: dynamicstring.c dynamicstring.h error.h
 
-dynamicstring-test.o: dynamicstring.h dynamicstring-test.c
+# dynamicstring-test.o: dynamicstring.h dynamicstring-test.c
 
-symtable-test.o: symtable.h symtable-test.c
+# symtable-test.o: symtable.h symtable-test.c
 
-error.o: error.c error.h
+# error.o: error.c error.h
 
-symtable.o: symtable.c symtable.h error.h
+# symtable.o: symtable.c symtable.h error.h
 
 clean:
 	rm -rf *.o

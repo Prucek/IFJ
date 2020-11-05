@@ -14,7 +14,7 @@
     ((c) == 'n' || (c) == '"' || (c) == 't' || (c) == '\\' || (c) == 'x')
 
 const char *keywords[] = {"int", "string", "float64", "if", "else",
-"for", "func", "package", "return", "inputs", "inputf", "inputi", "print", "int2float", "float2int", "len", "substr", "ord", "chr"};
+"for", "func", "package", "return"};
 
 dynamic_string buffer, error_buffer; //< buffers for correct and incorrect lexems
 

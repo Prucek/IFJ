@@ -53,18 +53,18 @@ int error_value = 0; //< in case of no error
  * @param line Line of error causing lexeme
  * @post error_value = 1
  */
-void lexical_error(char *str, int line)
+void lexical_error(int line)
 {
-    fprintf(stderr, "****  Lexical error: lexem which caused error = '%s', on line = '%d' !  ****\n", str, line);
+    fprintf(stderr, "****  Lexical error on line = '%d' !  ****\n", line);
     error_value = 1;
 }
 
 
-void syntax_error(Token_type t, int line)
+void syntax_error(int token_type, int line)
 {
     static int _line = 0; //print only one mistake on single line
     if (line != _line)
-        fprintf(stderr, "****  Syntax error: token type %s, line %d!  ****\n",array[t], line);
+        fprintf(stderr, "****  Syntax error: token type %s, line %d!  ****\n",array[token_type], line);
     error_value = 2;
     _line = line;
 }

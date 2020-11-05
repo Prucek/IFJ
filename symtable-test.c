@@ -17,33 +17,22 @@ void print_inorder(TNode *node)
     if (node)
     {
         print_inorder(node->lptr);
-        printf("%d ", node->key);
+        printf("%s ", node->key);
         print_inorder(node->rptr);
     }
 }
  
 int main() {
 
-char *identifier_1 = "number";
-char *identifier_2 = "get_number";
-char *identifier_3 = "pi";
-char *identifier_4 = "name";
-char *identifier_5 = "undefined";
+char *key1 = "ahojY";
+char *key2 = "ahojZ";
+char *key3 = "ahojW";
+char *key4 = "ahojX";
+char *key5 = "ahojV";
 
-data_1.id = (char *) malloc(sizeof(strlen(identifier_1) + 1));
-data_2.id = (char *) malloc(sizeof(strlen(identifier_2) + 1));
-data_3.id = (char *) malloc(sizeof(strlen(identifier_3) + 1));
-data_4.id = (char *) malloc(sizeof(strlen(identifier_4) + 1));
-data_5.id = (char *) malloc(sizeof(strlen(identifier_5) + 1));
-
-if (data_1.id == NULL || data_2.id == NULL || data_3.id == NULL || data_4.id == NULL)
-{
-    fprintf(stderr, "Allocation error!\n");
-    return 1;
-}
 
 /****** first data unit ******/
-strcpy(data_1.id, identifier_1);
+data_1.id = "number";
 data_1.type = T_INT;
 data_1.defined = false;
 data_1.global = false;
@@ -51,7 +40,8 @@ data_1.is_function = false;
 data_1.param_counter = 0;
 
 /***** second data unit ******/
-strcpy(data_2.id, identifier_2);
+//strcpy(data_2.id, identifier_2);
+data_2.id = "get_number";
 data_2.type = T_INT;
 data_2.defined = false;
 data_2.global = false;
@@ -59,7 +49,7 @@ data_2.is_function = true;
 data_2.param_counter = 1;
 
 /***** third data unit ******/
-strcpy(data_3.id, identifier_3);
+data_3.id = "pi";
 data_3.type = T_FLOAT64;
 data_3.defined = true;
 data_3.global = false;
@@ -67,7 +57,7 @@ data_3.is_function = false;
 data_3.param_counter = 0;
 
 /***** fourth data unit ******/
-strcpy(data_4.id, identifier_4);
+data_4.id = "name";
 data_4.type = T_STRING;
 data_4.defined = true;
 data_4.global = false;
@@ -75,7 +65,7 @@ data_4.is_function = false;
 data_4.param_counter = 0;
 
 /***** fifth data unit ******/
-strcpy(data_5.id, identifier_5);
+data_5.id = "undefined";
 data_5.type = T_UNDEFINED;
 data_5.defined = false;
 data_5.global = false;
@@ -84,27 +74,27 @@ data_5.param_counter = 0;
 
 
 node = init_symtable(node);
-node = insert_symtable(node, data_1, 9);    //< inserting first node == root
-actual_node = insert_symtable(node, data_2, 4);
-actual_node = insert_symtable(node, data_3, 15);
-actual_node = insert_symtable(node, data_4, 6);
-actual_node = insert_symtable(node, data_5, 3);
+node = insert_symtable(node, data_1, key1);    //< inserting first node == root
+actual_node = insert_symtable(node, data_2, key3);
+actual_node = insert_symtable(node, data_3, key2);
+actual_node = insert_symtable(node, data_4, key4);
+actual_node = insert_symtable(node, data_5, key5);
 
 
-printf("Expected inorder output = 3 4 6 9 15\n");
+printf("Expected inorder output = ahojV ahojW ahojX ahojY ahojZ\n");
 printf("Our inorder output : ");
 print_inorder(node);
 printf("\n***********************************************\n");
 
 printf("Search table test 1: searching existing key\n");
 
-actual_node = search_symtable(node, 15);
-if (actual_node->key != 15)    //< we should find node
+actual_node = search_symtable(node, key2);
+if (strcmp(actual_node->key, key2) != 0)    //< we should find node
 {
     fprintf(stderr, "Keys not equal in node and in passing data!\n");
     correct = false;
 }
-if (strcmp(actual_node->data.id, identifier_3))
+if (strcmp(actual_node->data.id, data_3.id) != 0)
 {
     fprintf(stderr, "Identifiers not same in node and in passing data!\n");
     correct = false;
@@ -132,7 +122,7 @@ if (correct)
 printf("***********************************************\n");
 printf("Search table test 2: searching not existing key\n");
 
-actual_node = search_symtable(node, 99);        //< we should not find any node
+actual_node = search_symtable(node, "NOT");        //< we should not find any node
 if (actual_node != NULL)
 {
     fprintf(stderr, "Search table error occured while searching not existing key!\n");
@@ -152,15 +142,15 @@ data_1.global = true;
 data_1.is_function = true;
 data_1.param_counter = 1;
 
-insert_symtable(node, data_1, 3);           //< node 3 should be rewrite with new data
-actual_node = search_symtable(node, 3);     //< we check if data were rewrote
+insert_symtable(node, data_1, key5);           //<node with key5 should be overwrote with new data
+actual_node = search_symtable(node, key5);     //< we check if data were overwrote
 
-if (actual_node->key != 3)                          //< we should find node
+if (strcmp(actual_node->key, key5) != 0)                          //< we should find node
 {
     fprintf(stderr, "Insert table error occured while inserting existing key!\n");
     correct = false;
 }
-if (strcmp(actual_node->data.id, identifier_1))
+if (strcmp(actual_node->data.id, data_1.id) != 0)
 {
     fprintf(stderr, "Identifiers not same in node and in passing data!\n");
     correct = false;
@@ -189,8 +179,8 @@ printf("***********************************************\n");
 correct = true; //< in case it was set to false in last test unit
 
 /* we gonna to delete one node with existing key without children */ 
-delete_node(node, 15);
-actual_node = search_symtable(node, 15);
+delete_node(node, key2);
+actual_node = search_symtable(node, key2);
 if (actual_node != NULL)
 {
     fprintf(stderr, "Failed to delete node with no children!\n");
@@ -202,15 +192,15 @@ else
 
 
 /* we gonna to delete one node with existing key with both children */
-delete_node(node, 4);
-actual_node = search_symtable(node, 4); //< node 4 not exists, is overwrote with with node 6 
+delete_node(node, key3);
+actual_node = search_symtable(node, key3); //< node not exists, is overwrote by node witk key4 
 if (actual_node != NULL)
 {
     fprintf(stderr, "Failed to delete node with two children\n");
     correct = false;
 }
-actual_node =search_symtable(node, 6);
-if (actual_node->lptr->key != 3)    //< node 6 now points to node 3
+actual_node =search_symtable(node, key4);
+if (strcmp(actual_node->lptr->key, key5) != 0)    //< key4 now points to key5
 {
     fprintf(stderr, "Failed to delete node with two children\n");
     correct = false;
@@ -223,14 +213,14 @@ if (correct)
 correct = true; //< in case it was set to false in last test unit
 
 /* we gonna to delete one node with existing key with one child */
-delete_node(node, 6);
-actual_node = search_symtable(node, 6); //< node six is deleted now
+delete_node(node, key4);
+actual_node = search_symtable(node, key4); //< node six is deleted now
 if (actual_node != NULL)
 {
     fprintf(stderr, "Failed to delete node with one child!\n");
     correct = false;
 }
-if (node->lptr->key != 3)   //< root must point to node 3 now
+if (strcmp(node->lptr->key, key5) != 0)   //< root must point to node 3 now
 {
    fprintf(stderr, "Failed to delete node with one child!\n");
    correct = false; 
@@ -244,13 +234,6 @@ printf("***********************************************\n");
 printf("End of test unit\n");
 
 delete_symtable(node);
-
-
-free(data_1.id);
-free(data_2.id);
-free(data_3.id);
-free(data_4.id);
-free(data_5.id);
 
 return 0;
 }

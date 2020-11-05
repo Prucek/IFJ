@@ -42,7 +42,7 @@ typedef struct tData
 
 typedef struct tnode
 {
-    int key;    // TKey key, bude implementovat parser
+    char *key;    //< key of node
     TData data;
     struct tnode *lptr;
     struct tnode *rptr;
@@ -51,15 +51,15 @@ typedef struct tnode
 
 
 TNode* init_symtable(TNode *root);
-TNode* search_symtable(TNode *root, int k);
+TNode* search_symtable(TNode *root, char *k);
 TNode* rewrite_data(TNode *node, TData new_data);  //< rewrite old data in node with new one
-TNode* create_node(TData d, int k);
-TNode* insert_symtable(TNode *root, TData d, int k);
+TNode* create_node(TData d, char *k);
+TNode* insert_symtable(TNode *root, TData d, char *k);
 void delete_symtable(TNode *root);
 
 /* funkcie na implemetaciu vymazania jedneho uzla, mozno nepotrebne*/
 
 TNode* most_left_node(TNode *root);     //< returns the most left node suitable for delete
-TNode* delete_node(TNode *root, int k); //< deletes the node with key k
+TNode* delete_node(TNode *root, char *k); //< deletes the node with key k
 
 #endif

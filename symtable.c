@@ -15,17 +15,17 @@ TNode* init_symtable(TNode *root)
 }
 
 
-TNode* search_symtable(TNode *root, int k)
+TNode* search_symtable(TNode *root, char *k)
 {
     if (root == NULL)
     {
         return NULL;
     }
-    else if (root->key == k)
+    else if (!strcmp(root->key, k))
     {
         return root;
     }
-    else if (root->key > k)
+    else if (strcmp(root->key, k) > 0)
     {
         return (search_symtable(root->lptr, k));    //< searching left side
     }
@@ -49,7 +49,7 @@ TNode *rewrite_data(TNode *node, TData new_data)
 }
 
 
-TNode* create_node(TData d, int k)
+TNode* create_node(TData d, char *k)
 {
     TNode *new_node = (TNode *) malloc(sizeof(TNode));
     if (new_node == NULL)
@@ -74,18 +74,18 @@ TNode* create_node(TData d, int k)
 }
 
 
-TNode* insert_symtable(TNode *root, TData d, int k)
+TNode* insert_symtable(TNode *root, TData d, char *k)
 {
     if (root == NULL)   //< create new node cause key was not found
     {
          return create_node(d, k);
     }
 
-    if (root->key > k)
+    if (strcmp(root->key, k) > 0)
     {
         root->lptr = insert_symtable(root->lptr, d, k);     //< trying insert to left child
     }
-    else if (root->key < k)
+    else if (strcmp(root->key, k) < 0)
     {
         root->rptr = insert_symtable(root->rptr, d, k);     //< trying insert to right child
     }
@@ -128,18 +128,18 @@ TNode* most_left_node(TNode *root)
 }
 
 
-TNode *delete_node(TNode *root, int k)
+TNode *delete_node(TNode *root, char *k)
 {
     if (root == NULL)
     {
         return NULL;
     }
-    else if (root->key > k)     //< searching key is on the left
+    else if (strcmp(root->key, k) > 0)     //< searching key is on the left
     {
         root->lptr = delete_node(root->lptr, k);
         return root;
     }
-    else if (root->key < k)     //< searching key is on the right
+    else if (strcmp(root->key, k) < 0)     //< searching key is on the right
     {
         root->rptr = delete_node(root->rptr, k);
         return root;

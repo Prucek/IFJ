@@ -38,11 +38,11 @@ TNode* search_symtable(TNode *root, char *k)
 
 TNode *rewrite_data(TNode *node, TData new_data)
 {
-    strcpy(node->data.id, new_data.id);
     node->data.type = new_data.type;
     node->data.defined = new_data.defined;
-    node->data.global = new_data.global;
+    node->data.is_var = new_data.is_var;
     node->data.is_function = new_data.is_function;
+    node->data.in_block = new_data.in_block;
     node->data.param_counter = new_data.param_counter;
 
     return node;
@@ -57,20 +57,12 @@ TNode* create_node(TData d, char *k)
         intern_error();
         return NULL;
     }
-
-    new_node->data.id = (char *) malloc(sizeof(strlen(d.id) + 1));
-    if (new_node->data.id == NULL)
-    {
-        intern_error();
-        return NULL;
-    }
-    else
-    {
-        new_node->key = k;
-        new_node->lptr = NULL;
-        new_node->rptr = NULL;
-        return (rewrite_data(new_node, d));
-    }
+    
+    new_node->key = k;
+    new_node->lptr = NULL;
+    new_node->rptr = NULL;
+    return (rewrite_data(new_node, d));
+    
 }
 
 
@@ -89,16 +81,8 @@ TNode* insert_symtable(TNode *root, TData d, char *k)
     {
         root->rptr = insert_symtable(root->rptr, d, k);     //< trying insert to right child
     }
-    else    //< key was found, rewrite data 
-    {
-        root->data.id = (char *) realloc(root->data.id, sizeof(strlen(d.id) + 1));
-        if (root->data.id == NULL)
-        {
-            intern_error();
-            return NULL;
-        }
-    }
-    return (rewrite_data(root, d));
+   
+    return (rewrite_data(root, d));     //< key was found, rewrite data 
 }
 
 
@@ -107,7 +91,6 @@ void delete_symtable(TNode *root)
     if (root != NULL)
     {
         delete_symtable(root->lptr);
-        free(root->data.id);        //< must free the heap with id
         delete_symtable(root->rptr);
         free(root);
     }
@@ -148,26 +131,17 @@ TNode *delete_node(TNode *root, char *k)
     {
         if (root->lptr == NULL && root->rptr == NULL)   //< in case node has no children
         {
-            free(root->data.id);    //< must free the heap with id
             free(root); 
             return NULL;
         }
         else if (root->lptr != NULL && root->rptr != NULL)  //< deleted node has 2 children
         {
             TNode *min = most_left_node(root->rptr);
-            root->data.id = (char *) realloc(root->data.id, sizeof(strlen(min->data.id) + 1));
-            if (root->data.id == NULL)
-            {     
-                intern_error();
-                return NULL;
-            }
-            else
-            {
-                root->key = min->key;
-                root = rewrite_data(root, min->data);
-                root->rptr = delete_node(root->rptr, min->key);
-                return root;
-            }
+            root->key = min->key;
+            root = rewrite_data(root, min->data);
+            root->rptr = delete_node(root->rptr, min->key);
+            return root;
+            
         }
         else    //< deleted node has one child
         {
@@ -180,7 +154,6 @@ TNode *delete_node(TNode *root, char *k)
             {
                 only_child = root->lptr;
             }
-            free(root->data.id);    //< must free the heap with id
             free(root);
             return only_child;
         }

@@ -30,11 +30,11 @@ typedef enum
 
 typedef struct tData
 {
-    char *id;
     Data_type type;
     bool defined;
-    bool global;
+    bool is_var;
     bool is_function;           //< whether the symbol is func
+    bool in_block;              //< whether we are in block
     unsigned param_counter;     //< counts how many param. the func has
 
 } TData;
@@ -42,7 +42,7 @@ typedef struct tData
 
 typedef struct tnode
 {
-    char *key;    //< key of node
+    char *key;    //< key of node, same as ID
     TData data;
     struct tnode *lptr;
     struct tnode *rptr;

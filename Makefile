@@ -5,7 +5,7 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 all: lexer-test dynamicstring-test symtable-test parser-test
 
-parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o
+parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 lexer-test: lexer.o lexer-test.o dynamicstring.o error.o symtable.o

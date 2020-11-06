@@ -32,43 +32,37 @@ char *key5 = "ahojV";
 
 
 /****** first data unit ******/
-data_1.id = "number";
 data_1.type = T_INT;
 data_1.defined = false;
-data_1.global = false;
+data_1.is_var = false;
 data_1.is_function = false;
 data_1.param_counter = 0;
 
 /***** second data unit ******/
-//strcpy(data_2.id, identifier_2);
-data_2.id = "get_number";
 data_2.type = T_INT;
 data_2.defined = false;
-data_2.global = false;
+data_2.is_var = false;
 data_2.is_function = true;
 data_2.param_counter = 1;
 
 /***** third data unit ******/
-data_3.id = "pi";
 data_3.type = T_FLOAT64;
 data_3.defined = true;
-data_3.global = false;
+data_3.is_var = false;
 data_3.is_function = false;
 data_3.param_counter = 0;
 
 /***** fourth data unit ******/
-data_4.id = "name";
 data_4.type = T_STRING;
 data_4.defined = true;
-data_4.global = false;
+data_4.is_var = false;
 data_4.is_function = false;
 data_4.param_counter = 0;
 
 /***** fifth data unit ******/
-data_5.id = "undefined";
 data_5.type = T_UNDEFINED;
 data_5.defined = false;
-data_5.global = false;
+data_5.is_var = false;
 data_5.is_function = false;
 data_5.param_counter = 0;
 
@@ -94,17 +88,12 @@ if (strcmp(actual_node->key, key2) != 0)    //< we should find node
     fprintf(stderr, "Keys not equal in node and in passing data!\n");
     correct = false;
 }
-if (strcmp(actual_node->data.id, data_3.id) != 0)
-{
-    fprintf(stderr, "Identifiers not same in node and in passing data!\n");
-    correct = false;
-}
 if (actual_node->data.type != T_FLOAT64)
 {
     fprintf(stderr, "Data type not same in node and in passing data!\n");
     correct = false;
 }
-if (actual_node->data.defined != true || actual_node->data.global != false || actual_node->data.is_function != false)
+if (actual_node->data.defined != true || actual_node->data.is_var != false || actual_node->data.is_function != false)
 {
     fprintf(stderr, "One of boolean variables not same in node and in passing data!\n");
     correct = false;
@@ -138,7 +127,7 @@ correct = true; //< in case it was set to false in first test unit
 /* we are going to insert new data with same key*/
 data_1.type = T_FLOAT64;
 data_1.defined = true;
-data_1.global = true;
+data_1.is_var = true;
 data_1.is_function = true;
 data_1.param_counter = 1;
 
@@ -150,17 +139,12 @@ if (strcmp(actual_node->key, key5) != 0)                          //< we should 
     fprintf(stderr, "Insert table error occured while inserting existing key!\n");
     correct = false;
 }
-if (strcmp(actual_node->data.id, data_1.id) != 0)
-{
-    fprintf(stderr, "Identifiers not same in node and in passing data!\n");
-    correct = false;
-}
 if (actual_node->data.type != T_FLOAT64)
 {
     fprintf(stderr, "Data type not same in node and in passing data!\n");
     correct = false;
 }
-if (actual_node->data.defined != true || actual_node->data.global != true || actual_node->data.is_function != true)
+if (actual_node->data.defined != true || actual_node->data.is_var != true || actual_node->data.is_function != true)
 {
     fprintf(stderr, "One of boolean variables not same in node and in passing data!\n");
     correct = false;

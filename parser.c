@@ -230,6 +230,10 @@ bool statement()
         {
             assignment_s(number_of_id);
         }
+        else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
+        {
+            function_call();
+        }
         else
         {
             syntax_error(m.actual_token.type,m.actual_line);
@@ -237,6 +241,49 @@ bool statement()
     }
 
     return true;
+}
+
+/**
+ * @brief Checks syntax of function call
+ */
+void function_call()
+{
+    Token_type previous = PARENTHESIS_LEFT;
+    while(true)
+    {
+        GET_TOKEN();
+        if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
+        {
+            return;
+        }
+        else if (CHECK_NO_ERROR(COMMA) && previous != COMMA)
+        {
+            previous = COMMA;
+            continue;
+        }
+        // EOL's not implemented, not sure if FUNEXP or obligatory
+        // can only be terms 
+        else if (CHECK_NO_ERROR(INT))
+        {
+            previous = INT;
+            continue;
+        }
+        else if (CHECK_NO_ERROR(FLOAT64))
+        {
+            previous = FLOAT64;
+            continue;
+        }
+        else if (CHECK_NO_ERROR(STRING))
+        {
+            previous = STRING;
+            continue;
+        }
+        else if (CHECK_NO_ERROR(ID))
+        {
+            previous = ID;
+            continue;
+        }
+    }
 }
 
 /**
@@ -267,6 +314,7 @@ void if_s()
 
 /**
  * @brief Checks syntax of assignment to var statement
+ * @param number_of_id is number of ID before =
  */
 void assignment_s(int number_of_id)
 {
@@ -351,6 +399,7 @@ void expression()
 {
     // Wimko TODO
     // for now
+    // IMPORTANT when reading ID and then "(" call function call and return 
     GET_TOKEN();
     if (CHECK_NO_ERROR(ID));
     else (CHECK_TOKEN(INT));
@@ -361,16 +410,12 @@ void expression()
  */ 
 void prolog()
 {
-    // ZO ZADANIA, NEROZUMIEM
-    // 9) Prolog mohou prokládat komentáře a prázdné řádky a slouží především kvůli kompatibilitě s programy jazyka Go.
-
     if (!expect_token(KEYWORD, K_PACKAGE))
     {
         syntax_error(KEYWORD,m.actual_line);
     }
     
-    GET_TOKEN();
-    if (m.actual_token.type != ID || 0) // TODO access symbol table t.data.s == main
+    if (!expect_token(ID,K_ERROR) || 0) // TODO access symbol table t.data.s == main
     {
         syntax_error(m.actual_token.type,m.actual_line);
     }
@@ -378,6 +423,8 @@ void prolog()
 
 /**
  * @brief Skip EOL's and expect certain token to come
+ * @param t_type is token type to expect
+ * @param k is expected Keyword, if expecting other than Keyword, set to K_ERROR
  * @return true if token came, else false
  */
 bool expect_token(Token_type t_type, Keyword k)

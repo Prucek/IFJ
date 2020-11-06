@@ -1,7 +1,9 @@
 // Program 1: Vypocet faktorialu (iterativne)
 
 
-        package main
+        package 
+        
+        main
 
 
 func main (i int, b string)(){
@@ -34,6 +36,8 @@ func ahoj(){
                         ahje = a
                         b := 3
                 }
+                ahoj(cuz,3,"cuuz")
+                blablabla()
         }
 }
 

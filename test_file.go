@@ -36,7 +36,7 @@ func ahoj(){
                         ahje = a
                         b := 3
                 }
-                ahoj(cuz,3,"cuuz")
+                ahoj(cuz,"",-2,"cuuz")
                 blablabla()
         }
 }

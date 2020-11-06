@@ -283,6 +283,10 @@ void function_call()
             previous = ID;
             continue;
         }
+        else 
+        {
+            syntax_error(m.actual_token.type,m.actual_line);
+        }
     }
 }
 

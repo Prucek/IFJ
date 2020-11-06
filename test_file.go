@@ -1,7 +1,9 @@
 // Program 1: Vypocet faktorialu (iterativne)
 
 
-        package main
+        package 
+        
+        main
 
 
 func main (i int, b string)(){

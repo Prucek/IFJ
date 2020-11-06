@@ -361,16 +361,12 @@ void expression()
  */ 
 void prolog()
 {
-    // ZO ZADANIA, NEROZUMIEM
-    // 9) Prolog mohou prokládat komentáře a prázdné řádky a slouží především kvůli kompatibilitě s programy jazyka Go.
-
     if (!expect_token(KEYWORD, K_PACKAGE))
     {
         syntax_error(KEYWORD,m.actual_line);
     }
     
-    GET_TOKEN();
-    if (m.actual_token.type != ID || 0) // TODO access symbol table t.data.s == main
+    if (!expect_token(ID,K_ERROR) || 0) // TODO access symbol table t.data.s == main
     {
         syntax_error(m.actual_token.type,m.actual_line);
     }

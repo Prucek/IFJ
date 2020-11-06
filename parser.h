@@ -15,6 +15,8 @@ typedef struct
 {
     Token actual_token;
     int actual_line;
+    TNode *global_table;
+    TNode *local_table;
 
 }Metadata;
 
@@ -47,7 +49,7 @@ bool func();
 /*
     statement --> EOL
     ^^^^^^^^^ |
-              --> expression -> EOL     
+              --> expression -> EOL
               |
    definiton  --> ID -> ":=" -> expression -> EOL
               |
@@ -57,9 +59,9 @@ bool func();
               |
        for    --> "for" -----------------> ";" -> expression -> ";" -----------------> "{" -> statement -> "}" -> EOL
               |          |              |                           |              |
-              |          -- definition ->                           -- assignment -> 
+              |          -- definition ->                           -- assignment ->
               |
-     return   --> "return" -> expression           
+     return   --> "return" -> expression
 */
 
 void header_arg();
@@ -86,4 +88,4 @@ void return_s();
 
 void expression();
 
-#endif  
+#endif

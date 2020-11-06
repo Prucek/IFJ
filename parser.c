@@ -261,7 +261,8 @@ void function_call()
             previous = COMMA;
             continue;
         }
-        
+        // EOL's not implemented, not sure if FUNEXP or obligatory
+        // can only be terms 
         else if (CHECK_NO_ERROR(INT))
         {
             previous = INT;
@@ -398,6 +399,7 @@ void expression()
 {
     // Wimko TODO
     // for now
+    // IMPORTANT when reading ID and then "(" call function call and return 
     GET_TOKEN();
     if (CHECK_NO_ERROR(ID));
     else (CHECK_TOKEN(INT));

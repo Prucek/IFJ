@@ -74,6 +74,8 @@ bool expect_token(Token_type t_type, Keyword k);
 
 bool statement();
 
+void function_call();
+
 void if_s();
 
 void assignment_s(int number_of_id);

@@ -230,6 +230,10 @@ bool statement()
         {
             assignment_s(number_of_id);
         }
+        else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
+        {
+            function_call();
+        }
         else
         {
             syntax_error(m.actual_token.type,m.actual_line);
@@ -237,6 +241,48 @@ bool statement()
     }
 
     return true;
+}
+
+/**
+ * @brief Checks syntax of function call
+ */
+void function_call()
+{
+    Token_type previous = PARENTHESIS_LEFT;
+    while(true)
+    {
+        GET_TOKEN();
+        if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
+        {
+            return;
+        }
+        else if (CHECK_NO_ERROR(COMMA) && previous != COMMA)
+        {
+            previous = COMMA;
+            continue;
+        }
+        
+        else if (CHECK_NO_ERROR(INT))
+        {
+            previous = INT;
+            continue;
+        }
+        else if (CHECK_NO_ERROR(FLOAT64))
+        {
+            previous = FLOAT64;
+            continue;
+        }
+        else if (CHECK_NO_ERROR(STRING))
+        {
+            previous = STRING;
+            continue;
+        }
+        else if (CHECK_NO_ERROR(ID))
+        {
+            previous = ID;
+            continue;
+        }
+    }
 }
 
 /**
@@ -267,6 +313,7 @@ void if_s()
 
 /**
  * @brief Checks syntax of assignment to var statement
+ * @param number_of_id is number of ID before =
  */
 void assignment_s(int number_of_id)
 {
@@ -374,6 +421,8 @@ void prolog()
 
 /**
  * @brief Skip EOL's and expect certain token to come
+ * @param t_type is token type to expect
+ * @param k is expected Keyword, if expecting other than Keyword, set to K_ERROR
  * @return true if token came, else false
  */
 bool expect_token(Token_type t_type, Keyword k)

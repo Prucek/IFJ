@@ -10,6 +10,7 @@
 
 #include "lexer.h"
 #include "error.h"
+#include "symtable.h"
 
 typedef struct
 {

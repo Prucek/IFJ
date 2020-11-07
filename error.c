@@ -3,7 +3,7 @@
  * @authors Marek Micek, Peter Rucek ....
  * @date 16 OCT 2020
  * @brief Error functions
- * 
+ *
  * @todo Doplnit parametre funckii na zaklade implementacie scanera a parsera
  */
 
@@ -47,7 +47,7 @@ int error_value = 0; //< in case of no error
 
 /**
  * PLACEHOLDER - Documentation may not be necessary here!
- * 
+ *
  * @brief Inform about lexical error occurrence
  * @param str Error causing lexeme
  * @param line Line of error causing lexeme
@@ -70,16 +70,16 @@ void syntax_error(int token_type, int line)
 }
 
 
-void no_definition_error()      //< mozno zlucit s re_definition_error, zavisi na implementacii
+void no_definition_error(char **id, int line)      //< mozno zlucit s re_definition_error, zavisi na implementacii
 {
-    fprintf(stderr, "****  Semantic error : Identifier was not defined yet !  ****\n");
+    fprintf(stderr, "****  Semantic error : Identifier :    %s     on line %d was not defined yet !  ****\n", *id, line);
     error_value = 3;
 }
 
 
-void re_definition_error()
+void re_definition_error(char **id, int line)
 {
-    fprintf(stderr, "****  Semantic error : Tried to define identifier : ID, but identifier : ID is already defined !  ****\n");
+    fprintf(stderr, "****  Semantic error : Tried to define identifier :    %s       on line %d but identifier : %s is already defined !  ****\n", *id, line, *id);
     error_value = 3;
 }
 

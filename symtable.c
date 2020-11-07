@@ -57,12 +57,20 @@ TNode* create_node(TData d, char *k)
         intern_error();
         return NULL;
     }
-    
-    new_node->key = k;
+
+    new_node->key = malloc(sizeof(char)* strlen(k)+1);
+    if (new_node->key == NULL)
+    {
+        intern_error();
+    }
+    for (unsigned int i = 0; i < strlen(k); i++)
+    {
+        new_node->key[i] = k[i];
+    }
     new_node->lptr = NULL;
     new_node->rptr = NULL;
     return (rewrite_data(new_node, d));
-    
+
 }
 
 
@@ -81,8 +89,8 @@ TNode* insert_symtable(TNode *root, TData d, char *k)
     {
         root->rptr = insert_symtable(root->rptr, d, k);     //< trying insert to right child
     }
-   
-    return (rewrite_data(root, d));     //< key was found, rewrite data 
+
+    return (rewrite_data(root, d));     //< key was found, rewrite data
 }
 
 
@@ -92,6 +100,7 @@ void delete_symtable(TNode *root)
     {
         delete_symtable(root->lptr);
         delete_symtable(root->rptr);
+        free(root->key);
         free(root);
     }
 }
@@ -107,7 +116,7 @@ TNode* most_left_node(TNode *root)
     else
     {
         return (most_left_node(root->lptr));
-    }  
+    }
 }
 
 
@@ -131,7 +140,8 @@ TNode *delete_node(TNode *root, char *k)
     {
         if (root->lptr == NULL && root->rptr == NULL)   //< in case node has no children
         {
-            free(root); 
+            free(root->key);
+            free(root);
             return NULL;
         }
         else if (root->lptr != NULL && root->rptr != NULL)  //< deleted node has 2 children
@@ -141,7 +151,7 @@ TNode *delete_node(TNode *root, char *k)
             root = rewrite_data(root, min->data);
             root->rptr = delete_node(root->rptr, min->key);
             return root;
-            
+
         }
         else    //< deleted node has one child
         {
@@ -154,9 +164,10 @@ TNode *delete_node(TNode *root, char *k)
             {
                 only_child = root->lptr;
             }
+            free(root->key);
             free(root);
             return only_child;
         }
-    } 
+    }
 }
 

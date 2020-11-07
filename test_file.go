@@ -1,19 +1,19 @@
 // Program 1: Vypocet faktorialu (iterativne)
 
 
-        package 
-        
+        package
+
         main
 
 
 func main (i int, b string)(){
 
         ahoj := a
-        id1 , id2 , id3,_ = a, b,c,d
+        id1  ,id2 , id3,_ = a, b,c,d
         return ahoj
         if a {
                 if b {
-                        ahoj := a  
+                        //ahoj := a
                         return ahoj
                 } else{
                 }
@@ -25,6 +25,8 @@ func main (i int, b string)(){
 }
 
 func ahoj(){
+    ahoj = a
+    id := 5
         for ;5; {
                 if a{
                         id = 5
@@ -36,11 +38,11 @@ func ahoj(){
                         ahje = a
                         b := 3
                 }
-                ahoj(cuz,"",-2,"cuuz")
+                ahoj(cuz,"",2,"cuuz")
                 blablabla()
         }
 }
 
 func dobry_den (s string, i int) (int,string){
-    
+
 }

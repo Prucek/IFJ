@@ -18,16 +18,18 @@
                         m.actual_token.data.k == K_FLOAT64))? true : (syntax_error(m.actual_token.type,m.actual_line),false)
 
 //global
-Metadata m = {.actual_line = 1};
+Metadata m = {.actual_line = 1, .local_table = NULL, };
 
 /**
  * @brief Syntax of program
  */
 int program()
 {
+    m.local_table = init_symtable(m.local_table);
     prolog();
     while(func());
     CHECK_TOKEN(EoF);
+    delete_symtable(m.local_table);
     return error_value;
 }
 
@@ -36,15 +38,20 @@ int program()
  */
 bool func()
 {
+    m.local_table = init_symtable(m.local_table);
     if(!func_header())
     {
         return false;
     }
 
-    // body 
+    // body
     while(statement());
 
     func();
+    if (m.local_table != NULL)
+    {
+        delete_symtable(m.local_table);
+    }
     return true;
 }
 
@@ -71,7 +78,7 @@ bool func_header()
     GET_AND_CHECK(PARENTHESIS_LEFT);
     GET_TOKEN();
     if (!CHECK_NO_ERROR(PARENTHESIS_RIGHT))
-    { 
+    {
         header_arg();
     }
 
@@ -112,7 +119,7 @@ void header_ret()
     IS_DATA_TYPE();
     // HERE add return value of function to symtable
     GET_TOKEN();
-    
+
     if (CHECK_NO_ERROR(COMMA))
     {
         header_ret();
@@ -144,7 +151,7 @@ void header_arg()
     GET_TOKEN();
     IS_DATA_TYPE();
     GET_TOKEN();
-    
+
     if (CHECK_NO_ERROR(COMMA))
     {
         //i++; part of FUNEXP
@@ -167,7 +174,9 @@ void header_arg()
  */
 bool statement()
 {
+
     // skip EOL's
+
     GET_TOKEN();
     while(CHECK_NO_ERROR(EOL))
     {
@@ -196,22 +205,55 @@ bool statement()
         else
         {
             syntax_error(m.actual_token.type,m.actual_line);
-        }   
+        }
     }
     else if (CHECK_TOKEN(ID))
-    {   
-        // HERE add m.actual_token to symtable
+    {
+        TData new_data;
+        new_data.type = m.actual_token.type;
+        new_data.is_var = true;
+        new_data.in_block = true;
+
+        char *id_name;
+        id_name = malloc(sizeof(char)*strlen(m.actual_token.data.s));
+        if (id_name == NULL)
+        {
+            intern_error();
+        }
+        for (unsigned int i = 0; i < strlen(m.actual_token.data.s); i++)
+        {
+            id_name[i] = m.actual_token.data.s[i];
+        }
+        free(m.actual_token.data.s);
         GET_TOKEN();
         int number_of_id = 1;
-
+        TNode *tmp = NULL;
         // assignment to var statement with multiple ID
         if (CHECK_NO_ERROR(COMMA))
         {
+            tmp = search_symtable(m.local_table, id_name);
+            if (tmp == NULL)
+            { //mozno je nelegalne
+                m.local_table = insert_symtable(m.local_table, new_data, id_name);
+            }
+
             while(!CHECK_NO_ERROR(VAR_ASSIGN))
             {
                 CHECK_TOKEN(COMMA);
                 GET_AND_CHECK(ID);
-                // HERE add m.actual_token to symtable
+
+                TData new_data;
+                new_data.type = m.actual_token.type;
+                new_data.is_var = true;
+                new_data.in_block = true;
+
+                tmp = search_symtable(m.local_table, m.actual_token.data.s);
+                if (tmp == NULL)
+                { //mozno je nelegalne
+                    m.local_table = insert_symtable(m.local_table, new_data, m.actual_token.data.s);
+                }
+                free(m.actual_token.data.s);
+
                 number_of_id++;
                 GET_TOKEN();
             }
@@ -221,6 +263,15 @@ bool statement()
         // definition of var statement
         else if (CHECK_NO_ERROR(DEF_OF_VAR))
         {
+            tmp = search_symtable(m.local_table, id_name);
+            if (tmp == NULL)
+            {
+                m.local_table = insert_symtable(m.local_table, new_data, id_name);
+            }
+            else
+            {
+                re_definition_error(&m.local_table->key, m.actual_line);
+            }
             expression();
             GET_AND_CHECK(EOL);
             m.actual_line++;
@@ -228,6 +279,11 @@ bool statement()
         // assignment to var statement
         else if (CHECK_NO_ERROR(VAR_ASSIGN))
         {
+            tmp = search_symtable(m.local_table, id_name);
+            if (tmp == NULL)
+            {
+                no_definition_error(&id_name, m.actual_line);
+            }
             assignment_s(number_of_id);
         }
         else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
@@ -238,6 +294,7 @@ bool statement()
         {
             syntax_error(m.actual_token.type,m.actual_line);
         }
+        free(id_name);
     }
 
     return true;
@@ -262,7 +319,7 @@ void function_call()
             continue;
         }
         // EOL's not implemented, not sure if FUNEXP or obligatory
-        // can only be terms 
+        // can only be terms
         else if (CHECK_NO_ERROR(INT))
         {
             previous = INT;
@@ -283,7 +340,7 @@ void function_call()
             previous = ID;
             continue;
         }
-        else 
+        else
         {
             syntax_error(m.actual_token.type,m.actual_line);
         }
@@ -295,7 +352,8 @@ void function_call()
  */
 void if_s()
 {
-    // if 
+    // if
+    // m.local_table = init_symtable(m.local_table);
     expression();
     GET_AND_CHECK(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
@@ -314,6 +372,10 @@ void if_s()
     while(statement());
     GET_AND_CHECK(EOL);
     m.actual_line++;
+    // if (m.local_table != NULL)
+    // {
+    //     delete_symtable(m.local_table);
+    // }
 }
 
 /**
@@ -341,6 +403,7 @@ void assignment_s(int number_of_id)
 void for_s()
 {
     // inicialization (can be epmty)
+    //m.local_table = init_symtable(m.local_table);
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
@@ -349,7 +412,7 @@ void for_s()
         GET_AND_CHECK(SEMICLN);
     }
     else if (CHECK_TOKEN(SEMICLN)){;}
-    
+
     // condition
     expression();
     GET_AND_CHECK(SEMICLN);
@@ -369,6 +432,7 @@ void for_s()
 
     // body
     while(statement());
+    //delete_symtable(m.local_table);
 }
 
 /**
@@ -403,7 +467,7 @@ void expression()
 {
     // Wimko TODO
     // for now
-    // IMPORTANT when reading ID and then "(" call function call and return 
+    // IMPORTANT when reading ID and then "(" call function call and return
     GET_TOKEN();
     if (CHECK_NO_ERROR(ID));
     else (CHECK_TOKEN(INT));
@@ -411,14 +475,14 @@ void expression()
 
 /**
  * @brief Checks syntax of the prolog
- */ 
+ */
 void prolog()
 {
     if (!expect_token(KEYWORD, K_PACKAGE))
     {
         syntax_error(KEYWORD,m.actual_line);
     }
-    
+
     if (!expect_token(ID,K_ERROR) || 0) // TODO access symbol table t.data.s == main
     {
         syntax_error(m.actual_token.type,m.actual_line);

@@ -44,6 +44,13 @@ TNode *rewrite_data(TNode *node, TData new_data)
     node->data.is_function = new_data.is_function;
     node->data.in_block = new_data.in_block;
     node->data.param_counter = new_data.param_counter;
+    node->data.ret_counter = new_data.ret_counter;
+
+    for (unsigned i = 0; i < new_data.ret_counter; i++)
+        node->data.retval_arr[i] = new_data.retval_arr[i];
+
+    for (unsigned j = 0; j < new_data.param_counter; j++)
+        node->data.arg_arr[j] = new_data.arg_arr[j];
 
     return node;
 }
@@ -52,13 +59,15 @@ TNode *rewrite_data(TNode *node, TData new_data)
 TNode* create_node(TData d, char *k)
 {
     TNode *new_node = (TNode *) malloc(sizeof(TNode));
-    if (new_node == NULL)
+    new_node->key = (char *) malloc(sizeof(strlen(k)+1));
+    if (new_node == NULL || new_node->key == NULL)
     {
         intern_error();
         return NULL;
     }
     
-    new_node->key = k;
+    //new_node->key = k;
+    strcpy(new_node->key, k);
     new_node->lptr = NULL;
     new_node->rptr = NULL;
     return (rewrite_data(new_node, d));
@@ -91,6 +100,7 @@ void delete_symtable(TNode *root)
     if (root != NULL)
     {
         delete_symtable(root->lptr);
+        free(root->key);            //< must free heap
         delete_symtable(root->rptr);
         free(root);
     }
@@ -131,13 +141,16 @@ TNode *delete_node(TNode *root, char *k)
     {
         if (root->lptr == NULL && root->rptr == NULL)   //< in case node has no children
         {
+            free(root->key);    //< must free heap
             free(root); 
             return NULL;
         }
         else if (root->lptr != NULL && root->rptr != NULL)  //< deleted node has 2 children
         {
             TNode *min = most_left_node(root->rptr);
-            root->key = min->key;
+            root->key = (char *) realloc(root->key, sizeof(strlen(min->key)+1));
+            //root->key = min->key;
+            strcpy(root->key, min->key);
             root = rewrite_data(root, min->data);
             root->rptr = delete_node(root->rptr, min->key);
             return root;
@@ -154,6 +167,7 @@ TNode *delete_node(TNode *root, char *k)
             {
                 only_child = root->lptr;
             }
+            free(root->key);
             free(root);
             return only_child;
         }

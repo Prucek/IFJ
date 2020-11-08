@@ -22,19 +22,14 @@ ____________
 ## Assignments
 
 * xcerni13:
-  * Study semantic analysis
+  * Continue with semantic analysis
 
 * xjurik12:
-  * Lexer module test (t.data.s)
-  * Lexical errors & errors enum
   * Expression analysis
 
 * xmicek08:
-  * Study semantic analysis
+  * Continue with semantic analysis
 
 * xrucek00:
-  * Finish syntactic analysis
+  * Start with generetion of code
 
-## Job Pool
-
-* EMPTY

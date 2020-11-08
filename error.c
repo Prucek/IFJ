@@ -70,16 +70,16 @@ void syntax_error(int token_type, int line)
 }
 
 
-void no_definition_error(char **id, int line)      //< mozno zlucit s re_definition_error, zavisi na implementacii
+void no_definition_error(char *id, int line)      //< mozno zlucit s re_definition_error, zavisi na implementacii
 {
-    fprintf(stderr, "****  Semantic error : Identifier :    %s     on line %d was not defined yet !  ****\n", *id, line);
+    fprintf(stderr, "****  Semantic error : Identifier: %s on line: %d was not defined yet !  ****\n", id, line);
     error_value = 3;
 }
 
 
-void re_definition_error(char **id, int line)
+void re_definition_error(char *id, int line)
 {
-    fprintf(stderr, "****  Semantic error : Tried to define identifier :    %s       on line %d but identifier : %s is already defined !  ****\n", *id, line, *id);
+    fprintf(stderr, "****  Semantic error : Identifier: %s on line: %d is already defined !  ****\n", id, line);
     error_value = 3;
 }
 
@@ -98,9 +98,9 @@ void compatibility_error()
 }
 
 
-void param_error()
+void param_error(char *id, int line)
 {
-    fprintf(stderr, "****  Semantic error : Unmatched number or type of paramethers in function : function !  ****\n");
+    fprintf(stderr, "****  Semantic error : Unmatched number or type of paramethers in function: %s on line: %d !  ****\n", id, line);
     error_value = 6;
 }
 

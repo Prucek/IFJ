@@ -12,15 +12,32 @@
 #include "error.h"
 #include "symtable.h"
 
+
 typedef struct
 {
     Token actual_token;
     int actual_line;
     TNode *global_table;
     TNode *local_table;
-
+    int index;          //< for searching of retval_arr and arg_arr
+    
 }Metadata;
+/*
+typedef struct Suspect
+{
+    struct Suspect *next;
+    char *suspected;        //< stores functions suspected from no_definition
+} *TSuspect;
 
+typedef struct 
+{
+    TSuspect first;
+} List;
+*/
+
+TData new_data_func, new_data_var;
+
+TData init_new_data(TData new_data);
 
 /*
     program -> "package main" ->|<---------------

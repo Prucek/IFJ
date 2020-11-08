@@ -15,6 +15,8 @@
 
 #include "error.h"
 
+#define MAX_RET_VAL 100
+#define MAX_ARG 100
 
 typedef enum 
 {
@@ -33,9 +35,12 @@ typedef struct tData
     Data_type type;
     bool defined;
     bool is_var;
-    bool is_function;           //< whether the symbol is func
+    bool is_function;           
     bool in_block;              //< whether we are in block
-    unsigned param_counter;     //< counts how many param. the func has
+    unsigned param_counter;     //< num of arguments
+    unsigned ret_counter;       //< num of ret values
+    int retval_arr[MAX_RET_VAL];    //< stores data types of ret values
+    int arg_arr[MAX_ARG];           //< stores data types of arg values
 
 } TData;
 

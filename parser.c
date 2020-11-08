@@ -7,7 +7,7 @@
 
 #include "parser.h"
 
-#define GET_TOKEN()  m.actual_token = get_next_token(stdin); (m.actual_token.type == ERROR)? lexical_error(m.actual_line), 1 : 0
+#define GET_TOKEN()  m.actual_token = get_next_token(stdin); (m.actual_token.type == ERROR)? (lexical_error(m.actual_line), 1) : 0
 #define CHECK_TOKEN(Type) ((m.actual_token.type == Type)? true : \
         (fprintf(stderr,"In function %s on line %d\n ",__func__, __LINE__) , syntax_error(Type,m.actual_line) , false))
 #define CHECK_NO_ERROR(Type) ((m.actual_token.type == Type)? true : false)
@@ -48,10 +48,9 @@ bool func()
     while(statement());
 
     func();
-    if (m.local_table != NULL)
-    {
-        delete_symtable(m.local_table);
-    }
+
+    delete_symtable(m.local_table);
+
     return true;
 }
 
@@ -73,8 +72,9 @@ bool func_header()
     // function id
     GET_AND_CHECK(ID);
     // HERE add m.actual_token to symtable function id
-
+    // also free m.actual_token.data.s after that
     // function parameters
+    free(m.actual_token.data.s);
     GET_AND_CHECK(PARENTHESIS_LEFT);
     GET_TOKEN();
     if (!CHECK_NO_ERROR(PARENTHESIS_RIGHT))
@@ -148,6 +148,7 @@ void header_arg()
     // }
     CHECK_TOKEN(ID);
     // HERE add parameters of function to symtable
+    free(m.actual_token.data.s);
     GET_TOKEN();
     IS_DATA_TYPE();
     GET_TOKEN();
@@ -220,11 +221,13 @@ bool statement()
         {
             intern_error();
         }
+
         for (unsigned int i = 0; i < strlen(m.actual_token.data.s); i++)
         {
             id_name[i] = m.actual_token.data.s[i];
         }
         free(m.actual_token.data.s);
+
         GET_TOKEN();
         int number_of_id = 1;
         TNode *tmp = NULL;
@@ -234,23 +237,19 @@ bool statement()
             tmp = search_symtable(m.local_table, id_name);
             if (tmp == NULL)
             { //mozno je nelegalne
-                m.local_table = insert_symtable(m.local_table, new_data, id_name);
+                no_definition_error(&id_name, m.actual_line);
             }
-
+            free(id_name);
             while(!CHECK_NO_ERROR(VAR_ASSIGN))
             {
                 CHECK_TOKEN(COMMA);
                 GET_AND_CHECK(ID);
 
-                TData new_data;
-                new_data.type = m.actual_token.type;
-                new_data.is_var = true;
-                new_data.in_block = true;
-
                 tmp = search_symtable(m.local_table, m.actual_token.data.s);
                 if (tmp == NULL)
                 { //mozno je nelegalne
-                    m.local_table = insert_symtable(m.local_table, new_data, m.actual_token.data.s);
+                    //FREE_TOKEN_DATA();
+                    no_definition_error(&m.actual_token.data.s, m.actual_line);
                 }
                 free(m.actual_token.data.s);
 
@@ -267,11 +266,15 @@ bool statement()
             if (tmp == NULL)
             {
                 m.local_table = insert_symtable(m.local_table, new_data, id_name);
+                //free(id_name);
             }
             else
             {
-                re_definition_error(&m.local_table->key, m.actual_line);
+                //FREE_TOKEN_DATA();
+                re_definition_error(&id_name, m.actual_line);
+
             }
+            free(id_name);
             expression();
             GET_AND_CHECK(EOL);
             m.actual_line++;
@@ -282,8 +285,10 @@ bool statement()
             tmp = search_symtable(m.local_table, id_name);
             if (tmp == NULL)
             {
+                //FREE_TOKEN_DATA();
                 no_definition_error(&id_name, m.actual_line);
             }
+            free(id_name);
             assignment_s(number_of_id);
         }
         else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
@@ -294,7 +299,7 @@ bool statement()
         {
             syntax_error(m.actual_token.type,m.actual_line);
         }
-        free(id_name);
+        //free(id_name);
     }
 
     return true;
@@ -332,11 +337,13 @@ void function_call()
         }
         else if (CHECK_NO_ERROR(STRING))
         {
+            free(m.actual_token.data.s);
             previous = STRING;
             continue;
         }
         else if (CHECK_NO_ERROR(ID))
         {
+            free(m.actual_token.data.s);
             previous = ID;
             continue;
         }
@@ -407,6 +414,7 @@ void for_s()
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
+        free(m.actual_token.data.s);
         GET_AND_CHECK(DEF_OF_VAR);
         expression();
         GET_AND_CHECK(SEMICLN);
@@ -421,6 +429,7 @@ void for_s()
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
+        free(m.actual_token.data.s);
         GET_AND_CHECK(VAR_ASSIGN);
         expression(); //only one ???
         GET_AND_CHECK(BRACKET_LEFT);
@@ -469,7 +478,10 @@ void expression()
     // for now
     // IMPORTANT when reading ID and then "(" call function call and return
     GET_TOKEN();
-    if (CHECK_NO_ERROR(ID));
+    if (CHECK_NO_ERROR(ID))
+    {
+        free(m.actual_token.data.s);
+    }
     else (CHECK_TOKEN(INT));
 }
 

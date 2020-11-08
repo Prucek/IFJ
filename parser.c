@@ -18,16 +18,44 @@
                         m.actual_token.data.k == K_FLOAT64))? true : (syntax_error(m.actual_token.type,m.actual_line),false)
 
 //global
-Metadata m = {.actual_line = 1};
+Metadata m = {.actual_line = 1, .index = 0};
+TNode *node;
+
+/**
+ * @brief Inits data structure of symtable to eliminate multi. insertion of one symbol
+ */
+TData init_new_data(TData new_data)
+{
+    new_data.type = T_UNDEFINED;
+    new_data.defined = new_data.is_var = new_data.is_function = new_data.in_block = false;
+    new_data.param_counter = new_data.ret_counter = 0;
+
+    for (int i = 0; i < MAX_RET_VAL; i++)
+        new_data.retval_arr[i] = T_UNDEFINED;
+
+    for (int j = 0; j < MAX_ARG; j++)
+        new_data.arg_arr[j] = T_UNDEFINED;
+
+    return new_data;
+}
 
 /**
  * @brief Syntax of program
  */
 int program()
 {
+    init_symtable(m.global_table);
     prolog();
     while(func());
+    node = search_symtable(m.global_table, "main");
+    if (node == NULL)
+    {
+        no_definition_error("main", -1);    //< func main was not defined
+    }
+    
+    delete_symtable(m.global_table);
     CHECK_TOKEN(EoF);
+
     return error_value;
 }
 
@@ -67,12 +95,23 @@ bool func_header()
     GET_AND_CHECK(ID);
     // HERE add m.actual_token to symtable function id
 
+    char *func_id = m.actual_token.data.s;  //< store func id cause insertion to symtable will be later
+    if ((node = search_symtable(m.global_table, func_id)) != NULL)
+    {
+        re_definition_error(func_id, m.actual_line);    //< redefinition of func is forrbiden
+    }
+
+    new_data_func = init_new_data(new_data_func);
+    new_data_func.defined = true;
+    new_data_func.is_function = true;
+    
     // function parameters
     GET_AND_CHECK(PARENTHESIS_LEFT);
     GET_TOKEN();
     if (!CHECK_NO_ERROR(PARENTHESIS_RIGHT))
     { 
         header_arg();
+        m.index = 0;
     }
 
     // function return values
@@ -82,6 +121,7 @@ bool func_header()
     {
         header_ret();
         inside = true;
+        m.index = 0;
     }
 
     // chcecking {EOL at the end of function header
@@ -94,8 +134,16 @@ bool func_header()
         GET_AND_CHECK(BRACKET_LEFT);
     }
     GET_AND_CHECK(EOL);
-    m.actual_line++;
+    if (!strcmp(func_id, "main"))
+    {
+        if (new_data_func.param_counter != 0 || new_data_func.ret_counter != 0)
+        {
+            param_error(func_id, m.actual_line);    //< func main cant have param or ret value
+        }
+    }
 
+    m.actual_line++;
+    m.global_table = insert_symtable(m.global_table, new_data_func, func_id);    //< insert whole func
     return true;
 }
 
@@ -109,8 +157,26 @@ void header_ret()
     {
         return;
     }
-    IS_DATA_TYPE();
+    if (IS_DATA_TYPE())
     // HERE add return value of function to symtable
+    {
+        new_data_func.ret_counter++;
+        switch (m.actual_token.data.k)
+        {
+        case K_INT:
+            new_data_func.retval_arr[m.index++] = T_INT;
+            break;
+        case K_FLOAT64:
+            new_data_func.retval_arr[m.index++] = T_FLOAT64;
+            break;
+        case K_STRING:
+            new_data_func.retval_arr[m.index++] = T_STRING;
+            break;
+        
+        default:
+            break;
+        }
+    }
     GET_TOKEN();
     
     if (CHECK_NO_ERROR(COMMA))
@@ -140,9 +206,39 @@ void header_arg()
     //     GET_TOKEN();
     // }
     CHECK_TOKEN(ID);
+    new_data_var = init_new_data(new_data_var);
+    Token prev = m.actual_token;
+    
     // HERE add parameters of function to symtable
     GET_TOKEN();
-    IS_DATA_TYPE();
+    if (IS_DATA_TYPE())
+    {
+        new_data_var.defined = true;
+        new_data_var.is_var = true;
+        new_data_func.param_counter++;
+
+        switch (m.actual_token.data.k)
+        {
+        case K_INT:
+            new_data_var.type = T_INT;
+            new_data_func.arg_arr[m.index++] = T_INT;
+            m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter 
+            break;
+        case K_FLOAT64:
+            new_data_var.type = T_FLOAT64;
+            new_data_func.arg_arr[m.index++] = T_FLOAT64;
+            m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter 
+            break;
+        case K_STRING:
+            new_data_var.type = T_STRING;
+            new_data_func.arg_arr[m.index++] = T_STRING;
+            m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter 
+            break;
+        
+        default:
+            break;
+        } 
+    }
     GET_TOKEN();
     
     if (CHECK_NO_ERROR(COMMA))
@@ -262,7 +358,8 @@ void function_call()
             continue;
         }
         // EOL's not implemented, not sure if FUNEXP or obligatory
-        // can only be terms 
+        // can only be terms
+        // TODO potrebujem dvojfazov7 priechod...funkcia uz musi byt v symtable 
         else if (CHECK_NO_ERROR(INT))
         {
             previous = INT;
@@ -282,10 +379,6 @@ void function_call()
         {
             previous = ID;
             continue;
-        }
-        else 
-        {
-            syntax_error(m.actual_token.type,m.actual_line);
         }
     }
 }

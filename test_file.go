@@ -5,8 +5,11 @@
         
         main
 
+func main(){
 
-func main (i int, b string)(){
+}
+
+func maine (i int, b string)(){
 
         ahoj := a
         id1 , id2 , id3,_ = a, b,c,d

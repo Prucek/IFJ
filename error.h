@@ -19,11 +19,11 @@ extern int error_value; //< Represents exit code of compiler
 
 void lexical_error(int line);
 void syntax_error(int token_type, int line);
-void no_definition_error();
-void re_definition_error();
+void no_definition_error(char *id, int line);
+void re_definition_error(char *id, int line);
 void type_error();
 void compatibility_error();
-void param_error();
+void param_error(char *id, int line);
 void other_error();
 void div_zero_error();
 void intern_error();

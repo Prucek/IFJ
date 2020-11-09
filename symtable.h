@@ -36,11 +36,12 @@ typedef struct tData
     bool defined;
     bool is_var;
     bool is_function;           
-    bool in_block;              //< whether we are in block
-    unsigned param_counter;     //< num of arguments
-    unsigned ret_counter;       //< num of ret values
+    bool in_block;                  //< whether we are in block
+    unsigned param_counter;         //< num of arguments
+    unsigned ret_counter;           //< num of ret values
     int retval_arr[MAX_RET_VAL];    //< stores data types of ret values
     int arg_arr[MAX_ARG];           //< stores data types of arg values
+    int line;                       //< line of symbol
 
 } TData;
 

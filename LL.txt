@@ -1,64 +1,64 @@
-<program>     -> <prolog> <func>
-<prolog>      -> package ID EOL
-<func>        -> <func_header> <statement> <func>
-<func>        -> EOF
+1  <program>     -> <prolog> <func>
+2  <prolog>      -> package ID EOL
+3  <func>        -> <func_header> <statement> <func>
+4  <func>        -> EOF
 
-<func_header> -> func ID ( <header_arg> ) <header_ret> { EOL
-<header_arg>  -> eps
-<header_arg>  -> ID <data_type> <header_args>
-<header_args> -> eps
-<header_args> -> , ID <data_type> <header_args>
+5  <func_header> -> func ID ( <header_arg> ) <header_ret> { EOL
+6  <header_arg>  -> eps
+7  <header_arg>  -> ID <data_type> <header_args>
+8  <header_args> -> eps
+9  <header_args> -> , ID <data_type> <header_args>
 
-<header_ret>  -> (<header_ret>) // can be ((((( ... )))) got no idea
-<header_ret>  -> eps
-<header_ret>  -> <data_type> <header_rets>
-<header_rets> -> eps
-<header_rets> -> , <data_type>
+10  <header_ret>  -> (<header_ret>) // can be ((((( ... )))) got no idea
+11  <header_ret>  -> eps
+12  <header_ret>  -> <data_type> <header_rets>
+13  <header_rets> -> eps
+14  <header_rets> -> , <data_type>
 
-<statement>   -> EOL <statement>
-<statement>   -> <if_s> <statement>
-<statement>   -> <for_s> <statement>
-<statement>   -> <return_s> <statement>
-<statement>   -> <def_of_var> <statement>
-<statement>   -> <assignment_s> <statement>
-<statement>   -> <fun_call> <statement>
-<statement>   -> }
+15  <statement>   -> EOL <statement>
+16  <statement>   -> <if_s> <statement>
+17  <statement>   -> <for_s> <statement>
+18  <statement>   -> <return_s> <statement>
+19  <statement>   -> <def_of_var> <statement>
+20  <statement>   -> <assignment_s> <statement>
+21  <statement>   -> <fun_call> <statement>
+22  <statement>   -> }
 
-<if_s>        -> if <expression> { EOL <statement> else { EOL
+23  <if_s>        -> if <expression> { EOL <statement> else { EOL
 
-<for_s>       -> for <def> ; <expression> ; <ass> { EOL
-<def>         -> eps
-<def>         -> ID := <expression>
-<ass>         -> eps
-<ass>         -> ID = <expression> // only one ?
+24  <for_s>       -> for <def> ; <expression> ; <ass> { EOL
+25  <def>         -> eps
+26  <def>         -> ID := <expression>
+27  <ass>         -> eps
+28  <ass>         -> ID = <expression> // only one ?
 
-<return_s>    -> return <val> EOL
-<val>         -> eps
-<val>         -> <expression> <vals>
-<vals>        -> , <expression> <vals>
-<vals>        -> eps
+29  <return_s>    -> return <val> EOL
+30  <val>         -> eps
+31  <val>         -> <expression> <vals>
+32  <vals>        -> , <expression> <vals>
+33  <vals>        -> eps
 
-<def_of_var>  -> ID := <expression> EOL
+34  <def_of_var>  -> ID := <expression> EOL
 
-<assignment_s>-> <id> = <ex> EOL
-<id>          -> ID <ids>
-<ids>         -> , ID <ids>
-<ids>         -> eps
-<ex>          -> <expression> <exs>
-<exs>         -> , <expression> <exs>
-<exs>         -> eps
+35  <assignment_s>-> <id> = <ex> EOL
+36  <id>          -> ID <ids>
+37  <ids>         -> , ID <ids>
+38  <ids>         -> eps
+39  <ex>          -> <expression> <exs>
+40  <exs>         -> , <expression> <exs>
+41  <exs>         -> eps
 
-<fun_call>    -> ID ( <arg> ) EOL
-<arg>         -> eps
-<arg>         -> <term> <args>
-<args>        -> , <term> <args>
-<args>        -> eps
+42  <fun_call>    -> ID ( <arg> ) EOL
+43  <arg>         -> eps
+44  <arg>         -> <term> <args>
+45  <args>        -> , <term> <args>
+46  <args>        -> eps
 
-<data_type>   -> int
-<data_type>   -> string
-<data_type>   -> float64
+47  <data_type>   -> int
+48  <data_type>   -> string
+49  <data_type>   -> float64
 
-<term>        -> int_value
-<term>        -> string_value
-<term>        -> float_value
-<term>        -> ID
+50  <term>        -> int_value
+51  <term>        -> string_value
+52  <term>        -> float_value
+53  <term>        -> ID

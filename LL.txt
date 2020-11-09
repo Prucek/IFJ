@@ -9,11 +9,11 @@
 8  <header_args> -> eps
 9  <header_args> -> , ID <data_type> <header_args>
 
-10  <header_ret>  -> (<header_ret>) // can be ((((( ... )))) got no idea
+10  <header_ret>  -> (<header_reta>)
 11  <header_ret>  -> eps
-12  <header_ret>  -> <data_type> <header_rets>
+12  <header_reta>  -> <data_type> <header_rets>
 13  <header_rets> -> eps
-14  <header_rets> -> , <data_type>
+14  <header_rets> -> , <data_type> <header_rets>
 
 15  <statement>   -> EOL <statement>
 16  <statement>   -> <if_s> <statement>

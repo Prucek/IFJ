@@ -1,0 +1,64 @@
+<program>     -> <prolog> <func>
+<prolog>      -> package ID EOL
+<func>        -> <func_header> <statement> <func>
+<func>        -> EOF
+
+<func_header> -> func ID ( <header_arg> ) <header_ret> { EOL
+<header_arg>  -> eps
+<header_arg>  -> ID <data_type> <header_args>
+<header_args> -> eps
+<header_args> -> , ID <data_type> <header_args>
+
+<header_ret>  -> (<header_ret>) // can be ((((( ... )))) got no idea
+<header_ret>  -> eps
+<header_ret>  -> <data_type> <header_rets>
+<header_rets> -> eps
+<header_rets> -> , <data_type>
+
+<statement>   -> EOL <statement>
+<statement>   -> <if_s> <statement>
+<statement>   -> <for_s> <statement>
+<statement>   -> <return_s> <statement>
+<statement>   -> <def_of_var> <statement>
+<statement>   -> <assignment_s> <statement>
+<statement>   -> <fun_call> <statement>
+<statement>   -> }
+
+<if_s>        -> if <expression> { EOL <statement> else { EOL
+
+<for_s>       -> for <def> ; <expression> ; <ass> { EOL
+<def>         -> eps
+<def>         -> ID := <expression>
+<ass>         -> eps
+<ass>         -> ID = <expression> // only one ?
+
+<return_s>    -> return <val> EOL
+<val>         -> eps
+<val>         -> <expression> <vals>
+<vals>        -> , <expression> <vals>
+<vals>        -> eps
+
+<def_of_var>  -> ID := <expression> EOL
+
+<assignment_s>-> <id> = <ex> EOL
+<id>          -> ID <ids>
+<ids>         -> , ID <ids>
+<ids>         -> eps
+<ex>          -> <expression> <exs>
+<exs>         -> , <expression> <exs>
+<exs>         -> eps
+
+<fun_call>    -> ID ( <arg> ) EOL
+<arg>         -> eps
+<arg>         -> <term> <args>
+<args>        -> , <term> <args>
+<args>        -> eps
+
+<data_type>   -> int
+<data_type>   -> string
+<data_type>   -> float64
+
+<term>        -> int_value
+<term>        -> string_value
+<term>        -> float_value
+<term>        -> ID

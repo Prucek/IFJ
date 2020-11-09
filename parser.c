@@ -18,7 +18,7 @@
                         m.actual_token.data.k == K_FLOAT64))? true : (syntax_error(m.actual_token.type,m.actual_line),false)
 
 //global
-Metadata m = {.actual_line = 1, .index = 0, .local_table = NULL,};
+Metadata m = {.actual_line = 1, .index = 0, .local_table = NULL};
 TNode *node;
 
 /**
@@ -44,6 +44,7 @@ TData init_new_data(TData new_data)
  */
 int program()
 {
+    m.global_table = init_symtable(m.global_table);
     m.local_table = init_symtable(m.local_table);
     prolog();
     while(func());
@@ -108,9 +109,9 @@ bool func_header()
     new_data_func = init_new_data(new_data_func);
     new_data_func.defined = true;
     new_data_func.is_function = true;
+    Token last_func = m.actual_token;   //< to make correct free later
 
     // function parameters
-    free(m.actual_token.data.s);
     GET_AND_CHECK(PARENTHESIS_LEFT);
     GET_TOKEN();
     if (!CHECK_NO_ERROR(PARENTHESIS_RIGHT))
@@ -149,6 +150,8 @@ bool func_header()
 
     m.actual_line++;
     m.global_table = insert_symtable(m.global_table, new_data_func, func_id);    //< insert whole func
+
+    free(last_func.data.s);     //< to free token id     
     return true;
 }
 
@@ -215,7 +218,6 @@ void header_arg()
     Token prev = m.actual_token;
 
     // HERE add parameters of function to symtable
-    free(m.actual_token.data.s);
     GET_TOKEN();
     if (IS_DATA_TYPE())
     {
@@ -245,6 +247,7 @@ void header_arg()
             break;
         }
     }
+    free(prev.data.s);      //< free token id
     GET_TOKEN();
 
     if (CHECK_NO_ERROR(COMMA))

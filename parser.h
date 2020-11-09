@@ -19,25 +19,16 @@ typedef struct
     int actual_line;
     TNode *global_table;
     TNode *local_table;
+    TNode *suspected;   //< symtable for functions suspecetd from no_definition
     int index;          //< for searching of retval_arr and arg_arr
     
 }Metadata;
-/*
-typedef struct Suspect
-{
-    struct Suspect *next;
-    char *suspected;        //< stores functions suspected from no_definition
-} *TSuspect;
 
-typedef struct 
-{
-    TSuspect first;
-} List;
-*/
 
 TData new_data_func, new_data_var;
 
 TData init_new_data(TData new_data);
+void check_suspected(TNode *root);
 
 /*
     program -> "package main" ->|<---------------
@@ -94,7 +85,7 @@ bool expect_token(Token_type t_type, Keyword k);
 
 bool statement();
 
-void function_call();
+void function_call(Token id);
 
 void if_s();
 

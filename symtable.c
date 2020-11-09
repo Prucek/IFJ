@@ -45,6 +45,7 @@ TNode *rewrite_data(TNode *node, TData new_data)
     node->data.in_block = new_data.in_block;
     node->data.param_counter = new_data.param_counter;
     node->data.ret_counter = new_data.ret_counter;
+    node->data.line = new_data.line;
 
     for (unsigned i = 0; i < new_data.ret_counter; i++)
         node->data.retval_arr[i] = new_data.retval_arr[i];
@@ -90,8 +91,11 @@ TNode* insert_symtable(TNode *root, TData d, char *k)
     {
         root->rptr = insert_symtable(root->rptr, d, k);     //< trying insert to right child
     }
-   
-    return (rewrite_data(root, d));     //< key was found, rewrite data 
+    else
+    {
+        root = rewrite_data(root, d);     //< key was found, rewrite data
+    }
+    return root;  
 }
 
 

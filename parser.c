@@ -18,17 +18,19 @@
                         m.actual_token.data.k == K_FLOAT64))? true : (syntax_error(m.actual_token.type,m.actual_line),false)
 
 //global
-Metadata m = {.actual_line = 1, .index = 0, .local_table = NULL};
+Metadata m = {.actual_line = 1, .index = 0, .local_table = NULL, .suspected = NULL};
 TNode *node;
 
 /**
  * @brief Inits data structure of symtable to eliminate multi. insertion of one symbol
+ * @param new_data Data unit that will be initionalized
+ * @return Initionalized data ready for next use
  */
 TData init_new_data(TData new_data)
 {
     new_data.type = T_UNDEFINED;
     new_data.defined = new_data.is_var = new_data.is_function = new_data.in_block = false;
-    new_data.param_counter = new_data.ret_counter = 0;
+    new_data.param_counter = new_data.ret_counter = new_data.line = 0;
 
     for (int i = 0; i < MAX_RET_VAL; i++)
         new_data.retval_arr[i] = T_UNDEFINED;
@@ -37,6 +39,42 @@ TData init_new_data(TData new_data)
         new_data.arg_arr[j] = T_UNDEFINED;
 
     return new_data;
+}
+
+/**
+ * @brief Checks semantics of funcs suspected from no_definition 
+ */
+void check_suspected(TNode *root)
+{
+    // using PostOrder
+    if (root != NULL)
+    {
+        check_suspected(root->lptr);
+        check_suspected(root->rptr);
+
+        if ((node = search_symtable(m.global_table, root->key)) == NULL)    //< func is not defined
+        {
+            no_definition_error(root->key, root->data.line);
+        }
+        else  //< func is defined, check params
+        {
+            if (node->data.param_counter != root->data.param_counter)   //< num of params not same
+            {
+                param_error(root->key, root->data.line);
+            }
+            else 
+            {
+                for (unsigned i = 0; i < node->data.param_counter; i++)
+                {
+                    if (node->data.arg_arr[i] != root->data.arg_arr[i])     //< data type not same
+                    {
+                        param_error(root->key, root->data.line);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -52,6 +90,11 @@ int program()
     if (node == NULL)
     {
         no_definition_error("main", -1);    //< func main was not defined
+    }
+    if (m.suspected != NULL)    //< check funcs suspected from no_definition
+    {
+        check_suspected(m.suspected);
+        delete_symtable(m.suspected);
     }
 
     delete_symtable(m.global_table);
@@ -307,6 +350,7 @@ bool statement()
     }
     else if (CHECK_TOKEN(ID))
     {
+        Token last_id = m.actual_token;     //< need to store token's id in case of function call
         TData new_data;
         new_data.type = m.actual_token.type;
         new_data.is_var = true;
@@ -323,7 +367,7 @@ bool statement()
         {
             id_name[i] = m.actual_token.data.s[i];
         }
-        free(m.actual_token.data.s);
+        //free(m.actual_token.data.s);  // premiestnil som na koniec funkcie
 
         GET_TOKEN();
         int number_of_id = 1;
@@ -390,13 +434,15 @@ bool statement()
         }
         else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
         {
-            function_call();
+            function_call(last_id);
+            m.index = 0;
         }
         else
         {
             syntax_error(m.actual_token.type,m.actual_line);
         }
         //free(id_name);
+        free(last_id.data.s);   //< free token's id
     }
 
     return true;
@@ -404,16 +450,35 @@ bool statement()
 
 /**
  * @brief Checks syntax of function call
+ * @param id Stores the id of calling function
  */
-void function_call()
+void function_call(Token id)
 {
     Token_type previous = PARENTHESIS_LEFT;
+    unsigned act_param_counter = 0;
+    bool sem_error = false;                     //< indicates semantic error
+    new_data_func = init_new_data(new_data_func);
+    new_data_func.is_function = true;
+    new_data_func.line = m.actual_line;
+
     while(true)
     {
         GET_TOKEN();
         if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
         {
-            return;
+            if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
+            {
+                if (node->data.param_counter != act_param_counter)      //< num of params not same
+                {
+                    sem_error = true;   
+                } 
+            }
+            else        //< not sure whether func defined
+            {
+                m.suspected = insert_symtable(m.suspected, new_data_func, id.data.s);   //< check this func after whole file read    
+            }
+            
+            break;
         }
         else if (CHECK_NO_ERROR(COMMA) && previous != COMMA)
         {
@@ -422,23 +487,69 @@ void function_call()
         }
         // EOL's not implemented, not sure if FUNEXP or obligatory
         // can only be terms
-        // TODO potrebujem dvojfazov7 priechod...funkcia uz musi byt v symtable
+        // TODO potrebujem dvojfazovy priechod...funkcia uz musi byt v symtable
         else if (CHECK_NO_ERROR(INT))
         {
+            act_param_counter++;
+            if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
+            {
+                if (node->data.arg_arr[m.index++] != T_INT)     //< data type of calling func not same
+                {
+                    sem_error = true;
+                }
+            }
+            else        //< not sure whether func defined
+            {
+                new_data_func.param_counter++;
+                new_data_func.arg_arr[m.index++] = T_INT;
+
+            }   // end of semantic analysis
+             
             previous = INT;
             continue;
         }
         else if (CHECK_NO_ERROR(FLOAT64))
         {
+            act_param_counter++;
+            if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
+            {
+                if (node->data.arg_arr[m.index++] != T_FLOAT64)     //< data type of calling func not same
+                {
+                    sem_error = true;
+                }
+            }
+            else        //< not sure whether func defined
+            {
+                new_data_func.param_counter++;
+                new_data_func.arg_arr[m.index++] = T_FLOAT64;
+
+            }   // end of semantic analysis
+
             previous = FLOAT64;
             continue;
         }
         else if (CHECK_NO_ERROR(STRING))
         {
+            act_param_counter++;
+            if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
+            {
+                if (node->data.arg_arr[m.index++] != T_STRING)     //< data type of calling func not same
+                {
+                    sem_error = true;
+                }
+            }
+            else        //< not sure whether func defined
+            {
+                new_data_func.param_counter++;
+                new_data_func.arg_arr[m.index++] = T_STRING;
+
+            }   // end of semantic analysis
+
             free(m.actual_token.data.s);
             previous = STRING;
             continue;
         }
+        //TODO prienik s Rebekinou castou
         else if (CHECK_NO_ERROR(ID))
         {
             free(m.actual_token.data.s);
@@ -449,6 +560,10 @@ void function_call()
         {
             syntax_error(m.actual_token.type,m.actual_line);
         }
+    }
+    if (sem_error)
+    {
+        param_error(id.data.s, m.actual_line); 
     }
 }
 

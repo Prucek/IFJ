@@ -42,6 +42,7 @@ func ahoj(){
                         b := 3
                 }
                 ahoj(cuz,"",2,"cuuz")
+                dobry_den("ahoj",24)
                 blablabla()
         }
 }

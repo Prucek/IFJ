@@ -28,50 +28,12 @@ typedef struct
 TData new_data_func, new_data_var;
 
 TData init_new_data(TData new_data);
+
 void check_suspected(TNode *root);
 
-/*
-    program -> "package main" ->|<---------------
-    ^^^^^^^                     |               |
-                                ----- func --------> EOF
-*/
 int program();
 
-/*
-    func -> "func" -> ID -> "(" -----------------> ")" --------------------------------------> "{" -> EOL -> statement -> "}"
-    ^^^^                     |                      |      |                               |
-                             |-----<- "," <---      |      |       //return values         |
-                             |               |      |      |                               |
-                             ---> ID -> type ------->      "("--------------------> ")"--->
-                                                            |<-","  <----         |
-                                //parameters                |           |         |
-                                                            ---- type ------------>
-    func factorial(n int) (int) {
-        ...
-    }
-    func main() {
-        ...
-    }
-*/
 bool func();
-
-/*
-    statement --> EOL
-    ^^^^^^^^^ |
-              --> expression -> EOL
-              |
-   definiton  --> ID -> ":=" -> expression -> EOL
-              |
-       if     --> "if" -> expression -> "{" -> EOL -> statement -> "}" -> "else" -> "{" -> EOL -> statement -> "}" -> EOL
-              |
-   assignment -------> ID -> "=" -> expression -> EOL
-              |
-       for    --> "for" -----------------> ";" -> expression -> ";" -----------------> "{" -> statement -> "}" -> EOL
-              |          |              |                           |              |
-              |          -- definition ->                           -- assignment ->
-              |
-     return   --> "return" -> expression
-*/
 
 void header_arg();
 

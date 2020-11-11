@@ -11,11 +11,12 @@ func main(){
 
 func maine (i int, b string)(){
 
-        ahoj := a
+        ahoj := ,a
         id := 5
         id1  ,id2 , id3,_ = a, b,c,d
         return ahoj
         if a {
+                j :=1
                 if b {
                         ahoj := a
                         return ahoj
@@ -34,7 +35,7 @@ func ahoj(){
     //ahoj = a
     od := 5
     id := 5
-        for ;5; {
+        for ;5,; {
                 if a{
                         id = 5
                         for a:=0;a;a=5{

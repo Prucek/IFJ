@@ -10,5 +10,5 @@
 int main()
 {
     program();
-    return 0;
+    return error_value;
 }

@@ -415,8 +415,15 @@ bool statement()
             }
             while(!CHECK_NO_ERROR(VAR_ASSIGN))
             {
-                CHECK_TOKEN(COMMA);
-                GET_AND_CHECK(ID);
+                if (!CHECK_TOKEN(COMMA))
+                {
+                    break;
+                }
+                GET_TOKEN();
+                if (!CHECK_TOKEN(ID))
+                {
+                    break;
+                }
 
                 tmp = search_all_trees(m.actual_token.data.s);
                 if (tmp == false)
@@ -467,9 +474,8 @@ bool statement()
         {
             syntax_error(m.actual_token.type,m.actual_line);
         }
-
+        
         free(last_id.data.s);   //< free token's id
-
     }
 
     return true;
@@ -725,6 +731,7 @@ void expression()
     // Wimko TODO
     // for now
     // IMPORTANT when reading ID and then "(" call function call and return
+    // TODO resolve coming from id,id 7
     GET_TOKEN();
     if (CHECK_NO_ERROR(ID))
     {

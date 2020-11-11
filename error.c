@@ -63,59 +63,83 @@ void lexical_error(int line)
 void syntax_error(int token_type, int line)
 {
     static int _line = 0; //print only one mistake on single line
-    if (line != _line)
+    if (line != _line && token_type >= 0)
         fprintf(stderr, "****  Syntax error: token type %s, line %d!  ****\n",array[token_type], line);
-    error_value = 2;
     _line = line;
+    if (error_value == 0)
+    {
+        error_value = 2;
+    }
 }
 
 
 void no_definition_error(char *id, int line)      //< mozno zlucit s re_definition_error, zavisi na implementacii
 {
     fprintf(stderr, "****  Semantic error : Identifier: %s on line: %d was not defined yet !  ****\n", id, line);
-    error_value = 3;
+    if (error_value == 0)
+    {
+        error_value = 3;
+    }
 }
 
 
 void re_definition_error(char *id, int line)
 {
     fprintf(stderr, "****  Semantic error : Identifier: %s on line: %d is already defined !  ****\n", id, line);
-    error_value = 3;
+    if (error_value == 0)
+    {
+        error_value = 3;
+    }
 }
 
 
 void type_error()
 {
-    fprintf(stderr, "****  Semantic error : Unmatched data type of variable : var, line !  ****\n");
-    error_value = 4;
+    fprintf(stderr, "****  Semantic error : Unmatched data type of variable : var, line !  ****\n"); 
+    if (error_value == 0)
+    {
+        error_value = 4;
+    }
 }
 
 
 void compatibility_error()
 {
     fprintf(stderr, "****  Semantic error : compatibility error: token, line !  ****\n");
-    error_value = 5;
+    if (error_value == 0)
+    {
+        error_value = 5;
+    }
 }
 
 
 void param_error(char *id, int line)
 {
     fprintf(stderr, "****  Semantic error : Unmatched number or type of paramethers in function: %s on line: %d !  ****\n", id, line);
-    error_value = 6;
+    if (error_value == 0)
+    {
+        error_value = 6;
+    }
 }
 
 
 void other_error()
 {
     fprintf(stderr, "****  Another kind of semantic error !  ****\n");
-    error_value = 7;
+    if (error_value == 0)
+    {
+        error_value = 8;
+    }
 }
 
 
 void div_zero_error()
 {
     fprintf(stderr, "****  Semantic error : division with zero !  ****\n");
-    error_value = 9;
+    if (error_value == 0)
+    {
+        error_value = 9;
+    }
 }
 
 

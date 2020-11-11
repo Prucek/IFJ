@@ -47,11 +47,14 @@ TNode *rewrite_data(TNode *node, TData new_data)
     node->data.ret_counter = new_data.ret_counter;
     node->data.line = new_data.line;
 
-    for (unsigned i = 0; i < new_data.ret_counter; i++)
-        node->data.retval_arr[i] = new_data.retval_arr[i];
+    if (node->data.is_function == true)
+    {
+        for (unsigned i = 0; i < new_data.ret_counter; i++)
+            node->data.retval_arr[i] = new_data.retval_arr[i];
 
-    for (unsigned j = 0; j < new_data.param_counter; j++)
-        node->data.arg_arr[j] = new_data.arg_arr[j];
+        for (unsigned j = 0; j < new_data.param_counter; j++)
+            node->data.arg_arr[j] = new_data.arg_arr[j];
+    }
 
     return node;
 }

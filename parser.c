@@ -20,6 +20,8 @@
 //global
 Metadata m = {.actual_line = 1, .index = 0, .local_table = NULL, .suspected = NULL};
 TNode *node;
+TNode *array_of_trees[100];
+int tree_index = -1;
 
 /**
  * @brief Inits data structure of symtable to eliminate multi. insertion of one symbol
@@ -42,7 +44,7 @@ TData init_new_data(TData new_data)
 }
 
 /**
- * @brief Checks semantics of funcs suspected from no_definition 
+ * @brief Checks semantics of funcs suspected from no_definition
  */
 void check_suspected(TNode *root)
 {
@@ -62,7 +64,7 @@ void check_suspected(TNode *root)
             {
                 param_error(root->key, root->data.line);
             }
-            else 
+            else
             {
                 for (unsigned i = 0; i < node->data.param_counter; i++)
                 {
@@ -77,13 +79,46 @@ void check_suspected(TNode *root)
     }
 }
 
+void add_tree(TNode *root)
+{
+    tree_index++;
+    array_of_trees[tree_index] = malloc(sizeof(TNode *));
+    if (array_of_trees[tree_index] == NULL)
+    {
+        intern_error();
+    }
+    array_of_trees[tree_index] = root;
+}
+
+bool search_all_trees(char *key)
+{
+    for (int i = 0; i <= tree_index; i++)
+    {
+        if ((node = search_symtable(array_of_trees[i], key)) != NULL)
+        {
+
+            return true;
+        }
+    }
+    return false;
+}
+
+void delete_tree() //deletes youngest tree
+{
+    free(array_of_trees[tree_index]);
+    array_of_trees[tree_index] = NULL;
+    tree_index--;
+}
+
 /**
  * @brief Syntax of program
  */
 int program()
 {
-    m.global_table = init_symtable(m.global_table);
     m.local_table = init_symtable(m.local_table);
+    add_tree(m.local_table);
+    m.global_table = init_symtable(m.global_table);
+
     prolog();
     while(func());
     node = search_symtable(m.global_table, "main");
@@ -98,8 +133,9 @@ int program()
     }
 
     delete_symtable(m.global_table);
-    CHECK_TOKEN(EoF);
     delete_symtable(m.local_table);
+    delete_tree();
+    CHECK_TOKEN(EoF);
     return error_value;
 }
 
@@ -108,7 +144,10 @@ int program()
  */
 bool func()
 {
-    m.local_table = init_symtable(m.local_table);
+    TNode *root = NULL;
+    root = init_symtable(root);
+    add_tree(root);
+
     if(!func_header())
     {
         return false;
@@ -117,10 +156,9 @@ bool func()
     // body
     while(statement());
 
-    func();
-
-    delete_symtable(m.local_table);
-
+    //func();
+    delete_symtable(root);
+    delete_tree();
     return true;
 }
 
@@ -194,7 +232,7 @@ bool func_header()
     m.actual_line++;
     m.global_table = insert_symtable(m.global_table, new_data_func, func_id);    //< insert whole func
 
-    free(last_func.data.s);     //< to free token id     
+    free(last_func.data.s);     //< to free token id
     return true;
 }
 
@@ -212,6 +250,7 @@ void header_ret()
     // HERE add return value of function to symtable
     {
         new_data_func.ret_counter++;
+        //add m.actual_token.data.k to local_table for reference in the current block
         switch (m.actual_token.data.k)
         {
         case K_INT:
@@ -315,9 +354,7 @@ void header_arg()
  */
 bool statement()
 {
-
     // skip EOL's
-
     GET_TOKEN();
     while(CHECK_NO_ERROR(EOL))
     {
@@ -357,42 +394,35 @@ bool statement()
         new_data.in_block = true;
 
         char *id_name;
-        id_name = malloc(sizeof(char)*strlen(m.actual_token.data.s));
+        id_name = malloc(sizeof(char) * (strlen(m.actual_token.data.s)+1));
         if (id_name == NULL)
         {
             intern_error();
         }
-
-        for (unsigned int i = 0; i < strlen(m.actual_token.data.s); i++)
-        {
-            id_name[i] = m.actual_token.data.s[i];
-        }
-        //free(m.actual_token.data.s);  // premiestnil som na koniec funkcie
+        id_name = m.actual_token.data.s;
 
         GET_TOKEN();
         int number_of_id = 1;
-        TNode *tmp = NULL;
+        bool tmp;
         // assignment to var statement with multiple ID
         if (CHECK_NO_ERROR(COMMA))
         {
-            tmp = search_symtable(m.local_table, id_name);
-            if (tmp == NULL)
+            tmp = search_all_trees(id_name);
+
+            if (tmp == false)
             { //mozno je nelegalne
                 no_definition_error(id_name, m.actual_line);
             }
-            free(id_name);
             while(!CHECK_NO_ERROR(VAR_ASSIGN))
             {
                 CHECK_TOKEN(COMMA);
                 GET_AND_CHECK(ID);
 
-                tmp = search_symtable(m.local_table, m.actual_token.data.s);
-                if (tmp == NULL)
-                { //mozno je nelegalne
-                    //FREE_TOKEN_DATA();
+                tmp = search_all_trees(m.actual_token.data.s);
+                if (tmp == false)
+                {
                     no_definition_error(m.actual_token.data.s, m.actual_line);
                 }
-                free(m.actual_token.data.s);
 
                 number_of_id++;
                 GET_TOKEN();
@@ -403,19 +433,16 @@ bool statement()
         // definition of var statement
         else if (CHECK_NO_ERROR(DEF_OF_VAR))
         {
-            tmp = search_symtable(m.local_table, id_name);
-            if (tmp == NULL)
+            tmp = search_all_trees(id_name);
+            if (tmp == false)
             {
-                m.local_table = insert_symtable(m.local_table, new_data, id_name);
-                //free(id_name);
+                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
             }
             else
             {
-                //FREE_TOKEN_DATA();
                 re_definition_error(id_name, m.actual_line);
-
             }
-            free(id_name);
+
             expression();
             GET_AND_CHECK(EOL);
             m.actual_line++;
@@ -423,13 +450,12 @@ bool statement()
         // assignment to var statement
         else if (CHECK_NO_ERROR(VAR_ASSIGN))
         {
-            tmp = search_symtable(m.local_table, id_name);
-            if (tmp == NULL)
+            tmp = search_all_trees(id_name);
+            if (tmp == false)
             {
-                //FREE_TOKEN_DATA();
                 no_definition_error(id_name, m.actual_line);
             }
-            free(id_name);
+
             assignment_s(number_of_id);
         }
         else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
@@ -441,8 +467,9 @@ bool statement()
         {
             syntax_error(m.actual_token.type,m.actual_line);
         }
-        //free(id_name);
+
         free(last_id.data.s);   //< free token's id
+
     }
 
     return true;
@@ -470,14 +497,14 @@ void function_call(Token id)
             {
                 if (node->data.param_counter != act_param_counter)      //< num of params not same
                 {
-                    sem_error = true;   
-                } 
+                    sem_error = true;
+                }
             }
             else        //< not sure whether func defined
             {
-                m.suspected = insert_symtable(m.suspected, new_data_func, id.data.s);   //< check this func after whole file read    
+                m.suspected = insert_symtable(m.suspected, new_data_func, id.data.s);   //< check this func after whole file read
             }
-            
+
             break;
         }
         else if (CHECK_NO_ERROR(COMMA) && previous != COMMA)
@@ -504,7 +531,7 @@ void function_call(Token id)
                 new_data_func.arg_arr[m.index++] = T_INT;
 
             }   // end of semantic analysis
-             
+
             previous = INT;
             continue;
         }
@@ -563,7 +590,7 @@ void function_call(Token id)
     }
     if (sem_error)
     {
-        param_error(id.data.s, m.actual_line); 
+        param_error(id.data.s, m.actual_line);
     }
 }
 
@@ -572,8 +599,10 @@ void function_call(Token id)
  */
 void if_s()
 {
-    // if
-    // m.local_table = init_symtable(m.local_table);
+    TNode *root = NULL;
+    root = init_symtable(root);
+    add_tree(root);
+
     expression();
     GET_AND_CHECK(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
@@ -592,10 +621,9 @@ void if_s()
     while(statement());
     GET_AND_CHECK(EOL);
     m.actual_line++;
-    // if (m.local_table != NULL)
-    // {
-    //     delete_symtable(m.local_table);
-    // }
+
+    delete_symtable(root);
+    delete_tree();
 }
 
 /**
@@ -624,6 +652,11 @@ void for_s()
 {
     // inicialization (can be epmty)
     //m.local_table = init_symtable(m.local_table);
+    // TNode *new_symtable = NULL;
+    // new_symtable = init_symtable(new_symtable);
+    // char *new_key = NULL;
+    // TNode *root_to_del = NULL;
+
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
@@ -654,7 +687,9 @@ void for_s()
 
     // body
     while(statement());
-    //delete_symtable(m.local_table);
+
+    // delete_symtable(new_symtable);
+    // delete_node(root_to_del, new_key);
 }
 
 /**

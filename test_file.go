@@ -12,39 +12,45 @@ func main(){
 func maine (i int, b string)(){
 
         ahoj := a
+        id := 5
         id1  ,id2 , id3,_ = a, b,c,d
         return ahoj
         if a {
                 if b {
-                        //ahoj := a
+                        ahoj := a
                         return ahoj
                 } else{
                 }
                 return ahoj
         }else{
-                id1 , id2 , id3,_ = a, b,c,d
+                //id1 , id2 , id3,_ = a, b,c,d
         }
+        ahoj := b
+        id = 5
         return masci,aj
 }
 
 func ahoj(){
-    ahoj = a
+    //ahoj = a
+    od := 5
     id := 5
         for ;5; {
                 if a{
                         id = 5
-                        ah := 42
                         for a:=0;a;a=5{
                                 return 7
                         }
                 } else {
-                        ahje = a
+                        //ahje = a
                         b := 3
+                        //b := a
                 }
-                ahoj(cuz,"",2,"cuuz")
+                ahoj()
                 dobry_den("ahoj",24)
-                blablabla()
+                //blablabla()
         }
+    bebi = s
+    id = 5
 }
 
 func dobry_den (s string, i int) (int,string){

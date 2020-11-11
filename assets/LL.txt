@@ -19,36 +19,36 @@
 16  <statement>   -> <if_s> <statement>
 17  <statement>   -> <for_s> <statement>
 18  <statement>   -> <return_s> <statement>
-19  <statement>   -> <def_of_var> <statement>
-20  <statement>   -> <assignment_s> <statement>
-21  <statement>   -> <fun_call> <statement>
-22  <statement>   -> }
+19  <statement>   -> ID <id>
+20  <id>          -> <def_of_var> <statement>
+21  <id>          -> <assignment_s> <statement>
+22  <id>          -> <fun_call> <statement>
+23  <statement>   -> }
 
-23  <if_s>        -> if <expression> { EOL <statement> else { EOL
+24  <if_s>        -> if <expression> { EOL <statement> else { EOL <statement>
 
-24  <for_s>       -> for <def> ; <expression> ; <ass> { EOL
-25  <def>         -> eps
-26  <def>         -> ID := <expression>
-27  <ass>         -> eps
-28  <ass>         -> ID = <expression> // only one ?
+25  <for_s>       -> for <def> ; <expression> ; <ass> { EOL <statement>
+26  <def>         -> eps
+27  <def>         -> ID := <expression>
+28  <ass>         -> eps
+29  <ass>         -> ID = <expression>
 
-29  <return_s>    -> return <val> EOL
-30  <val>         -> eps
-31  <val>         -> <expression> <vals>
-32  <vals>        -> , <expression> <vals>
-33  <vals>        -> eps
+30  <return_s>    -> return <val> EOL
+31  <val>         -> eps
+32  <val>         -> <expression> <vals>
+33  <vals>        -> , <expression> <vals>
+34  <vals>        -> eps
 
-34  <def_of_var>  -> ID := <expression> EOL
+35  <def_of_var>  -> := <expression> EOL
 
-35  <assignment_s>-> <id> = <ex> EOL
-36  <id>          -> ID <ids>
+36  <assignment_s>-> <ids> = <ex> EOL
 37  <ids>         -> , ID <ids>
 38  <ids>         -> eps
 39  <ex>          -> <expression> <exs>
 40  <exs>         -> , <expression> <exs>
 41  <exs>         -> eps
 
-42  <fun_call>    -> ID ( <arg> ) EOL
+42  <fun_call>    -> ( <arg> ) EOL
 43  <arg>         -> eps
 44  <arg>         -> <term> <args>
 45  <args>        -> , <term> <args>

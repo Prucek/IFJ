@@ -738,12 +738,28 @@ void expression()
     // for now
     // IMPORTANT when reading ID and then "(" call function call and return
     // TODO resolve coming from id,id 7
+
     GET_TOKEN();
     if (CHECK_NO_ERROR(ID))
     {
         free(m.current_token.data.s);
     }
-    else (CHECK_TOKEN(INT));
+    else if(CHECK_NO_ERROR(INT))
+    {
+
+    }
+    else if(CHECK_NO_ERROR(STRING))
+    {
+        
+    }
+    else if(CHECK_NO_ERROR(FLOAT64))
+    {
+        
+    }
+    else
+    {
+        syntax_error(m.current_token.type,m.current_line);
+    }
 }
 
 /**

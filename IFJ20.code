@@ -1,0 +1,15 @@
+.IFJcode20
+JUMP main
+
+LABEL foo
+    CREATEFRAME
+    PUSHFRAME
+        DEFVAR LF@a
+        MOVE LF@a string@Hello\032World\032!\010
+        WRITE LF@a
+    POPFRAME
+RETURN
+
+LABEL main
+    CALL foo
+    CALL foo

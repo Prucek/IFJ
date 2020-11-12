@@ -49,7 +49,6 @@ int error_value = 0; //< in case of no error
  * PLACEHOLDER - Documentation may not be necessary here!
  *
  * @brief Inform about lexical error occurrence
- * @param str Error causing lexeme
  * @param line Line of error causing lexeme
  * @post error_value = 1
  */
@@ -66,7 +65,7 @@ void syntax_error(int token_type, int line)
     if (line != _line && token_type >= 0)
         fprintf(stderr, "****  Syntax error: token type %s, line %d!  ****\n",array[token_type], line);
     _line = line;
-    if (error_value == 0)
+    if (error_value != 1) // only if no lex error
     {
         error_value = 2;
     }

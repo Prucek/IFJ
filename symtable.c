@@ -62,20 +62,20 @@ TNode *rewrite_data(TNode *node, TData new_data)
 
 TNode* create_node(TData d, char *k)
 {
-    TNode *new_node = (TNode *) malloc(sizeof(TNode));
-    new_node->key = (char *) malloc(sizeof(strlen(k)+1));
+    TNode *new_node = malloc(sizeof(TNode));
+    new_node->key = malloc(sizeof(char)*(strlen(k)+1));
     if (new_node == NULL || new_node->key == NULL)
     {
         intern_error();
         return NULL;
     }
-    
+
     //new_node->key = k;
     strcpy(new_node->key, k);
     new_node->lptr = NULL;
     new_node->rptr = NULL;
     return (rewrite_data(new_node, d));
-    
+
 }
 
 
@@ -98,7 +98,7 @@ TNode* insert_symtable(TNode *root, TData d, char *k)
     {
         root = rewrite_data(root, d);     //< key was found, rewrite data
     }
-    return root;  
+    return root;
 }
 
 
@@ -107,10 +107,11 @@ void delete_symtable(TNode *root)
     if (root != NULL)
     {
         delete_symtable(root->lptr);
-        free(root->key);            //< must free heap
         delete_symtable(root->rptr);
+        free(root->key);            //< must free heap
         free(root);
     }
+    root = NULL;
 }
 
 /* funkcie na implemetaciu vymazania jedneho uzla, mozno nepotrebne */
@@ -124,7 +125,7 @@ TNode* most_left_node(TNode *root)
     else
     {
         return (most_left_node(root->lptr));
-    }  
+    }
 }
 
 
@@ -149,7 +150,7 @@ TNode *delete_node(TNode *root, char *k)
         if (root->lptr == NULL && root->rptr == NULL)   //< in case node has no children
         {
             free(root->key);    //< must free heap
-            free(root); 
+            free(root);
             return NULL;
         }
         else if (root->lptr != NULL && root->rptr != NULL)  //< deleted node has 2 children
@@ -161,7 +162,7 @@ TNode *delete_node(TNode *root, char *k)
             root = rewrite_data(root, min->data);
             root->rptr = delete_node(root->rptr, min->key);
             return root;
-            
+
         }
         else    //< deleted node has one child
         {
@@ -178,6 +179,6 @@ TNode *delete_node(TNode *root, char *k)
             free(root);
             return only_child;
         }
-    } 
+    }
 }
 

@@ -84,6 +84,7 @@ void check_suspected(TNode *root)
 void add_tree(TNode *root)
 {
     tree_index++;
+    array_of_trees[tree_index] = NULL;
     array_of_trees[tree_index] = malloc(sizeof(TNode *));
     if (array_of_trees[tree_index] == NULL)
     {
@@ -107,7 +108,6 @@ bool search_all_trees(char *key)
 
 void delete_tree() //deletes youngest tree
 {
-    free(array_of_trees[tree_index]);
     array_of_trees[tree_index] = NULL;
     tree_index--;
 }
@@ -118,7 +118,6 @@ void delete_tree() //deletes youngest tree
 int program()
 {
     m.global_table = init_symtable(m.global_table);
-    //m.local_table = *array_of_trees;
     prolog();
     while(func());
     node = search_symtable(m.global_table, "main");
@@ -133,6 +132,15 @@ int program()
     }
 
     delete_symtable(m.global_table);
+
+    for (int i = 0; i < 100; i++)
+    {
+        if (array_of_trees[i] != NULL)
+        {
+            delete_symtable(array_of_trees[i]);
+        }
+    }
+    
     CHECK_TOKEN(EoF);
     return error_value;
 }
@@ -147,8 +155,11 @@ bool func()
     add_tree(root);
     TData new_data;
     new_data.type = ID;
+    new_data.defined = true;
     new_data.is_var = true;
+    new_data.is_function = false;
     new_data.in_block = true;
+
     array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, "_");
 
     if(!func_header())
@@ -159,7 +170,7 @@ bool func()
     // body
     while(statement());
 
-    //func();
+    delete_symtable(array_of_trees[tree_index]);
     delete_symtable(root);
     delete_tree();
     return true;
@@ -393,6 +404,8 @@ bool statement()
         new_data.type = m.current_token.type;
         new_data.is_var = true;
         new_data.in_block = true;
+        new_data.defined = true;
+        new_data.is_function = false;
 
         char *id_name;
         id_name = m.current_token.data.s;
@@ -627,7 +640,7 @@ void if_s()
     while(statement());
     GET_AND_CHECK(EOL);
 
-    delete_symtable(root);
+    delete_symtable(array_of_trees[tree_index]);
     delete_tree();
 }
 
@@ -688,7 +701,7 @@ void for_s()
     // body
     while(statement());
 
-    delete_symtable(root);
+    delete_symtable(array_of_trees[tree_index]);
     delete_tree();
 }
 

@@ -7,18 +7,20 @@
 
 #include "parser.h"
 
-#define GET_TOKEN()  m.actual_token = get_next_token(stdin); (m.actual_token.type == ERROR)? (lexical_error(m.actual_line), 1) : 0
-#define CHECK_TOKEN(Type) ((m.actual_token.type == Type)? true : \
-        (fprintf(stderr,"In function %s on line %d\n ",__func__, __LINE__) , syntax_error(Type,m.actual_line) , false))
-#define CHECK_NO_ERROR(Type) ((m.actual_token.type == Type)? true : false)
+#define GET_TOKEN()  do{ m.current_token = get_next_token(stdin); \
+                    (m.current_token.type == EOL)? m.current_line++ : 0 ; \
+                    (m.current_token.type == ERROR)? (lexical_error(m.current_line), 1) : 0 ;}while(0)
+#define CHECK_TOKEN(Type) ((m.current_token.type == Type)? true : \
+        (fprintf(stderr,"In function %s on line %d\n ",__func__, __LINE__) , syntax_error(Type,m.current_line) , false))
+#define CHECK_NO_ERROR(Type) ((m.current_token.type == Type)? true : false)
 #define GET_AND_CHECK(Type) do {GET_TOKEN(); CHECK_TOKEN(Type);}while(0)
-#define IS_DATA_TYPE() (m.actual_token.type == KEYWORD && \
-                       (m.actual_token.data.k == K_STRING ||\
-                        m.actual_token.data.k == K_INT ||\
-                        m.actual_token.data.k == K_FLOAT64))? true : (syntax_error(m.actual_token.type,m.actual_line),false)
+#define IS_DATA_TYPE() (m.current_token.type == KEYWORD && \
+                       (m.current_token.data.k == K_STRING ||\
+                        m.current_token.data.k == K_INT ||\
+                        m.current_token.data.k == K_FLOAT64))? true : (syntax_error(m.current_token.type,m.current_line),false)
 
 //global
-Metadata m = {.actual_line = 1, .index = 0, .local_table = NULL, .suspected = NULL};
+Metadata m = {.current_line = 1, .index = 0, .local_table = NULL, .suspected = NULL};
 TNode *node;
 TNode *array_of_trees[100];
 int tree_index = -1;
@@ -172,7 +174,7 @@ bool func_header()
     {
         if(!CHECK_NO_ERROR(EoF))
         {
-            syntax_error(KEYWORD,m.actual_line);
+            syntax_error(KEYWORD,m.current_line);
         }
         return false;
     }
@@ -181,16 +183,16 @@ bool func_header()
     GET_AND_CHECK(ID);
     // HERE add m.actual_token to symtable function id
 
-    char *func_id = m.actual_token.data.s;  //< store func id cause insertion to symtable will be later
+    char *func_id = m.current_token.data.s;  //< store func id cause insertion to symtable will be later
     if ((node = search_symtable(m.global_table, func_id)) != NULL)
     {
-        re_definition_error(func_id, m.actual_line);    //< redefinition of func is forrbiden
+        re_definition_error(func_id, m.current_line);    //< redefinition of func is forrbiden
     }
 
     new_data_func = init_new_data(new_data_func);
     new_data_func.defined = true;
     new_data_func.is_function = true;
-    Token last_func = m.actual_token;   //< to make correct free later
+    Token last_func = m.current_token;   //< to make correct free later
 
     // function parameters
     GET_AND_CHECK(PARENTHESIS_LEFT);
@@ -225,11 +227,10 @@ bool func_header()
     {
         if (new_data_func.param_counter != 0 || new_data_func.ret_counter != 0)
         {
-            param_error(func_id, m.actual_line);    //< func main cant have param or ret value
+            param_error(func_id, m.current_line);    //< func main cant have param or ret value
         }
     }
 
-    m.actual_line++;
     m.global_table = insert_symtable(m.global_table, new_data_func, func_id);    //< insert whole func
 
     free(last_func.data.s);     //< to free token id
@@ -251,7 +252,7 @@ void header_ret()
     {
         new_data_func.ret_counter++;
         //add m.actual_token.data.k to local_table for reference in the current block
-        switch (m.actual_token.data.k)
+        switch (m.current_token.data.k)
         {
         case K_INT:
             new_data_func.retval_arr[m.index++] = T_INT;
@@ -279,7 +280,7 @@ void header_ret()
     }
      else
     {
-        syntax_error(m.actual_token.type,m.actual_line);
+        syntax_error(m.current_token.type,m.current_line);
     }
 }
 
@@ -292,12 +293,12 @@ void header_arg()
     // static int i = 0; // EOL cannot be before first parameter
     // if (CHECK_NO_ERROR(EOL) && i) // EOL can be after parameter
     // {
-    //     m.actual_line++;
+    //     m.current_line++;
     //     GET_TOKEN();
     // }
     CHECK_TOKEN(ID);
     new_data_var = init_new_data(new_data_var);
-    Token prev = m.actual_token;
+    Token prev = m.current_token;
 
     // HERE add parameters of function to symtable
     GET_TOKEN();
@@ -307,7 +308,7 @@ void header_arg()
         new_data_var.is_var = true;
         new_data_func.param_counter++;
 
-        switch (m.actual_token.data.k)
+        switch (m.current_token.data.k)
         {
         case K_INT:
             new_data_var.type = T_INT;
@@ -344,7 +345,7 @@ void header_arg()
     }
     else
     {
-        syntax_error(m.actual_token.type,m.actual_line);
+        syntax_error(m.current_token.type,m.current_line);
     }
 }
 
@@ -358,7 +359,6 @@ bool statement()
     GET_TOKEN();
     while(CHECK_NO_ERROR(EOL))
     {
-        m.actual_line++;
         GET_TOKEN();
     }
 
@@ -368,38 +368,38 @@ bool statement()
     }
     else if (CHECK_NO_ERROR(KEYWORD))
     {
-        if (m.actual_token.data.k == K_IF)
+        if (m.current_token.data.k == K_IF)
         {
             if_s();
         }
-        else if (m.actual_token.data.k == K_FOR)
+        else if (m.current_token.data.k == K_FOR)
         {
             for_s();
         }
-        else if (m.actual_token.data.k == K_RETURN)
+        else if (m.current_token.data.k == K_RETURN)
         {
             return_s();
         }
         else
         {
-            syntax_error(m.actual_token.type,m.actual_line);
+            syntax_error(m.current_token.type,m.current_line);
         }
     }
     else if (CHECK_TOKEN(ID))
     {
-        Token last_id = m.actual_token;     //< need to store token's id in case of function call
+        Token last_id = m.current_token;     //< need to store token's id in case of function call
         TData new_data;
-        new_data.type = m.actual_token.type;
+        new_data.type = m.current_token.type;
         new_data.is_var = true;
         new_data.in_block = true;
 
         char *id_name;
-        id_name = malloc(sizeof(char) * (strlen(m.actual_token.data.s)+1));
+        id_name = malloc(sizeof(char) * (strlen(m.current_token.data.s)+1));
         if (id_name == NULL)
         {
             intern_error();
         }
-        id_name = m.actual_token.data.s;
+        id_name = m.current_token.data.s;
 
         GET_TOKEN();
         int number_of_id = 1;
@@ -411,7 +411,7 @@ bool statement()
 
             if (tmp == false)
             { //mozno je nelegalne
-                no_definition_error(id_name, m.actual_line);
+                no_definition_error(id_name, m.current_line);
             }
             while(!CHECK_NO_ERROR(VAR_ASSIGN))
             {
@@ -425,10 +425,10 @@ bool statement()
                     break;
                 }
 
-                tmp = search_all_trees(m.actual_token.data.s);
+                tmp = search_all_trees(m.current_token.data.s);
                 if (tmp == false)
                 {
-                    no_definition_error(m.actual_token.data.s, m.actual_line);
+                    no_definition_error(m.current_token.data.s, m.current_line);
                 }
 
                 number_of_id++;
@@ -440,19 +440,19 @@ bool statement()
         // definition of var statement
         else if (CHECK_NO_ERROR(DEF_OF_VAR))
         {
-            tmp = search_all_trees(id_name);
+            tmp = search_symtable(array_of_trees[tree_index], id_name);
             if (tmp == false)
             {
+                new_data.defined = true;
                 array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
             }
             else
             {
-                re_definition_error(id_name, m.actual_line);
+                re_definition_error(id_name, m.current_line);
             }
 
             expression();
             GET_AND_CHECK(EOL);
-            m.actual_line++;
         }
         // assignment to var statement
         else if (CHECK_NO_ERROR(VAR_ASSIGN))
@@ -460,7 +460,7 @@ bool statement()
             tmp = search_all_trees(id_name);
             if (tmp == false)
             {
-                no_definition_error(id_name, m.actual_line);
+                no_definition_error(id_name, m.current_line);
             }
 
             assignment_s(number_of_id);
@@ -472,7 +472,7 @@ bool statement()
         }
         else
         {
-            syntax_error(m.actual_token.type,m.actual_line);
+            syntax_error(m.current_token.type,m.current_line);
         }
         
         free(last_id.data.s);   //< free token's id
@@ -492,7 +492,7 @@ void function_call(Token id)
     bool sem_error = false;                     //< indicates semantic error
     new_data_func = init_new_data(new_data_func);
     new_data_func.is_function = true;
-    new_data_func.line = m.actual_line;
+    new_data_func.line = m.current_line;
 
     while(true)
     {
@@ -578,25 +578,25 @@ void function_call(Token id)
 
             }   // end of semantic analysis
 
-            free(m.actual_token.data.s);
+            free(m.current_token.data.s);
             previous = STRING;
             continue;
         }
         //TODO prienik s Rebekinou castou
         else if (CHECK_NO_ERROR(ID))
         {
-            free(m.actual_token.data.s);
+            free(m.current_token.data.s);
             previous = ID;
             continue;
         }
         else
         {
-            syntax_error(m.actual_token.type,m.actual_line);
+            syntax_error(m.current_token.type,m.current_line);
         }
     }
     if (sem_error)
     {
-        param_error(id.data.s, m.actual_line);
+        param_error(id.data.s, m.current_line);
     }
 }
 
@@ -612,21 +612,20 @@ void if_s()
     expression();
     GET_AND_CHECK(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
-    m.actual_line++;
+
     while(statement());
 
     // else
     GET_AND_CHECK(KEYWORD);
-    if (m.actual_token.data.k != K_ELSE)
+    if (m.current_token.data.k != K_ELSE)
     {
-        syntax_error(m.actual_token.type,m.actual_line);
+        syntax_error(m.current_token.type,m.current_line);
     }
     GET_AND_CHECK(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
-    m.actual_line++;
+
     while(statement());
     GET_AND_CHECK(EOL);
-    m.actual_line++;
 
     delete_symtable(root);
     delete_tree();
@@ -648,7 +647,6 @@ void assignment_s(int number_of_id)
         GET_AND_CHECK(COMMA);
     }
     GET_AND_CHECK(EOL);
-    m.actual_line++;
 }
 
 /**
@@ -666,7 +664,7 @@ void for_s()
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
-        free(m.actual_token.data.s);
+        free(m.current_token.data.s);
         GET_AND_CHECK(DEF_OF_VAR);
         expression();
         GET_AND_CHECK(SEMICLN);
@@ -681,7 +679,7 @@ void for_s()
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
-        free(m.actual_token.data.s);
+        free(m.current_token.data.s);
         GET_AND_CHECK(VAR_ASSIGN);
         expression(); //only one ???
         GET_AND_CHECK(BRACKET_LEFT);
@@ -689,7 +687,6 @@ void for_s()
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
 
     GET_AND_CHECK(EOL);
-    m.actual_line++;
 
     // body
     while(statement());
@@ -713,12 +710,11 @@ void return_s()
         }
         else if (CHECK_NO_ERROR(EOL))
         {
-            m.actual_line++;
             break;
         }
         else
         {
-            syntax_error(m.actual_token.type,m.actual_line);
+            syntax_error(m.current_token.type,m.current_line);
         }
     }
 }
@@ -735,7 +731,7 @@ void expression()
     GET_TOKEN();
     if (CHECK_NO_ERROR(ID))
     {
-        free(m.actual_token.data.s);
+        free(m.current_token.data.s);
     }
     else (CHECK_TOKEN(INT));
 }
@@ -747,12 +743,12 @@ void prolog()
 {
     if (!expect_token(KEYWORD, K_PACKAGE))
     {
-        syntax_error(KEYWORD,m.actual_line);
+        syntax_error(KEYWORD,m.current_line);
     }
 
     if (!expect_token(ID,K_ERROR) || 0) // TODO access symbol table t.data.s == main
     {
-        syntax_error(m.actual_token.type,m.actual_line);
+        syntax_error(m.current_token.type,m.current_line);
     }
 }
 
@@ -767,13 +763,12 @@ bool expect_token(Token_type t_type, Keyword k)
     while(true)
     {
         GET_TOKEN();
-        if (m.actual_token.type == t_type && ((k == K_ERROR)? true : m.actual_token.data.k == k))
+        if (m.current_token.type == t_type && ((k == K_ERROR)? true : m.current_token.data.k == k))
         {
             return true;
         }
-        else if (m.actual_token.type == EOL)
+        else if (m.current_token.type == EOL)
         {
-            m.actual_line++;
             continue;
         }
         else

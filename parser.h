@@ -15,8 +15,8 @@
 
 typedef struct
 {
-    Token actual_token;
-    int actual_line;
+    Token current_token;
+    int current_line;
     TNode *global_table;
     TNode *local_table;
     TNode *suspected;   //< symtable for functions suspecetd from no_definition

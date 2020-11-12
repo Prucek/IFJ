@@ -118,7 +118,7 @@ void delete_tree() //deletes youngest tree
 int program()
 {
     m.global_table = init_symtable(m.global_table);
-
+    //m.local_table = *array_of_trees;
     prolog();
     while(func());
     node = search_symtable(m.global_table, "main");
@@ -145,6 +145,11 @@ bool func()
     TNode *root = NULL;
     root = init_symtable(root);
     add_tree(root);
+    TData new_data;
+    new_data.type = ID;
+    new_data.is_var = true;
+    new_data.in_block = true;
+    array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, "_");
 
     if(!func_header())
     {
@@ -431,6 +436,10 @@ bool statement()
         // definition of var statement
         else if (CHECK_NO_ERROR(DEF_OF_VAR))
         {
+            if (!strcmp(id_name, "_"))
+            {
+                other_error();
+            }
             tmp = search_symtable(array_of_trees[tree_index], id_name);
             if (tmp == false)
             {

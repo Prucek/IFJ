@@ -117,8 +117,6 @@ void delete_tree() //deletes youngest tree
  */
 int program()
 {
-    m.local_table = init_symtable(m.local_table);
-    add_tree(m.local_table);
     m.global_table = init_symtable(m.global_table);
 
     prolog();
@@ -135,8 +133,6 @@ int program()
     }
 
     delete_symtable(m.global_table);
-    delete_symtable(m.local_table);
-    delete_tree();
     CHECK_TOKEN(EoF);
     return error_value;
 }
@@ -394,11 +390,6 @@ bool statement()
         new_data.in_block = true;
 
         char *id_name;
-        id_name = malloc(sizeof(char) * (strlen(m.current_token.data.s)+1));
-        if (id_name == NULL)
-        {
-            intern_error();
-        }
         id_name = m.current_token.data.s;
 
         GET_TOKEN();
@@ -474,7 +465,7 @@ bool statement()
         {
             syntax_error(m.current_token.type,m.current_line);
         }
-        
+
         free(last_id.data.s);   //< free token's id
     }
 
@@ -654,12 +645,9 @@ void assignment_s(int number_of_id)
  */
 void for_s()
 {
-    // inicialization (can be epmty)
-    //m.local_table = init_symtable(m.local_table);
-    // TNode *new_symtable = NULL;
-    // new_symtable = init_symtable(new_symtable);
-    // char *new_key = NULL;
-    // TNode *root_to_del = NULL;
+    TNode *root = NULL;
+    root = init_symtable(root);
+    add_tree(root);
 
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
@@ -691,8 +679,8 @@ void for_s()
     // body
     while(statement());
 
-    // delete_symtable(new_symtable);
-    // delete_node(root_to_del, new_key);
+    delete_symtable(root);
+    delete_tree();
 }
 
 /**

@@ -81,16 +81,14 @@ void check_suspected(TNode *root)
     }
 }
 
-void add_tree(TNode *root)
+void add_tree()
 {
     tree_index++;
-    array_of_trees[tree_index] = NULL;
     array_of_trees[tree_index] = malloc(sizeof(TNode *));
     if (array_of_trees[tree_index] == NULL)
     {
         intern_error();
     }
-    array_of_trees[tree_index] = root;
 }
 
 bool search_all_trees(char *key)
@@ -140,7 +138,7 @@ int program()
             delete_symtable(array_of_trees[i]);
         }
     }
-    
+
     CHECK_TOKEN(EoF);
     return error_value;
 }
@@ -150,9 +148,9 @@ int program()
  */
 bool func()
 {
-    TNode *root = NULL;
-    root = init_symtable(root);
-    add_tree(root);
+    add_tree();
+    array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
+
     TData new_data;
     new_data.type = ID;
     new_data.defined = true;
@@ -171,7 +169,7 @@ bool func()
     while(statement());
 
     delete_symtable(array_of_trees[tree_index]);
-    delete_symtable(root);
+    //delete_symtable(root);
     delete_tree();
     return true;
 }
@@ -618,9 +616,9 @@ void function_call(Token id)
  */
 void if_s()
 {
-    TNode *root = NULL;
-    root = init_symtable(root);
-    add_tree(root);
+    add_tree();
+    array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
+
 
     expression();
     GET_AND_CHECK(BRACKET_LEFT);
@@ -667,9 +665,9 @@ void assignment_s(int number_of_id)
  */
 void for_s()
 {
-    TNode *root = NULL;
-    root = init_symtable(root);
-    add_tree(root);
+    add_tree();
+    array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
+
 
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
@@ -750,11 +748,11 @@ void expression()
     }
     else if(CHECK_NO_ERROR(STRING))
     {
-        
+
     }
     else if(CHECK_NO_ERROR(FLOAT64))
     {
-        
+
     }
     else
     {

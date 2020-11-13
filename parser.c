@@ -7,22 +7,33 @@
 
 #include "parser.h"
 
-#define GET_TOKEN()  do{ m.current_token = get_next_token(stdin); \
-                    (m.current_token.type == EOL)? m.current_line++ : 0 ; \
-                    (m.current_token.type == ERROR)? (lexical_error(m.current_line), 1) : 0 ;}while(0)
-#define CHECK_TOKEN(Type) ((m.current_token.type == Type)? true : \
-        (fprintf(stderr,"In function %s on line %d\n ",__func__, __LINE__) , syntax_error(Type,m.current_line) , false))
-#define CHECK_NO_ERROR(Type) ((m.current_token.type == Type)? true : false)
-#define GET_AND_CHECK(Type) do {GET_TOKEN(); CHECK_TOKEN(Type);}while(0)
-#define IS_DATA_TYPE() (m.current_token.type == KEYWORD && \
-                       (m.current_token.data.k == K_STRING ||\
-                        m.current_token.data.k == K_INT ||\
-                        m.current_token.data.k == K_FLOAT64))? true : (syntax_error(m.current_token.type,m.current_line),false)
+#define GET_TOKEN()  \
+        do{ m.current_token = get_next_token(stdin); \
+            (m.current_token.type == EOL)? m.current_line++ : 0 ; \
+            (m.current_token.type == ERROR)? (lexical_error(m.current_line), 1) : 0 ;\
+        }while(0)
+
+#define CHECK_TOKEN(Type) \
+        ((m.current_token.type == (Type))? true : \
+        (syntax_error(m.current_token.type,m.current_line), \
+        ((m.current_token.type == ID || m.current_token.type == STRING)? \
+        free(m.current_token.data.s),false : false), false))
+
+#define CHECK_NO_ERROR(Type) ((m.current_token.type == (Type))? true : false)
+
+#define GET_AND_CHECK(Type) do {GET_TOKEN(); CHECK_TOKEN((Type));}while(0)
+
+#define IS_DATA_TYPE() \
+        (m.current_token.type == KEYWORD && \
+        (m.current_token.data.k == K_STRING || \
+         m.current_token.data.k == K_INT || \
+         m.current_token.data.k == K_FLOAT64))? \
+         true : (syntax_error(m.current_token.type,m.current_line),false)
 
 //global
 Metadata m = {.current_line = 1, .index = 0, .local_table = NULL, .suspected = NULL};
 TNode *node;
-TNode *array_of_trees[100];
+TNode *array_of_trees[100]; // this could be macro
 int tree_index = -1;
 
 /**
@@ -84,11 +95,7 @@ void check_suspected(TNode *root)
 void add_tree()
 {
     tree_index++;
-    array_of_trees[tree_index] = malloc(sizeof(TNode *));
-    if (array_of_trees[tree_index] == NULL)
-    {
-        intern_error();
-    }
+    array_of_trees[tree_index] = NULL;
 }
 
 bool search_all_trees(char *key)
@@ -413,6 +420,7 @@ bool statement()
         int number_of_id = 1;
         bool tmp;
         // assignment to var statement with multiple ID
+        
         if (CHECK_NO_ERROR(COMMA))
         {
             tmp = search_all_trees(id_name);
@@ -431,13 +439,14 @@ bool statement()
                 if (!CHECK_TOKEN(ID))
                 {
                     break;
-                }
-
+                }         
                 tmp = search_all_trees(m.current_token.data.s);
                 if (tmp == false)
                 {
                     no_definition_error(m.current_token.data.s, m.current_line);
                 }
+
+                free(m.current_token.data.s);
 
                 number_of_id++;
                 GET_TOKEN();
@@ -749,7 +758,7 @@ void expression()
     }
     else if(CHECK_NO_ERROR(STRING))
     {
-
+        free(m.current_token.data.s);
     }
     else if(CHECK_NO_ERROR(FLOAT64))
     {
@@ -796,7 +805,7 @@ bool expect_token(Token_type t_type, Keyword k)
     while(true)
     {
         GET_TOKEN();
-        if (m.current_token.type == t_type && ((k == K_ERROR)? true : m.current_token.data.k == k))
+        if (CHECK_NO_ERROR(t_type) && ((k == K_ERROR)? true : m.current_token.data.k == k))
         {
             return true;
         }

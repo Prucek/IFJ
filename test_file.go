@@ -13,7 +13,7 @@ func main (i int, b string)(){
 
         ahoj := a
         id := 5
-        id1  ,id2 , id3,_ = a, b,c,d
+        id1 ,id2 , id = a, b
         return ahoj
         if a {
                 j :=1
@@ -32,10 +32,10 @@ func main (i int, b string)(){
 }
 
 func ahoj(){
-    //ahoj = a
+    ahoj = a
     od := 5
     id := 5
-        for a:=3;a < 3; a = a + 1 {
+        for ;a ;  {
                 if a{
                         id = 5
                         for a:=0;a;a=5{
@@ -48,9 +48,9 @@ func ahoj(){
                 }
                 ahoj()
                 dobry_den("ahoj",24)
-                //blablabla()
+                blablabla()
         }
-    bebi = s
+    bebi = "hello"
     id = 5
 }
 

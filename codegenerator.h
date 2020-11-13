@@ -1,3 +1,10 @@
+/**
+ * @file codegenerator.h
+ * @authors Peter Rucek ...
+ * @date 13 Nov 2020
+ * @brief Inteface for codegenerator.c
+ */
+
 // GF
 // LF
 // TF
@@ -73,3 +80,27 @@
 // EXIT ⟨symb⟩
 // BREAK 
 // DPRINT ⟨symb⟩
+
+
+
+#ifndef _CODEGENERATOR_H_
+#define _CODEGENERATOR_H_
+
+#include "dynamicstring.h"
+#include <stdio.h>
+
+bool gen_header();
+
+void gen_dispose();
+
+bool gen_func_header(char *func_name);
+
+bool gen_main_end();
+
+bool gen_print();
+
+bool gen_func_end();
+
+void flush();
+
+#endif

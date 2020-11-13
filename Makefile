@@ -8,7 +8,7 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 # compiler : parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o
 # 	$(CC) $(CFLAGS) -o $@ $^
 
-all: lexer-test dynamicstring-test symtable-test parser-test
+all: lexer-test dynamicstring-test symtable-test parser-test codegenerator-test
 
 parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o
 	$(CC) $(CFLAGS) -o $@ $^
@@ -22,6 +22,12 @@ dynamicstring-test: dynamicstring-test.o dynamicstring.o error.o
 symtable-test: symtable-test.o symtable.o error.o
 	$(CC) $(CFLAGS) -o $@ $^
 
+codegenerator-test: dynamicstring.o codegenerator-test.o codegenerator.o error.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+code-test: codegenerator-test
+	./codegenerator-test >out
+	./ic20int out
 # No need
 # lexer.o: lexer.c lexer.h dynamicstring.h error.h
 

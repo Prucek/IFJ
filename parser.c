@@ -123,8 +123,10 @@ void delete_tree() //deletes youngest tree
 int program()
 {
     m.global_table = init_symtable(m.global_table);
+
     prolog();
     while(func());
+
     node = search_symtable(m.global_table, "main");
     if (node == NULL)
     {
@@ -328,24 +330,24 @@ void header_arg()
 
         switch (m.current_token.data.k)
         {
-        case K_INT:
-            new_data_var.type = T_INT;
-            new_data_func.arg_arr[m.index++] = T_INT;
-            m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter
-            break;
-        case K_FLOAT64:
-            new_data_var.type = T_FLOAT64;
-            new_data_func.arg_arr[m.index++] = T_FLOAT64;
-            m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter
-            break;
-        case K_STRING:
-            new_data_var.type = T_STRING;
-            new_data_func.arg_arr[m.index++] = T_STRING;
-            m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter
-            break;
+            case K_INT:
+                new_data_var.type = T_INT;
+                new_data_func.arg_arr[m.index++] = T_INT;
+                m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter
+                break;
+            case K_FLOAT64:
+                new_data_var.type = T_FLOAT64;
+                new_data_func.arg_arr[m.index++] = T_FLOAT64;
+                m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter
+                break;
+            case K_STRING:
+                new_data_var.type = T_STRING;
+                new_data_func.arg_arr[m.index++] = T_STRING;
+                m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
     }
     free(prev.data.s);      //< free token id
@@ -439,7 +441,8 @@ bool statement()
                 if (!CHECK_TOKEN(ID))
                 {
                     break;
-                }         
+                }  
+                       
                 tmp = search_all_trees(m.current_token.data.s);
                 if (tmp == false)
                 {

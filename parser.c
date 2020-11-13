@@ -234,7 +234,7 @@ bool func_header()
     {
         GET_AND_CHECK(BRACKET_LEFT);
     }
-    GET_AND_CHECK(EOL);
+    
     if (!strcmp(func_id, "main"))
     {
         if (new_data_func.param_counter != 0 || new_data_func.ret_counter != 0)
@@ -244,8 +244,9 @@ bool func_header()
     }
 
     m.global_table = insert_symtable(m.global_table, new_data_func, func_id);    //< insert whole func
-
     free(last_func.data.s);     //< to free token id
+
+    GET_AND_CHECK(EOL);
     return true;
 }
 

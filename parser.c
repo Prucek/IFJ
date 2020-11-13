@@ -772,7 +772,15 @@ void prolog()
         syntax_error(KEYWORD,m.current_line);
     }
 
-    if (!expect_token(ID,K_ERROR) || 0) // TODO access symbol table t.data.s == main
+    if (expect_token(ID,K_ERROR))
+    {
+        if (strcmp("main",m.current_token.data.s) != 0)
+        {
+            syntax_error(m.current_token.type,m.current_line);
+        }
+        free(m.current_token.data.s);
+    }
+    else
     {
         syntax_error(m.current_token.type,m.current_line);
     }

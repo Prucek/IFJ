@@ -11,6 +11,7 @@
 #include "lexer.h"
 #include "error.h"
 #include "symtable.h"
+#include "codegenerator.h"
 
 
 typedef struct
@@ -31,7 +32,7 @@ TData init_new_data(TData new_data);
 
 void check_suspected(TNode *root);
 
-int program();
+void program();
 
 bool func();
 
@@ -39,7 +40,7 @@ void header_arg();
 
 void header_ret();
 
-bool func_header();
+bool func_header(bool *is_main);
 
 void prolog();
 

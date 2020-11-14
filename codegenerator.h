@@ -99,6 +99,8 @@ bool gen_main_end();
 
 bool gen_print();
 
+bool gen_code_end();
+
 bool gen_func_end();
 
 void flush();

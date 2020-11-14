@@ -9,11 +9,11 @@ func main(){
 
 }
 
-func main (i int, b string)(){
+func maine (i int, b string)(){
 
         ahoj := a
         id := 5
-        id1 ,id2 , id = a, b
+        ahoj, id = a, b
         return ahoj
         if a {
                 j :=1
@@ -26,13 +26,13 @@ func main (i int, b string)(){
         }else{
                 //id1 , id2 , id3,_ = a, b,c,d
         }
-        ahoj := b
+        //ahoj := b
         id = 5
         return masci,aj
 }
 
 func ahoj(){
-    ahoj = a
+    //ahoj = a
     od := 5
     id := 5
         for ;a ;  {
@@ -48,9 +48,9 @@ func ahoj(){
                 }
                 ahoj()
                 dobry_den("ahoj",24)
-                blablabla()
+                //blablabla()
         }
-    bebi = "hello"
+    bebi := "hello"
     id = 5
 }
 

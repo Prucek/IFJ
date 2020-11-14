@@ -10,5 +10,6 @@
 int main()
 {
     program();
+    fprintf(stderr,"Error code: %d\n",error_value);
     return error_value;
 }

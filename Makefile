@@ -10,7 +10,7 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 all: lexer-test dynamicstring-test symtable-test parser-test codegenerator-test
 
-parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o
+parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o codegenerator.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 lexer-test: lexer.o lexer-test.o dynamicstring.o error.o symtable.o
@@ -28,6 +28,9 @@ codegenerator-test: dynamicstring.o codegenerator-test.o codegenerator.o error.o
 code-test: codegenerator-test
 	./codegenerator-test >out
 	./ic20int out
+
+pars-test: parser-test
+	./parser-test <test_file.go
 # No need
 # lexer.o: lexer.c lexer.h dynamicstring.h error.h
 
@@ -49,7 +52,7 @@ code-test: codegenerator-test
 
 clean:
 	rm -rf *.o
-	rm -rf lexer-test dynamicstring-test symtable-test parser-test
+	rm -rf lexer-test dynamicstring-test symtable-test parser-test codegenerator-test
 
 zip:
 	rm -rf *.o

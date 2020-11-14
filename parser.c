@@ -30,6 +30,8 @@
          m.current_token.data.k == K_FLOAT64))? \
          true : (syntax_error(m.current_token.type,m.current_line),false)
 
+#define GENERATE(func) if ((!func)) intern_error()
+
 //global
 Metadata m = {.current_line = 1, .index = 0, .local_table = NULL, .suspected = NULL};
 TNode *node;
@@ -120,9 +122,11 @@ void delete_tree() //deletes youngest tree
 /**
  * @brief Syntax of program
  */
-int program()
+void program()
 {
     m.global_table = init_symtable(m.global_table);
+
+    GENERATE(gen_header());
 
     prolog();
     while(func());
@@ -149,7 +153,17 @@ int program()
     }
 
     CHECK_TOKEN(EoF);
-    return error_value;
+    
+    GENERATE(gen_code_end());
+
+    if (error_value == 0) // No error
+    {
+        flush();
+    }
+    else
+    {
+        gen_dispose();
+    }
 }
 
 /**
@@ -169,13 +183,23 @@ bool func()
 
     array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, "_");
 
-    if(!func_header())
+    bool is_main = false;
+    if(!func_header(&is_main))
     {
         return false;
     }
 
     // body
     while(statement());
+
+    if(is_main)
+    {
+        GENERATE(gen_main_end());
+    }
+    else
+    {
+        GENERATE(gen_func_end());
+    }
 
     delete_symtable(array_of_trees[tree_index]);
     //delete_symtable(root);
@@ -186,7 +210,7 @@ bool func()
 /**
  * @brief Checks syntax of function header
  */
-bool func_header()
+bool func_header(bool *is_main)
 {
     // checking EOF
     if (!expect_token(KEYWORD,K_FUNC))
@@ -200,13 +224,14 @@ bool func_header()
 
     // function id
     GET_AND_CHECK(ID);
-    // HERE add m.actual_token to symtable function id
 
     char *func_id = m.current_token.data.s;  //< store func id cause insertion to symtable will be later
     if ((node = search_symtable(m.global_table, func_id)) != NULL)
     {
         re_definition_error(func_id, m.current_line);    //< redefinition of func is forrbiden
     }
+
+    GENERATE(gen_func_header(func_id));
 
     new_data_func = init_new_data(new_data_func);
     new_data_func.defined = true;
@@ -244,6 +269,8 @@ bool func_header()
     
     if (!strcmp(func_id, "main"))
     {
+        *is_main = true;
+
         if (new_data_func.param_counter != 0 || new_data_func.ret_counter != 0)
         {
             param_error(func_id, m.current_line);    //< func main cant have param or ret value
@@ -268,7 +295,6 @@ void header_ret()
         return;
     }
     if (IS_DATA_TYPE())
-    // HERE add return value of function to symtable
     {
         new_data_func.ret_counter++;
         //add m.actual_token.data.k to local_table for reference in the current block
@@ -320,7 +346,6 @@ void header_arg()
     new_data_var = init_new_data(new_data_var);
     Token prev = m.current_token;
 
-    // HERE add parameters of function to symtable
     GET_TOKEN();
     if (IS_DATA_TYPE())
     {

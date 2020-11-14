@@ -24,16 +24,7 @@ bool gen_header()
     CODE("DEFVAR GF@expr_result\n");
     
     CODE("JUMP main\n");
-
     return true;
-}
-
-/**
- * @brief free allocated code buffer
- */
-void gen_dispose()
-{
-    dynstr_free(&code);
 }
 
 /**
@@ -44,16 +35,20 @@ bool gen_func_header(char *func_name)
     CODE("LABEL "); CODE(func_name); CODE("\n");
     CODE("CREATEFRAME\n");
     CODE("PUSHFRAME\n");
-
     return true;
 }
 
 bool gen_print()
 {
     CODE("WRITE string@Hello\\032World!\\010\n");
-
     return true;
 }
+
+// bool gen_var_def(char *id)
+// {
+//     CODE("DEFVAR "); CODE(id); CODE("\n");
+//     return true;
+// }
 
 /**
  * @brief Generate main end
@@ -61,8 +56,8 @@ bool gen_print()
 bool gen_main_end()
 {
     CODE("POPFRAME\n");
-    CODE("CLEARS");
-
+    CODE("CLEARS\n");
+    CODE("JUMP end_of_code\n");
     return true;
 }
 
@@ -72,9 +67,25 @@ bool gen_main_end()
 bool gen_func_end()
 {
     CODE("POPFRAME\n");
-    CODE("RETURN");
-
+    CODE("RETURN\n");
     return true;
+}
+
+/**
+ * @brief Generate label where to jump after main end, so other functions are not executed
+ */
+bool gen_code_end()
+{
+    CODE("LABEL end_of_code\n");
+    return true;
+}
+
+/**
+ * @brief free allocated code buffer
+ */
+void gen_dispose()
+{
+    dynstr_free(&code);
 }
 
 /**

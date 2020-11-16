@@ -12,6 +12,7 @@
     fprintf(stderr, "**TESTFAIL " __FILE__"> %s** "fmt"\n", __func__, ##__VA_ARGS__)
 #define setError() if(error!=true) error=true
 
+// Customized failure messages
 #define TESTFAIL_TYPE "Token no.%d's TYPE does not match the expected type (src[%d:%d])"
 #define TESTFAIL_DATA "Token no.%d's DATA does not match the expected data (src[%d:%d])"
 
@@ -139,6 +140,8 @@ static void lexAgainst(Token expected[])
 /**
  * Tokenize the contents of example program no 1
  * Pass when Llexer output matches expected output, else throw error
+ * 
+ * @todo Make this function call testfail() to achieve more precise failure message
  */
 void test_goSource1()
 {

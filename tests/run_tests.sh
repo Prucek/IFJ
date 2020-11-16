@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-
 ###########################################
-# TODO
-#
-# output failures in run_tests.sh
-# globalize a testlib.h interface to enforce standardized test suites
+## Compiles & runs every test suite (dependent on makefile)
+## and displays results summary
+##
+## Author: Matej Jurik
 ###########################################
 
 # Config & funcs

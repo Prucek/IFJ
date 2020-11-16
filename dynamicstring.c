@@ -103,6 +103,36 @@ int add_string(dynamic_string *str, char *str_to_copy)
     return 1;
 }
 
+
+/**
+ * @brief Append a variable number of linefeed terminated strings to dynstr's buffer
+ * @param str Valid pointer to initialized dynstr
+ * @param ... List of strings to be appended
+ * @return 1 if append was successfull,
+ *         0 if allocation error occured
+ */
+int add_strings(dynamic_string *str, ...)
+{
+    va_list args;
+
+    va_start(args, str); //< Variadic args come after str param
+
+    char *str_to_copy = va_arg(args, char*); //< Get next va_arg
+
+    // args' size can not be determined - use linefeed termination
+    while(strcmp(str_to_copy, "\n") != 0) 
+    {
+        if (!add_string(str, str_to_copy)) return 0;
+
+        str_to_copy = va_arg(args, char*); 
+    }
+
+    if (!add_char(str, '\n')) return 0; 
+
+    va_end(args);
+    return 1;
+}
+
 /**
  * @brief Destruct dynstr - Free used memory and reset other members to default values.
  *        Allows to re-use buffer, needs to be used before a buffer is used again.

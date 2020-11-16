@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "error.h"
 
 #define BLOCK 8
@@ -28,6 +29,8 @@ void dynstr_init(dynamic_string *str);
 int add_char(dynamic_string *str, char c);
 
 int add_string(dynamic_string *str, char *str_to_copy);
+
+int add_strings(dynamic_string *str, ...);
 
 void dynstr_free(dynamic_string *str);
 

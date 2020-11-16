@@ -9,6 +9,9 @@
 
 #define CODE(_code) if(!add_string(&code,(_code)))return false;
 
+// Variadic args MUST be strings (otherwise segfault) & last arg must be "\n" (otherwise infinite cycle)
+#define CODELN(...) if(!add_strings(&code, ##__VA_ARGS__)) return false;
+
 dynamic_string code; // code will be stored here and flushed in the end of compilation to stdout if compilation went successful
 
 /**
@@ -32,7 +35,8 @@ bool gen_header()
  */
 bool gen_func_header(char *func_name)
 {
-    CODE("LABEL "); CODE(func_name); CODE("\n");
+    // CODE("LABEL "); CODE(func_name); CODE("\n"); // Old
+    CODELN("LABEL ", func_name, "\n");
     CODE("CREATEFRAME\n");
     CODE("PUSHFRAME\n");
     return true;

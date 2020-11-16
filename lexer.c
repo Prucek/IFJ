@@ -3,9 +3,6 @@
  * @authors Peter Rucek, Marek Micek, Rebeka Cernianska, Matej Jurik
  * @date 15 Oct 2020
  * @brief Lexer implementation
- *
- * @todo * Decide on what FSM should behave like in S_ERROR state
- *       * Handle EOL requested/optional/required problem
  */
 
 #include "lexer.h"
@@ -579,43 +576,9 @@ Token get_next_token(FILE *f)
 
             // Unwanted lexeme
             case S_ERROR:
-
-                /** DISABLED ERROR MSG OUTPUTING UNTIL NEXT MEETING */
-
-                // dynstr_init(&error_buffer);
-
-                // // Error caught while tokenizing string or number
-                // if (buffer.alloc_len != 0) {
-                //     // Store token data buf into error buf so it contains the whole 'error causing' string
-                //     if (add_string(&error_buffer, buffer.buff))
-                //     {
-                //         // Store the rest of the line being tokenized
-                //         if (c != '\n')
-                //         {
-                //             add_char(&error_buffer, c); //< Add last scanned char
-
-                //             while (!(isspace(c = fgetc(f))))
-                //                 add_char(&error_buffer, c);
-                //         }
-                //     }
-                //     dynstr_free(&buffer);
-                // }
-                // // Error caught by tokenizing an unsupported character
-                // else
-                // {
-                //     add_char(&error_buffer, c);
-                // }
-
-                // if (c == '\n') //< Return EoL back to be tokenized
-                //     ungetc(c, f);
-
-                // lexical_error(error_buffer.buff, line);
-                // dynstr_free(&buffer);
-                // dynstr_free(&error_buffer);
-
                 t.type = ERROR; //< (null)
                 t.data.i = 1;   //< E_LEXICAL
-                return t;       //< mozno lepsie vraciat NULL, no treba zmenit implementaciu
+                return t;
                 break;
 
             default:

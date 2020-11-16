@@ -10,6 +10,23 @@ IFJ20 is a simplified version of the programming language Go.
 * Marek Micek, xmicek08
 * Peter Rucek, xrucek00
 
+## Testing
+
+All module tests are stored inside of '/tests' subfolder
+
+To run all tests, use:
+
+```bash
+make compiler-test
+```
+
+### Testing Conventions
+
+* In cases like failed malloc, allways use `testerror(TESTERROR_*)` to exit testing
+* To represent a failing test, always use `testfail(TESTFAIL_*)` where `TESTFAIL_*` represents a failure message
+* Add customized test failure messages by defining a new `TESTFAIL_*` macros
+* Add customized test cases by implementing new `test_*` functions inside of respective test suites
+
 <!-- ## Bugs -->
 
 ____________

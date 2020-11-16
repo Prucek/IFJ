@@ -9,7 +9,8 @@
 
 #define testerror(error) perror("**TESTERROR " __FILE__ "** "error)
 #define testfail(fmt, ...) \
-    fprintf(stderr, "**TESTFAIL " __FILE__"** "fmt"\n", ##__VA_ARGS__) 
+    fprintf(stderr, "**TESTFAIL " __FILE__"> %s** "fmt"\n", __func__, ##__VA_ARGS__)
+#define setError() if(error!=true) error=true
 
 #define TESTFAIL_TYPE "Token no.%d's TYPE does not match the expected type (src[%d:%d])"
 #define TESTFAIL_DATA "Token no.%d's DATA does not match the expected data (src[%d:%d])"
@@ -22,9 +23,9 @@ bool error = false;
 
 void setUp()
 {
-    goSource1 = fopen("test_source1.go", "r");
-    goSource2 = fopen("test_source3.go", "r");
-    goSource3 = fopen("test_source2.go", "r");
+    goSource1 = fopen("source1.go", "r");
+    goSource2 = fopen("source3.go", "r");
+    goSource3 = fopen("source2.go", "r");
 
     if (!goSource1)
     {
@@ -83,8 +84,7 @@ static void lexAgainst(Token expected[])
                 if (curTok.data.i != expected[tokIdx].data.i)
                 {
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    error = true;
-                    return;
+                    setError();
                 }
             }
             else if (expected[tokIdx].type == FLOAT64)
@@ -92,8 +92,7 @@ static void lexAgainst(Token expected[])
                 if (curTok.data.d != expected[tokIdx].data.d)
                 {
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    error = true;
-                    return;
+                    setError();
                 }
             }
             else if (expected[tokIdx].type == KEYWORD)
@@ -101,18 +100,15 @@ static void lexAgainst(Token expected[])
                 if (curTok.data.k != expected[tokIdx].data.k)
                 {
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    error = true;
-                    return;
+                    setError();
                 }                
             }
             else if (expected[tokIdx].type == STRING || expected[tokIdx].type == ID)
             {
                 if (strcmp(curTok.data.s, expected[tokIdx].data.s) != 0)
                 {
-                    printf("%s ::: %s\n", curTok.data.s, expected[tokIdx].data.s);
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    error = true;
-                    return;
+                    setError();
                 }
             }
             else
@@ -120,8 +116,7 @@ static void lexAgainst(Token expected[])
                 if (curTok.data.s != NULL) //< All other token types hold NULL as their data
                 {
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    error = true;
-                    return;
+                    setError();
                 }
 
                 if (curTok.type == EOL)
@@ -129,15 +124,14 @@ static void lexAgainst(Token expected[])
                     curLine++;
                     tokenOffset = 0;
                 }
-            }
+            } //< Dataparse end
 
             tokIdx++;
             tokCnt++;
-        } //< Dataparse end
+        }
         else {
             testfail(TESTFAIL_TYPE, tokCnt, curLine, tokenOffset);
-            error = true;
-            return;
+            setError();
         } //< Typeparse end
     }
 }

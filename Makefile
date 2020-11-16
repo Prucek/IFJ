@@ -10,6 +10,9 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 all: lexer-test dynamicstring-test symtable-test parser-test codegenerator-test
 
+compiler-test: 
+	@bash ./tests/run_tests.sh
+
 parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o codegenerator.o
 	$(CC) $(CFLAGS) -o $@ $^
 

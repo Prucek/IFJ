@@ -8,9 +8,8 @@
 # globalize a testlib.h interface to enforce standardized test suites
 ###########################################
 
-
-
 # Config & funcs
+IFS=$'\n' # Internal Field Separator
 
 green="[1;32m"
 red="[1;31m"
@@ -35,35 +34,45 @@ echo
 for test in ${tests[@]}; do
     echo -n "Testing ${test:2}: "
 
-    outfile="./$test.out"
+    outfile="./${test:6}.out"
     $test 2>$outfile # Execute test
 
-    curr_errors=`grep TESTERROR $outfile`
-    if [[ -z $curr_errors ]]; then
+    # Split to array elements on linefeeds
+    curr_errors=(`grep TESTERROR $outfile`) 
 
-        curr_fails=`grep TESTFAIL $outfile`
-        if [[ -z $curr_fails ]]; then 
+    if [[ ${#curr_errors[@]} -eq 0 ]]; then
+
+        curr_fails=(`grep TESTFAIL $outfile`)
+
+        if [[ ${#curr_fails[@]} -eq 0 ]]; then 
             # Test ran successfully
             print $green "OK!"
         else
             # Test failed
-            print $red "FAILED!"
+            print $red "FAILED! (${#curr_fails[@]} failures)"
             # Print current test's failures
-            echo -ne "\t"
-            echo $curr_fails
+            for fail in ${curr_fails[@]}; do
+                printf "  "
+                echo $fail
+            done
         fi
 
     else
         # An error occured inside of test
-        print $red "FAILED!"
+        print $red "ERROR!"
         # Print current test's errors
-        echo -ne "\t"
-        echo $curr_errors
+        for error in ${curr_errors[@]}; do
+                printf "  "
+                echo $error
+        done
     fi
-done 
+done
 
 make -s clean
-rm -f test_*.out
+rm -f _*.out
 
 # Exit out of ./tests
 cd ..
+
+# Reset IFS to spaces
+unset IFS 

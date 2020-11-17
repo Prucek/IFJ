@@ -125,9 +125,9 @@ void param_error(char *id, int line)
 }
 
 
-void other_error()
+void other_error(int line)
 {
-    fprintf(stderr, "****  Another kind of semantic error !  ****\n");
+    fprintf(stderr, "****  Another kind of semantic error on line: %d!  ****\n", line);
     if (error_value == 0)
     {
         error_value = 8;

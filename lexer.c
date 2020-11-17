@@ -329,10 +329,10 @@ Token get_next_token(FILE *f)
                     add_char(&buffer, c);
                     state = S_EXPO_1;
                 }
-                else if (isalpha(c))
-                {
-                    state = S_ERROR;
-                }
+                // else if (isalpha(c))
+                // {
+                //     state = S_ERROR;
+                // }
                 else
                 {
                     state = S_INT;

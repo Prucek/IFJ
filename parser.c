@@ -310,7 +310,7 @@ void program()
     GENERATE(gen_header());
 
     prolog();
-    while(1)
+    while(true)
     {
         if (!func() && (m.current_token.type == EoF))
         {
@@ -410,22 +410,32 @@ bool func_header(bool *is_main)
     }
 
     // function id
-    GET_AND_CHECK(ID);
+    bool missing_id = false;
+    Token last_func;
+    char *func_id;
 
-    char *func_id = m.current_token.data.s;  //< store func id cause insertion to symtable will be later
-    bool is_built = is_built_fun(func_id);
-
-    if ((node = search_symtable(m.global_table, func_id)) != NULL || is_built)
+    GET_TOKEN();
+    if (!CHECK_TOKEN(ID))
     {
-        re_definition_error(func_id, m.current_line);    //< redefinition of func is forrbiden
+        missing_id = true;
     }
+    else 
+    {
+        func_id = m.current_token.data.s;  //< store func id cause insertion to symtable will be later
+        bool is_built = is_built_fun(func_id);
 
-    GENERATE(gen_func_header(func_id));
+        if ((node = search_symtable(m.global_table, func_id)) != NULL || is_built)
+        {
+            re_definition_error(func_id, m.current_line);    //< redefinition of func is forrbiden
+        }
 
-    new_data_func = init_new_data(new_data_func);
-    new_data_func.defined = true;
-    new_data_func.is_function = true;
-    Token last_func = m.current_token;   //< to make correct free later
+        GENERATE(gen_func_header(func_id));
+
+        new_data_func = init_new_data(new_data_func);
+        new_data_func.defined = true;
+        new_data_func.is_function = true;
+        last_func = m.current_token;   //< to make correct free later        
+    }
 
     // function parameters
     GET_AND_CHECK(PARENTHESIS_LEFT);
@@ -456,18 +466,21 @@ bool func_header(bool *is_main)
         GET_AND_CHECK(BRACKET_LEFT);
     }
 
-    if (!strcmp(func_id, "main"))
+    if (!missing_id)
     {
-        *is_main = true;
-
-        if (new_data_func.param_counter != 0 || new_data_func.ret_counter != 0)
+        if (!strcmp(func_id, "main"))
         {
-            param_error(func_id, m.current_line);    //< func main cant have param or ret value
-        }
-    }
+            *is_main = true;
 
-    m.global_table = insert_symtable(m.global_table, new_data_func, func_id);    //< insert whole func
-    free(last_func.data.s);     //< to free token id
+            if (new_data_func.param_counter != 0 || new_data_func.ret_counter != 0)
+            {
+                param_error(func_id, m.current_line);    //< func main cant have param or ret value
+            }
+        }
+
+        m.global_table = insert_symtable(m.global_table, new_data_func, func_id);    //< insert whole func
+        free(last_func.data.s);     //< to free token id
+    }
 
     GET_AND_CHECK(EOL);
     return true;
@@ -595,8 +608,13 @@ bool statement()
     {
         GET_TOKEN();
     }
-
-    if (CHECK_NO_ERROR(BRACKET_RIGHT))
+    
+    if (CHECK_NO_ERROR(EoF))
+    {
+        syntax_error(m.current_token.type, m.current_line);
+        return false;
+    }
+    else if (CHECK_NO_ERROR(BRACKET_RIGHT))
     {
         return false;
     }
@@ -846,6 +864,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
         else
         {
             syntax_error(m.current_token.type,m.current_line);
+            break;
         }
     }
     if (sem_error)
@@ -971,6 +990,11 @@ void return_s()
         }
         else if (CHECK_NO_ERROR(EOL))
         {
+            break;
+        }
+        else if (CHECK_NO_ERROR(EoF))
+        {
+            syntax_error(m.current_token.type,m.current_line);
             break;
         }
         else

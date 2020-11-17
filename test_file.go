@@ -39,8 +39,8 @@ func maine (i int, b string)(){
 func ahoj(){
     //ahoj = a
     //i = 5
-    od := 5
-    id := 5
+    od := (5*8)/0
+    id := (od*2)/4+5 != 1 +9
     len("ahoj")
     inputf(25.4)
     inputf()
@@ -48,8 +48,8 @@ func ahoj(){
 
         for ;a ;  {
                 if a{
-                        id = 5
-                        for a:=0;a;a=5{
+                        id = id*id
+                        for a:=0; a!= 3;a=a +1{
                                 return 7
                         }
                 } else {
@@ -60,18 +60,20 @@ func ahoj(){
                 ahoj()
                 dobry_den("ahoj", 24)
                 preco(25, 4, 8.5)
+                main()
 
                 ///id, od = dobry_den("ahoj", 24.5)  //hadze syntakticku chybu vzdy ked priradujeme funkciu premennej, treba dorobit spravne express.
                 // takze nemozem poriadne otestovat ci sa zhoduje lava strana priradenia s poctom a navratov. hodnotami volanej funckie
                 
                 blablabla()
         }
-    bebi := "hello"
+    bebi := "hello"+"its"-"me"
     id = 5
 }
 
 func dobry_den (s string, i int) (int,string){
 
+        dobry_den()
 }
 
 func preco(i int, j int, k float64){

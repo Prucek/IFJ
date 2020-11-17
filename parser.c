@@ -694,7 +694,7 @@ bool statement()
         {
             if (!strcmp(id_name, "_"))
             {
-                other_error();
+                other_error(m.current_line);
             }
             tmp = search_symtable(array_of_trees[tree_index], id_name);
             if (tmp == false)
@@ -707,7 +707,7 @@ bool statement()
                 re_definition_error(id_name, m.current_line);
             }
 
-            expression(CA_Definition);
+            expression();
             CHECK_TOKEN(EOL);
         }
         // assignment to var statement
@@ -763,6 +763,11 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
         GET_TOKEN();
         if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
         {
+            if (!strcmp(id.data.s, "main"))     //< calling main is not allowed
+            {
+                other_error(m.current_line);
+                break;
+            }
             if (!(is_built))
             {
                 if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
@@ -882,7 +887,7 @@ void if_s()
     array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
 
-    expression(CA_If);
+    expression();
     CHECK_TOKEN(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
 
@@ -912,7 +917,11 @@ void assignment_s(unsigned number_of_id)
 {
     for (unsigned i = 1; i <= number_of_id; i++)
     {
-        expression(CA_Assignment);
+        if (!expression())
+        {
+            GET_AND_CHECK(EOL);
+            return;
+        }
         if (i == number_of_id)
         {
             break;
@@ -946,13 +955,13 @@ void for_s()
         GET_AND_CHECK(DEF_OF_VAR);
         array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
         free(id_name);
-        expression(CA_Definition);
+        expression();
         CHECK_TOKEN(SEMICLN);
     }
     else if (CHECK_TOKEN(SEMICLN)){;}
 
     // condition
-    expression(CA_For);
+    expression();
     CHECK_TOKEN(SEMICLN);
 
     // increment / decrement (can be epmty)
@@ -961,7 +970,7 @@ void for_s()
     {
         free(m.current_token.data.s);
         GET_AND_CHECK(VAR_ASSIGN);
-        expression(CA_For); //only one ???
+        expression(); //only one ???
         CHECK_TOKEN(BRACKET_LEFT);
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
@@ -982,7 +991,7 @@ void return_s()
 {
     while (true)
     {
-        expression(CA_Return);
+        expression();
 
         if (CHECK_NO_ERROR(COMMA))
         {
@@ -1012,206 +1021,275 @@ void return_s()
  * @post after parsing valid expression, m.current_token.type is EOL
  *       after parsing invalid expression, m.current_token.type ....
  */
-void expression(CurrentAction action)
+bool expression()
 {
     /** @todo Implement semantic analysis for variables & functions within expressions
      *        When reading ID and then "(" call function call and return
      */
 
-    switch (action)
+    // switch (action)
+    // {
+    // case CA_Assignment:
+    // case CA_If:
+    // case CA_For:
+    // case CA_Definition:
+    //     if (!__expression(EXPR_SIMPLE))
+    //     {
+    //         syntax_error(m.current_token.type, m.current_line);
+    //     }
+    //     break;
+    // case CA_Return:
+    //     // No. of return values semantics
+    //     if (!__expression(EXPR_SIMPLE))
+    //     {
+    //         syntax_error(m.current_token.type, m.current_line);
+    //     }
+    //     break;
+    // default:
+    //     intern_error();
+    //     break;
+    // }
+    bool func_call = false;
+    if (!expr(&func_call))
     {
-    case CA_Assignment:
-    case CA_If:
-    case CA_For:
-    case CA_Definition:
-        if (!__expression(EXPR_SIMPLE))
-        {
-            syntax_error(m.current_token.type, m.current_line);
-        }
-        break;
-    case CA_Return:
-        // No. of return values semantics
-        if (!__expression(EXPR_SIMPLE))
-        {
-            syntax_error(m.current_token.type, m.current_line);
-        }
-        break;
-    default:
-        intern_error();
-        break;
+        syntax_error(m.current_token.type,m.current_line);
     }
-}
-
-/**
- * @brief Parse a whole expression - entrypoint to expression parsing
- *        Serves as an abstraction of expression() to ignore CurrentAction decision tree
- * @param exprType Expression type indicator ( @see parser.h > tExpr for notes )
- * @return bool
- */
-bool __expression(tExpr exprType)
-{
-    return comparison(exprType);
-}
-
-/**
- * @brief Parse "operand => logical operator => operand" type of expressions
- * @param exprType Expression type indicator
- * @return bool
- */
-bool comparison(tExpr exprType)
-{
-    if (exprType == EXPR_SIMPLE) {
-        if (!term(exprType)) return false; //< Parse left operand only when parsing a simple expr
-    }
-    else {
-        term(exprType); //< Groupped expr -> move down according to precedence table
-    }
-
-    Token_type expected[] = {GT, LT, NE, LE, GE, EQ};
-    while (curtok_matches(expected, 6))
-    {
-        if (!term(EXPR_SIMPLE)) return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Parse "operand => add or sub operator => operand" type of expressions
- * @param exprType Expression type indicator
- * @return bool
- */
-bool term(tExpr exprType)
-{
-    if (exprType == EXPR_SIMPLE) {
-        if (!factor(exprType)) return false; //< Parse left operand only when parsing a simple expr
-    }
-    else {
-        factor(exprType); //< Groupped expr -> move down according to precedence table
-    }
-
-    Token_type expected[] = {ADD, SUB};
-    while(curtok_matches(expected, 2))
-    {
-        if (!factor(EXPR_SIMPLE)) return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Parse "operand => mul or div operator => operand" type of expressions and function calls
- *        After a successful parsing of expr literal, loads next token to be used
- *        as an operation depictor.
- *        Parsing of EXPR_GROUPPED expression type ( @see parser.h > tExpr ) begins here
- *        in order to maintain operator precedence
- * @param exprType Expression type indicator
- * @return bool
- */
-bool factor(tExpr exprType)
-{
-    if (exprType == EXPR_SIMPLE) { //< Parse left operand only when parsing a simple expr
-        if (!literal())
-            return false;
-        else
-        {
-            /** @todo Fix function literals + groupped expr */
-            if (CHECK_NO_ERROR(ID)) //< Check for function call
-            {
-                GET_TOKEN();
-                if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
-                {
-                    if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
-                    {
-                        // Function parsed - get next token
-                        GET_TOKEN();
-                    }
-                    else {
-                        return false;
-                    }
-                }
-                // Not a function call - continue as normal
-            }
-            else
-                GET_TOKEN(); //< If a literal was parsed successfully, get next token (operator)
-        }
-    }
-
-    Token_type expected[] = {MUL, DIV};
-    while(curtok_matches(expected, 2))
-    {
-        if (!literal()) return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Parse elementary parts of expression. Supports nested expressions.
- *        Note that groupped expressions are essentialy expressions with expr as left operand
- *        so calling __expression(EXPR_GROUPPED) ( @see expression() ) tries to parse only right
- *        operand.
- *        Also note that this function serves as the base case to the recursive descent parsing.
- * @return bool
- */
-bool literal()
-{
-    // IMPLEMENT SEMANTIC CHECKING (ID & FUNC)
-
-    GET_TOKEN();
-
-    Token_type expected[] = {INT, FLOAT64, STRING, ID};
-    if (curtok_matches(expected, 4))
-    {
+    if (func_call)
+        return false;
+    else
         return true;
+    
+}
+
+/**
+ * @brief Reads input for expressions and ajusts it
+ */
+bool input(int *input_token, bool *func_call)
+{
+    m.previous_token = m.current_token;
+    GET_TOKEN();
+    if (CHECK_NO_ERROR(ADD) || CHECK_NO_ERROR(SUB))
+    {
+        *input_token = PM;
+    }
+    else if (CHECK_NO_ERROR(MUL) || CHECK_NO_ERROR(DIV))
+    {
+        *input_token = MD;
     }
     else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
     {
-        if (!__expression(EXPR_SIMPLE)) return false; //< Parse nested (priority) expression
-
-        // GET_TOKEN();
-        if (CHECK_TOKEN(PARENTHESIS_RIGHT)) //< End of nested (priority) expression
+        if (m.previous_token.type == ID)
         {
-            GET_TOKEN();
-            if (!CHECK_TOKEN(EOL)) //< Check whether expression still continues
-            {
-                // Continue aftern nested expr
-                if (!__expression(EXPR_GROUPPED)) return false;
-            }
-
-            return true; //< Expression ends with EOL
+            function_call(m.previous_token,1,false); // todo 
+            *func_call = true;
         }
-        else { //< Nested expression has no exiting right parenthesis
-            return false;
-        }
+        *input_token = LP;
     }
-    else { //< Current token matches no valid expression tokens
+    else if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
+    {
+        *input_token = RP;
+    }
+    else if (CHECK_NO_ERROR(ID) || CHECK_NO_ERROR(INT) ||
+             CHECK_NO_ERROR(STRING) || CHECK_NO_ERROR(FLOAT64))
+    {
+        if (CHECK_NO_ERROR(ID) || CHECK_NO_ERROR(STRING))
+        {
+            if (CHECK_NO_ERROR(ID))
+            {
+                m.previous_token = m.current_token;
+            }
+            free(m.current_token.data.s);
+        }
+        *input_token = II;
+    }
+    else if (CHECK_NO_ERROR(GT) || CHECK_NO_ERROR(LT) ||
+             CHECK_NO_ERROR(EQ) || CHECK_NO_ERROR(NE) ||
+             CHECK_NO_ERROR(LE) || CHECK_NO_ERROR(GE)   )
+    {
+        *input_token = RO;
+    }
+    else if (CHECK_NO_ERROR(EOL) || CHECK_NO_ERROR(COMMA) ||
+             CHECK_NO_ERROR(SEMICLN) || CHECK_NO_ERROR(BRACKET_LEFT))
+    {
+        *input_token = EN;
+    }
+    else
+    {
         return false;
     }
-}
-
-/**
- * @brief Check if current token is in a given checkList
- * @param checkList Array of tokens to check the current token against
- * @param listSize Size of checkList
- * @return bool
- */
-bool curtok_matches(Token_type checkList[], int listSize)
-{
-    bool match = false;
-
-    for (int idx = 0; idx < listSize; idx++)
-    {
-        if (m.current_token.type == checkList[idx])
-        {
-            match = true;
-            break;
-        }
-    }
-
-    if (!match) return false;
     return true;
 }
+
+// /**
+//  * @brief Parse a whole expression - entrypoint to expression parsing
+//  *        Serves as an abstraction of expression() to ignore CurrentAction decision tree
+//  * @param exprType Expression type indicator ( @see parser.h > tExpr for notes )
+//  * @return bool
+//  */
+// bool __expression(tExpr exprType)
+// {
+//     return comparison(exprType);
+// }
+
+// /**
+//  * @brief Parse "operand => logical operator => operand" type of expressions
+//  * @param exprType Expression type indicator
+//  * @return bool
+//  */
+// bool comparison(tExpr exprType)
+// {
+//     if (exprType == EXPR_SIMPLE) {
+//         if (!term(exprType)) return false; //< Parse left operand only when parsing a simple expr
+//     }
+//     else {
+//         term(exprType); //< Groupped expr -> move down according to precedence table
+//     }
+
+//     Token_type expected[] = {GT, LT, NE, LE, GE, EQ};
+//     while (curtok_matches(expected, 6))
+//     {
+//         if (!term(EXPR_SIMPLE)) return false;
+//     }
+
+//     return true;
+// }
+
+// /**
+//  * @brief Parse "operand => add or sub operator => operand" type of expressions
+//  * @param exprType Expression type indicator
+//  * @return bool
+//  */
+// bool term(tExpr exprType)
+// {
+//     if (exprType == EXPR_SIMPLE) {
+//         if (!factor(exprType)) return false; //< Parse left operand only when parsing a simple expr
+//     }
+//     else {
+//         factor(exprType); //< Groupped expr -> move down according to precedence table
+//     }
+
+//     Token_type expected[] = {ADD, SUB};
+//     while(curtok_matches(expected, 2))
+//     {
+//         if (!factor(EXPR_SIMPLE)) return false;
+//     }
+    
+//     return true;
+// }
+
+// /**
+//  * @brief Parse "operand => mul or div operator => operand" type of expressions and function calls
+//  *        After a successful parsing of expr literal, loads next token to be used 
+//  *        as an operation depictor. 
+//  *        Parsing of EXPR_GROUPPED expression type ( @see parser.h > tExpr ) begins here
+//  *        in order to maintain operator precedence
+//  * @param exprType Expression type indicator
+//  * @return bool
+//  */
+// bool factor(tExpr exprType)
+// {
+//     if (exprType == EXPR_SIMPLE) { //< Parse left operand only when parsing a simple expr
+//         if (!literal()) 
+//             return false; 
+//         else 
+//         {
+//             /** @todo Fix function literals + groupped expr */
+//             if (CHECK_NO_ERROR(ID)) //< Check for function call
+//             {
+//                 GET_TOKEN();
+//                 if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
+//                 {
+//                     if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
+//                     {
+//                         // Function parsed - get next token
+//                         GET_TOKEN();
+//                     }
+//                     else {
+//                         return false;
+//                     }
+//                 }
+//                 // Not a function call - continue as normal
+//             }
+//             else
+//                 GET_TOKEN(); //< If a literal was parsed successfully, get next token (operator)
+//         }
+//     }
+
+//     Token_type expected[] = {MUL, DIV};
+//     while(curtok_matches(expected, 2))
+//     {
+//         if (!literal()) return false;
+//     }
+
+//     return true;
+// }
+
+// /**
+//  * @brief Parse elementary parts of expression. Supports nested expressions.
+//  *        Note that groupped expressions are essentialy expressions with expr as left operand
+//  *        so calling __expression(EXPR_GROUPPED) ( @see expression() ) tries to parse only right
+//  *        operand.
+//  *        Also note that this function serves as the base case to the recursive descent parsing.
+//  * @return bool
+//  */
+// bool literal()
+// {
+//     // IMPLEMENT SEMANTIC CHECKING (ID & FUNC)
+
+//     GET_TOKEN();
+
+//     Token_type expected[] = {INT, FLOAT64, STRING, ID};
+//     if (curtok_matches(expected, 4))
+//     {
+//         return true;
+//     }
+//     else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
+//     {
+//         if (!__expression(EXPR_SIMPLE)) return false; //< Parse nested (priority) expression
+
+//         // GET_TOKEN();
+//         if (CHECK_TOKEN(PARENTHESIS_RIGHT)) //< End of nested (priority) expression
+//         {
+//             GET_TOKEN(); 
+//             if (!CHECK_TOKEN(EOL)) //< Check whether expression still continues
+//             { 
+//                 // Continue aftern nested expr
+//                 if (!__expression(EXPR_GROUPPED)) return false;  
+//             }
+
+//             return true; //< Expression ends with EOL
+//         }
+//         else { //< Nested expression has no exiting right parenthesis
+//             return false;
+//         }
+//     }
+//     else { //< Current token matches no valid expression tokens 
+//         return false;
+//     }
+// }
+
+// /**
+//  * @brief Check if current token is in a given checkList
+//  * @param checkList Array of tokens to check the current token against
+//  * @param listSize Size of checkList
+//  * @return bool
+//  */
+// bool curtok_matches(Token_type checkList[], int listSize)
+// {
+//     bool match = false;
+
+//     for (int idx = 0; idx < listSize; idx++)
+//     {
+//         if (m.current_token.type == checkList[idx])
+//         {
+//             match = true;
+//             break;
+//         }
+//     } 
+
+//     if (!match) return false;
+//     return true;
+// }
 
 /**
  * @brief Checks syntax of the prolog

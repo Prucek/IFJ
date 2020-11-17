@@ -39,8 +39,8 @@ func maine (i int, b string)(){
 func ahoj(){
     //ahoj = a
     //i = 5
-    od := 5
-    id := 5
+    od := (5*8)/0
+    id := (od*2)/4+5 != 1 +9
     len("ahoj")
     inputf(25.4)
     inputf()

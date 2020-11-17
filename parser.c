@@ -33,10 +33,20 @@
 #define GENERATE(func) if ((!func)) intern_error()
 
 //global
-Metadata m = {.current_line = 1, .index = 0, .local_table = NULL, .suspected = NULL};
+Metadata m = {.current_line = 1, .index = 0, .local_table = NULL};
 TNode *node;
 TNode *array_of_trees[100]; // this could be macro
+TNode *arr_suspected[ARR_TREE_RANGE];  //< stores all funcs suspected from no_definition
 int tree_index = -1;
+int suspected_tree_idx = -1;
+char *built_in[] = {"inputs", "inputf", "inputi", "print", "int2float", "float2int",
+"len", "substr", "ord", "chr"};
+
+//TODO EXPRESSIONS !!!!!
+// bez nich nemozem dorobit semantiku funkcii, lava strana priradenia je zatial bez datoveho typu
+// takze nemozem skontrolovat zhodu medzi typmi ktore vracia fun a typmi na lavej strane
+// preto sa v mojej implementacii nachadzaju zakomentovane casti, ktore bez expressions nemaju vyznam
+// pri priradeni funkcie hadze syntakticku chybu : od, id = dobry_den("ahoj", 24)
 
 /**
  * @brief Inits data structure of symtable to eliminate multi. insertion of one symbol
@@ -47,11 +57,13 @@ TData init_new_data(TData new_data)
 {
     new_data.type = T_UNDEFINED;
     new_data.defined = new_data.is_var = new_data.is_function = new_data.in_block = false;
-    new_data.param_counter = new_data.ret_counter = new_data.line = 0;
+    new_data.param_counter = new_data.ret_counter = new_data.line = new_data.id_counter = 0;
 
     for (int i = 0; i < MAX_RET_VAL; i++)
+    {
         new_data.retval_arr[i] = T_UNDEFINED;
-
+        //new_data.id_type[i] = T_UNDEFINED;      //< bude sa pouzivat po dorobeni expressions
+    }
     for (int j = 0; j < MAX_ARG; j++)
         new_data.arg_arr[j] = T_UNDEFINED;
 
@@ -59,15 +71,34 @@ TData init_new_data(TData new_data)
 }
 
 /**
+ * @brief Inits another tree in array of suspected tree
+ */
+void add_suspected_tree()
+{
+    suspected_tree_idx++;
+    arr_suspected[suspected_tree_idx] = init_symtable(arr_suspected[suspected_tree_idx]);
+}
+
+/**
+ * @brief Deletes the whole array of suspected trees
+ */
+void delete_arr_suspected()
+{
+    for (int i = 0; i <= suspected_tree_idx; i++)
+    {
+        delete_symtable(arr_suspected[i]);
+    }
+}
+
+/**
  * @brief Checks semantics of funcs suspected from no_definition
  */
-void check_suspected(TNode *root)
+void check_suspected()
 {
-    // using PostOrder
-    if (root != NULL)
+    for (int idx = 0; idx <= suspected_tree_idx; idx++)
     {
-        check_suspected(root->lptr);
-        check_suspected(root->rptr);
+        TNode *root = arr_suspected[idx];
+        bool sem_error = false;
 
         if ((node = search_symtable(m.global_table, root->key)) == NULL)    //< func is not defined
         {
@@ -75,9 +106,9 @@ void check_suspected(TNode *root)
         }
         else  //< func is defined, check params
         {
-            if (node->data.param_counter != root->data.param_counter)   //< num of params not same
+            if (node->data.param_counter != root->data.param_counter) //|| node->data.ret_counter != root->data.id_counter)
             {
-                param_error(root->key, root->data.line);
+                sem_error = true;
             }
             else
             {
@@ -85,13 +116,163 @@ void check_suspected(TNode *root)
                 {
                     if (node->data.arg_arr[i] != root->data.arg_arr[i])     //< data type not same
                     {
-                        param_error(root->key, root->data.line);
+                        sem_error = true;
                         break;
                     }
                 }
             }
+            if (sem_error)
+            {
+                param_error(root->key, root->data.line);
+            }
+       }
+    }
+}
+
+/**
+ * @brief Checks semantics of buil_in functions
+ * @param root Root of global symtable
+*/
+void check_built(TNode *root)
+{
+    if (root != NULL)
+    {
+        //using PostOrder
+        check_built(root->lptr);
+        check_built(root->rptr);
+
+        bool sem_error = false;
+        bool is_built = is_built_fun(root->key);    //< whether current func is built_in
+        if (is_built)
+        {
+            if (!strcmp(root->key, "inputs"))
+            {
+                if (root->data.param_counter != 0) // || root->data.id_counter != 2)
+                {
+                    sem_error = true;
+                }
+                /*else if (root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
+                {
+                    sem_error = true;
+                }*/
+            }
+            else if (!strcmp(root->key, "inputi"))
+            {
+                if (root->data.param_counter != 0)  // || root->data.id_counter != 2)
+                {
+                    sem_error = true;
+                }
+                /*else if (root->data.id_type[0] != T_INT || root->data.id_type[1] != T_INT)
+                {
+                    sem_error = true;
+                }*/
+            }
+            else if (!strcmp(root->key, "inputf"))
+            {
+                if (root->data.param_counter != 0) // root->data.id_counter != 2)
+                {
+                    sem_error = true;
+                }
+                /*else if (root->data.id_type[0] != T_FLOAT64 || root->data.id_type[1] != T_INT)
+                {
+                    sem_error = true;
+                }*/
+            }
+            else if (!strcmp(root->key, "int2float"))
+            {
+                if (root->data.param_counter != 1)  // || root->data.id_counter != 1)
+                {
+                    sem_error = true;
+                }
+                else if (root->data.arg_arr[0] != T_INT) // || root->data.id_type[0] != T_FLOAT64)
+                {
+                    sem_error = true;
+                }
+            }
+            else if (!strcmp(root->key, "float2int"))
+            {
+                if (root->data.param_counter != 1) // || root->data.id_counter != 1)
+                {
+                    sem_error = true;
+                }
+                else if (root->data.arg_arr[0] != T_FLOAT64) // || root->data.id_type[0] != T_INT)
+                {
+                    sem_error = true;
+                }
+            }
+            else if (!strcmp(root->key, "len"))
+            {
+                if (root->data.param_counter != 1) // || root->data.id_counter != 1)
+                {
+                    sem_error = true;
+                }
+                else if (root->data.arg_arr[0] != T_STRING) // || root->data.id_type[0] != T_INT)
+                {
+                    sem_error = true;
+                }
+            }
+            else if (!strcmp(root->key, "substr"))
+            {
+                if (root->data.param_counter != 3)  // || root->data.id_counter != 2)
+                {
+                    sem_error = true;
+                }
+                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT || root->data.arg_arr[2] != T_INT) //|| root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
+                {
+                    sem_error = true;
+                }
+            }
+            else if (!strcmp(root->key, "ord"))
+            {
+                if (root->data.param_counter != 2) // || root->data.id_counter != 2)
+                {
+                    sem_error = true;
+                }
+                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT) //|| root->data.id_type[0] != T_INT || root->data.id_type[1] != T_INT)
+                {
+                    sem_error = true;
+                }
+            }
+            else if (!strcmp(root->key, "chr"))
+            {
+                if (root->data.param_counter != 1) // || root->data.id_counter != 2)
+                {
+                    sem_error = true;
+                }
+                else if (root->data.arg_arr[0] != T_INT) // || root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT) 
+                {
+                    sem_error = true;
+                }
+            }
+            else //< print
+            {
+                /*if (root->data.id_counter != 0)
+                {
+                    sem_error = true;
+                }*/
+            }
+        }
+        if (sem_error)
+        {
+            param_error(root->key, root->data.line);
         }
     }
+}
+
+/**
+ * @brief Compares current func id with all possible built_in function
+ * @return True if func id is one of built_in function, else false 
+ */
+bool is_built_fun(char *func_id)
+{
+    for (int i = 0; i < BUILT_FUNC_NUM; i++)
+    {
+        if (!strcmp(func_id, built_in[i]))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void add_tree()
@@ -129,17 +310,23 @@ void program()
     GENERATE(gen_header());
 
     prolog();
-    while(func());
+    while(1)
+    {
+        if (!func() && (m.current_token.type == EoF))
+        {
+            break;
+        }
+    }
 
     node = search_symtable(m.global_table, "main");
     if (node == NULL)
     {
         no_definition_error("main", -1);    //< func main was not defined
     }
-    if (m.suspected != NULL)    //< check funcs suspected from no_definition
+    if (suspected_tree_idx > -1)    //< check funcs suspected from no_definition
     {
-        check_suspected(m.suspected);
-        delete_symtable(m.suspected);
+        check_suspected();
+        delete_arr_suspected();
     }
 
     delete_symtable(m.global_table);
@@ -153,7 +340,7 @@ void program()
     }
 
     CHECK_TOKEN(EoF);
-    
+
     GENERATE(gen_code_end());
 
     if (error_value == 0) // No error
@@ -226,7 +413,9 @@ bool func_header(bool *is_main)
     GET_AND_CHECK(ID);
 
     char *func_id = m.current_token.data.s;  //< store func id cause insertion to symtable will be later
-    if ((node = search_symtable(m.global_table, func_id)) != NULL)
+    bool is_built = is_built_fun(func_id);
+
+    if ((node = search_symtable(m.global_table, func_id)) != NULL || is_built)
     {
         re_definition_error(func_id, m.current_line);    //< redefinition of func is forrbiden
     }
@@ -266,7 +455,7 @@ bool func_header(bool *is_main)
     {
         GET_AND_CHECK(BRACKET_LEFT);
     }
-    
+
     if (!strcmp(func_id, "main"))
     {
         *is_main = true;
@@ -358,17 +547,17 @@ void header_arg()
             case K_INT:
                 new_data_var.type = T_INT;
                 new_data_func.arg_arr[m.index++] = T_INT;
-                m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter
+                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
                 break;
             case K_FLOAT64:
                 new_data_var.type = T_FLOAT64;
                 new_data_func.arg_arr[m.index++] = T_FLOAT64;
-                m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter
+                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
                 break;
             case K_STRING:
                 new_data_var.type = T_STRING;
                 new_data_func.arg_arr[m.index++] = T_STRING;
-                m.global_table = insert_symtable(m.global_table, new_data_var, prev.data.s);     //< insert parameter
+                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
                 break;
 
             default:
@@ -444,10 +633,10 @@ bool statement()
         id_name = m.current_token.data.s;
 
         GET_TOKEN();
-        int number_of_id = 1;
+        unsigned number_of_id = 1;
         bool tmp;
         // assignment to var statement with multiple ID
-        
+
         if (CHECK_NO_ERROR(COMMA))
         {
             tmp = search_all_trees(id_name);
@@ -466,8 +655,8 @@ bool statement()
                 if (!CHECK_TOKEN(ID))
                 {
                     break;
-                }  
-                       
+                }
+
                 tmp = search_all_trees(m.current_token.data.s);
                 if (tmp == false)
                 {
@@ -516,8 +705,15 @@ bool statement()
         }
         else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
         {
-            function_call(last_id);
+            bool is_built = is_built_fun(last_id.data.s);
+            number_of_id--;     //< func's id must be reduced
+            function_call(last_id, number_of_id, is_built);
             m.index = 0;
+            
+            if (is_built)
+            {
+                check_built(m.global_table);  //< check semantic of built_in function
+            }
         }
         else
         {
@@ -534,7 +730,7 @@ bool statement()
  * @brief Checks syntax of function call
  * @param id Stores the id of calling function
  */
-void function_call(Token id)
+void function_call(Token id, unsigned num_of_id, bool is_built)
 {
     Token_type previous = PARENTHESIS_LEFT;
     unsigned act_param_counter = 0;
@@ -542,22 +738,31 @@ void function_call(Token id)
     new_data_func = init_new_data(new_data_func);
     new_data_func.is_function = true;
     new_data_func.line = m.current_line;
+    new_data_func.id_counter = num_of_id;
 
     while(true)
     {
         GET_TOKEN();
         if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
         {
-            if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
+            if (!(is_built))
             {
-                if (node->data.param_counter != act_param_counter)      //< num of params not same
+                if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
                 {
-                    sem_error = true;
+                    if (node->data.param_counter != act_param_counter || node->data.ret_counter != num_of_id)      //< num of params or ret vals not same
+                    {
+                        sem_error = true;
+                    }
+                }
+                else        //< not sure whether func defined
+                {
+                    add_suspected_tree();
+                    arr_suspected[suspected_tree_idx] = insert_symtable(arr_suspected[suspected_tree_idx], new_data_func, id.data.s);   //< check this func after whole file read
                 }
             }
-            else        //< not sure whether func defined
+            else    //< func is built_in, we insert it to global table and check semantics later
             {
-                m.suspected = insert_symtable(m.suspected, new_data_func, id.data.s);   //< check this func after whole file read
+                m.global_table = insert_symtable(m.global_table, new_data_func, id.data.s);
             }
 
             break;
@@ -684,9 +889,9 @@ void if_s()
  * @brief Checks syntax of assignment to var statement
  * @param number_of_id is number of ID before =
  */
-void assignment_s(int number_of_id)
+void assignment_s(unsigned number_of_id)
 {
-    for (int i = 1; i <= number_of_id; i++)
+    for (unsigned i = 1; i <= number_of_id; i++)
     {
         if (!expression())
         {
@@ -714,8 +919,18 @@ void for_s()
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
-        free(m.current_token.data.s);
+        char *id_name;
+        id_name = m.current_token.data.s;
+        TData new_data;
+        new_data.type = m.current_token.type;
+        new_data.is_var = true;
+        new_data.in_block = true;
+        new_data.defined = true;
+        new_data.is_function = false;
+
         GET_AND_CHECK(DEF_OF_VAR);
+        array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
+        free(id_name);
         expression();
         CHECK_TOKEN(SEMICLN);
     }
@@ -835,8 +1050,8 @@ bool input(int *input_token, bool *func_call)
     else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
     {
         if (m.previous_token.type == ID)
-        {   
-            function_call(m.previous_token);
+        {
+            function_call(m.previous_token,1,false); // todo 
             *func_call = true;
         }
         *input_token = LP;

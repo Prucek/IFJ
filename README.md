@@ -12,7 +12,7 @@ IFJ20 is a simplified version of the programming language Go.
 
 ## Testing
 
-All module tests are stored inside of '/tests' subfolder
+All module tests are stored inside of `~/tests` subfolder
 
 To run all tests, use:
 
@@ -20,8 +20,11 @@ To run all tests, use:
 make compiler-test
 ```
 
+*note that using `./run_tests.sh` instead using the command above won't work
+
 ### Testing Conventions
 
+* Do not create any files starting with `test_` inside of the `~/tests` subfolder
 * In cases like failed malloc, allways use `testerror(TESTERROR_*)` to exit testing
 * To represent a failing test, always use `testfail(TESTFAIL_*)` where `TESTFAIL_*` represents a failure message
 * Add customized test failure messages by defining a new `TESTFAIL_*` macros

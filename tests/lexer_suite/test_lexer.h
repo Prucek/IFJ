@@ -8,18 +8,12 @@
 #ifndef __TEST_LEXER_H_
 #define __TEST_LEXER_H_
 
+// Testing interface
+#include "../testlib.h"
+
 // Lexer interface
 #include "../../lexer.h"
+#include "../../error.h"
+#include "../../dynamicstring.h"
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-
-// Lexer test interface
-
-void setUp();
-void tearDown();
-
-
-#endif // __TEST_LEXER_H
+#endif // __TEST_LEXER_H_

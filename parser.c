@@ -310,7 +310,13 @@ void program()
     GENERATE(gen_header());
 
     prolog();
-    while(func());
+    while(1)
+    {
+        if (!func() && (m.current_token.type == EoF))
+        {
+            break;
+        }
+    }
 
     node = search_symtable(m.global_table, "main");
     if (node == NULL)
@@ -334,7 +340,7 @@ void program()
     }
 
     CHECK_TOKEN(EoF);
-    
+
     GENERATE(gen_code_end());
 
     if (error_value == 0) // No error
@@ -449,7 +455,7 @@ bool func_header(bool *is_main)
     {
         GET_AND_CHECK(BRACKET_LEFT);
     }
-    
+
     if (!strcmp(func_id, "main"))
     {
         *is_main = true;
@@ -630,7 +636,7 @@ bool statement()
         unsigned number_of_id = 1;
         bool tmp;
         // assignment to var statement with multiple ID
-        
+
         if (CHECK_NO_ERROR(COMMA))
         {
             tmp = search_all_trees(id_name);
@@ -649,8 +655,8 @@ bool statement()
                 if (!CHECK_TOKEN(ID))
                 {
                     break;
-                }  
-                       
+                }
+
                 tmp = search_all_trees(m.current_token.data.s);
                 if (tmp == false)
                 {
@@ -909,8 +915,18 @@ void for_s()
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
-        free(m.current_token.data.s);
+        char *id_name;
+        id_name = m.current_token.data.s;
+        TData new_data;
+        new_data.type = m.current_token.type;
+        new_data.is_var = true;
+        new_data.in_block = true;
+        new_data.defined = true;
+        new_data.is_function = false;
+
         GET_AND_CHECK(DEF_OF_VAR);
+        array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
+        free(id_name);
         expression(CA_Definition);
         CHECK_TOKEN(SEMICLN);
     }
@@ -1055,14 +1071,14 @@ bool term(tExpr exprType)
     {
         if (!factor(EXPR_SIMPLE)) return false;
     }
-    
+
     return true;
 }
 
 /**
  * @brief Parse "operand => mul or div operator => operand" type of expressions and function calls
- *        After a successful parsing of expr literal, loads next token to be used 
- *        as an operation depictor. 
+ *        After a successful parsing of expr literal, loads next token to be used
+ *        as an operation depictor.
  *        Parsing of EXPR_GROUPPED expression type ( @see parser.h > tExpr ) begins here
  *        in order to maintain operator precedence
  * @param exprType Expression type indicator
@@ -1071,9 +1087,9 @@ bool term(tExpr exprType)
 bool factor(tExpr exprType)
 {
     if (exprType == EXPR_SIMPLE) { //< Parse left operand only when parsing a simple expr
-        if (!literal()) 
-            return false; 
-        else 
+        if (!literal())
+            return false;
+        else
         {
             /** @todo Fix function literals + groupped expr */
             if (CHECK_NO_ERROR(ID)) //< Check for function call
@@ -1132,11 +1148,11 @@ bool literal()
         // GET_TOKEN();
         if (CHECK_TOKEN(PARENTHESIS_RIGHT)) //< End of nested (priority) expression
         {
-            GET_TOKEN(); 
+            GET_TOKEN();
             if (!CHECK_TOKEN(EOL)) //< Check whether expression still continues
-            { 
+            {
                 // Continue aftern nested expr
-                if (!__expression(EXPR_GROUPPED)) return false;  
+                if (!__expression(EXPR_GROUPPED)) return false;
             }
 
             return true; //< Expression ends with EOL
@@ -1145,7 +1161,7 @@ bool literal()
             return false;
         }
     }
-    else { //< Current token matches no valid expression tokens 
+    else { //< Current token matches no valid expression tokens
         return false;
     }
 }
@@ -1167,7 +1183,7 @@ bool curtok_matches(Token_type checkList[], int listSize)
             match = true;
             break;
         }
-    } 
+    }
 
     if (!match) return false;
     return true;

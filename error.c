@@ -114,7 +114,7 @@ void compatibility_error()
 
 void param_error(char *id, int line)
 {
-    fprintf(stderr, "****  Semantic error : Unmatched number or type of paramethers in function: %s on line: %d !  ****\n", id, line);
+    fprintf(stderr, "****  Semantic error : Unmatched number or type of paramethers/return values in function: %s on line: %d !  ****\n", id, line);
     if (error_value == 0)
     {
         error_value = 6;

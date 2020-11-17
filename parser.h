@@ -12,11 +12,13 @@
 #include "error.h"
 #include "symtable.h"
 #include "codegenerator.h"
-
+#include "stack.h"
+#include "expressions.h"
 
 typedef struct
 {
     Token current_token;
+    Token previous_token;
     int current_line;
     TNode *global_table;
     TNode *local_table;
@@ -25,23 +27,23 @@ typedef struct
     
 }Metadata;
 
-// Type of action being performed at the moment 
-typedef enum 
-{
-    CA_Definition,
-    CA_Assignment,
-    CA_If,
-    CA_For,
-    CA_Return
+// // Type of action being performed at the moment 
+// typedef enum 
+// {
+//     CA_Definition,
+//     CA_Assignment,
+//     CA_If,
+//     CA_For,
+//     CA_Return
 
-} CurrentAction; //< Used in expression type determination
+// } CurrentAction; //< Used in expression type determination
 
-typedef enum
-{
-    EXPR_SIMPLE,  //< Parsed as "operand => operator => operand" expr   
-    EXPR_GROUPPED //< Parsed as "... operator => operand" expr, ommiting left operand
+// typedef enum
+// {
+//     EXPR_SIMPLE,  //< Parsed as "operand => operator => operand" expr   
+//     EXPR_GROUPPED //< Parsed as "... operator => operand" expr, ommiting left operand
 
-} tExpr; 
+// } tExpr; 
 
 TData new_data_func, new_data_var;
 
@@ -75,18 +77,20 @@ void for_s();
 
 void return_s();
 
-void expression();
+bool expression();
 
-bool __expression();
+bool input(int *input_token, bool *func_call);
 
-bool comparison();
+// bool __expression();
 
-bool term();
+// bool comparison();
 
-bool factor();
+// bool term();
 
-bool literal();
+// bool factor();
 
-bool curtok_matches(Token_type checkList[], int listSize);
+// bool literal();
+
+// bool curtok_matches(Token_type checkList[], int listSize);
 
 #endif

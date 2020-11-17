@@ -11,9 +11,9 @@ func main(){
 
 func maine (i int, b string)(){
 
-        ahoj := a
-        id := 5
-        ahoj, id = a, b
+        ahoj := (a+5) == 1
+        id := ((5)*9)+1
+        ahoj, id = a + 1, b >= 3
         return ahoj
         if a {
                 j :=1
@@ -33,12 +33,12 @@ func maine (i int, b string)(){
 
 func ahoj(){
     //ahoj = a
-    od := 5
-    id := 5
-        for ;a ;  {
+    od := (5 +a *(8))
+    id := 5/0
+        for ;a >=0;  {
                 if a{
-                        id = 5
-                        for a:=0;a;a=5{
+                        id = id*id
+                        for a:=0; a!= 3;a=a +1{
                                 return 7
                         }
                 } else {
@@ -46,11 +46,11 @@ func ahoj(){
                         b := 3
                         //b := a
                 }
-                ahoj()
-                dobry_den("ahoj",24)
+                id, ah = ahoj()
+                od = dobry_den("ahoj",24)
                 //blablabla()
         }
-    bebi := "hello"
+    bebi := "hello"+"its"-"me"
     id = 5
 }
 

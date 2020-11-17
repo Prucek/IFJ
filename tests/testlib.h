@@ -11,6 +11,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <errno.h>
+
+// Standard test suite return values
+
+#define TEST_SUCCESS 0
+#define TEST_FAIL 255 // -1
 
 // Standard test interface
 

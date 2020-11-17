@@ -13,6 +13,9 @@ all: lexer-test dynamicstring-test symtable-test parser-test codegenerator-test
 compiler-test: 
 	@bash ./tests/run_tests.sh
 
+compiler-test-debug: 
+	@bash ./tests/run_tests.sh --dbg
+
 parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o codegenerator.o
 	$(CC) $(CFLAGS) -o $@ $^
 

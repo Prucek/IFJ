@@ -7,10 +7,15 @@
 
 #include "test_lexer.h"
 
-#define testerror(error) perror("**TESTERROR " __FILE__ "** "error)
+// Standard macros & globals
+#define setError() if(fail!=true) fail=true
+
+#define testerror(error) perror("**TESTERROR " __FILE__ "** "error); exit(errno)
 #define testfail(fmt, ...) \
+    setError(); \
     fprintf(stderr, "**TESTFAIL " __FILE__"> %s** "fmt"\n", __func__, ##__VA_ARGS__)
-#define setError() if(error!=true) error=true
+
+bool fail = false;
 
 // Customized failure messages
 #define TESTFAIL_TYPE "Token no.%d's TYPE does not match the expected type (src[%d:%d])"
@@ -20,7 +25,6 @@ FILE* goSource1;
 FILE* goSource2;
 FILE* goSource3;
 
-bool error = false;
 
 void setUp()
 {
@@ -31,17 +35,14 @@ void setUp()
     if (!goSource1)
     {
         testerror("test_source1.go cannot be opened");
-        exit(1);
     }
     if (!goSource2)
     {
         testerror("test_source2.go cannot be opened");
-        exit(1);
     }
     if (!goSource3)
     {
         testerror("test_source3.go cannot be opened");
-        exit(1);
     }
 }
 
@@ -50,17 +51,14 @@ void tearDown()
     if (fclose(goSource1) == EOF)
     {
         testerror("test_source1.go cannot be closed");
-        exit(1);
     }
     if (fclose(goSource2) == EOF)
     {
         testerror("test_source2.go cannot be closed");
-        exit(1);
     }
     if (fclose(goSource3) == EOF)
     {
         testerror("test_source3.go cannot be closed");
-        exit(1);
     }
 }
 
@@ -85,7 +83,6 @@ static void lexAgainst(Token expected[])
                 if (curTok.data.i != expected[tokIdx].data.i)
                 {
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    setError();
                 }
             }
             else if (expected[tokIdx].type == FLOAT64)
@@ -93,7 +90,6 @@ static void lexAgainst(Token expected[])
                 if (curTok.data.d != expected[tokIdx].data.d)
                 {
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    setError();
                 }
             }
             else if (expected[tokIdx].type == KEYWORD)
@@ -101,7 +97,6 @@ static void lexAgainst(Token expected[])
                 if (curTok.data.k != expected[tokIdx].data.k)
                 {
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    setError();
                 }                
             }
             else if (expected[tokIdx].type == STRING || expected[tokIdx].type == ID)
@@ -109,7 +104,6 @@ static void lexAgainst(Token expected[])
                 if (strcmp(curTok.data.s, expected[tokIdx].data.s) != 0)
                 {
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    setError();
                 }
             }
             else
@@ -117,7 +111,6 @@ static void lexAgainst(Token expected[])
                 if (curTok.data.s != NULL) //< All other token types hold NULL as their data
                 {
                     testfail(TESTFAIL_DATA, tokCnt, curLine, tokenOffset);
-                    setError();
                 }
 
                 if (curTok.type == EOL)
@@ -132,7 +125,6 @@ static void lexAgainst(Token expected[])
         }
         else {
             testfail(TESTFAIL_TYPE, tokCnt, curLine, tokenOffset);
-            setError();
         } //< Typeparse end
     }
 }
@@ -269,6 +261,6 @@ int main(void)
 
     tearDown();
 
-    if (error) return 1;
-    return 0;
+    if (fail) return TEST_FAIL;
+    return TEST_SUCCESS;
 }

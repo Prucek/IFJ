@@ -46,6 +46,7 @@ TNode *rewrite_data(TNode *node, TData new_data)
     node->data.param_counter = new_data.param_counter;
     node->data.ret_counter = new_data.ret_counter;
     node->data.line = new_data.line;
+    node->data.id_counter = new_data.id_counter;
 
     if (node->data.is_function == true)
     {
@@ -54,6 +55,9 @@ TNode *rewrite_data(TNode *node, TData new_data)
 
         for (unsigned j = 0; j < new_data.param_counter; j++)
             node->data.arg_arr[j] = new_data.arg_arr[j];
+        /*
+        for (unsigned k = 0; k < new_data.id_counter; k++)
+            node->data.id_type[k] = new_data.id_type[k];*/
     }
 
     return node;

@@ -55,7 +55,10 @@ int error_value = 0; //< in case of no error
 void lexical_error(int line)
 {
     fprintf(stderr, "****  Lexical error on line = '%d' !  ****\n", line);
-    error_value = 1;
+    if (error_value == 0)
+    {
+        error_value = 1;
+    }
 }
 
 
@@ -65,7 +68,7 @@ void syntax_error(int token_type, int line)
     if (line != _line && token_type >= 0)
         fprintf(stderr, "****  Syntax error: token type %s, line %d!  ****\n",array[token_type], line);
     _line = line;
-    if (error_value != 1) // only if no lex error
+    if (error_value == 0)
     {
         error_value = 2;
     }
@@ -94,7 +97,7 @@ void re_definition_error(char *id, int line)
 
 void type_error()
 {
-    fprintf(stderr, "****  Semantic error : Unmatched data type of variable : var, line !  ****\n"); 
+    fprintf(stderr, "****  Semantic error : Unmatched data type of variable : var, line !  ****\n");
     if (error_value == 0)
     {
         error_value = 4;

@@ -3,9 +3,6 @@
  * @authors Peter Rucek, Marek Micek, Rebeka Cernianska, Matej Jurik
  * @date 15 Oct 2020
  * @brief Lexer implementation
- *
- * @todo * Decide on what FSM should behave like in S_ERROR state
- *       * Handle EOL requested/optional/required problem
  */
 
 #include "lexer.h"
@@ -280,13 +277,13 @@ Token get_next_token(FILE *f)
             case S_ID_OR_KEY:
                 if (isalnum(c) || c == '_')
                 {
-                    state = S_ID_OR_KEY;
+                    //state = S_ID_OR_KEY;
                     add_char(&buffer, c);
                 }
                 else
                 {
                     ungetc(c, f);
-                    state = S_START;
+                    //state = S_START;
 
                     Keyword kw = get_keywordID(buffer.buff);
                     if (kw == K_ERROR)
@@ -299,8 +296,6 @@ Token get_next_token(FILE *f)
                             intern_error();
                         }
                         copy_token_string(t.data.s, &buffer);
-
-                        //copy_token_string(&t.data.s, &buffer);
                     }
                     else
                     {
@@ -374,10 +369,18 @@ Token get_next_token(FILE *f)
                 else
                 {
                     ungetc(c, f);
-                    t.type = FLOAT64;
-                    t.data.d = atof(buffer.buff);
-                    dynstr_free(&buffer);
-                    return t;
+                    if (buffer.buff[buffer.len-1] == '.')
+                    {
+                        state = S_ERROR;
+                    }
+                    else
+                    {
+                        t.type = FLOAT64;
+                        t.data.d = atof(buffer.buff);
+                        dynstr_free(&buffer);
+                        return t;
+                    }
+
                 }
                 break;
 
@@ -452,7 +455,6 @@ Token get_next_token(FILE *f)
                     else //< Enclosed string - return str token
                     {
                         t.type = STRING;
-                        //t.data.s = NULL;
                         t.data.s = malloc(sizeof(char) * (strlen(buffer.buff) + 1));
                         if (t.data.s == NULL)
                         {
@@ -579,43 +581,9 @@ Token get_next_token(FILE *f)
 
             // Unwanted lexeme
             case S_ERROR:
-
-                /** DISABLED ERROR MSG OUTPUTING UNTIL NEXT MEETING */
-
-                // dynstr_init(&error_buffer);
-
-                // // Error caught while tokenizing string or number
-                // if (buffer.alloc_len != 0) {
-                //     // Store token data buf into error buf so it contains the whole 'error causing' string
-                //     if (add_string(&error_buffer, buffer.buff))
-                //     {
-                //         // Store the rest of the line being tokenized
-                //         if (c != '\n')
-                //         {
-                //             add_char(&error_buffer, c); //< Add last scanned char
-
-                //             while (!(isspace(c = fgetc(f))))
-                //                 add_char(&error_buffer, c);
-                //         }
-                //     }
-                //     dynstr_free(&buffer);
-                // }
-                // // Error caught by tokenizing an unsupported character
-                // else
-                // {
-                //     add_char(&error_buffer, c);
-                // }
-
-                // if (c == '\n') //< Return EoL back to be tokenized
-                //     ungetc(c, f);
-
-                // lexical_error(error_buffer.buff, line);
-                // dynstr_free(&buffer);
-                // dynstr_free(&error_buffer);
-
                 t.type = ERROR; //< (null)
                 t.data.i = 1;   //< E_LEXICAL
-                return t;       //< mozno lepsie vraciat NULL, no treba zmenit implementaciu
+                return t;
                 break;
 
             default:

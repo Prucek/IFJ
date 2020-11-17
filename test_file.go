@@ -60,6 +60,7 @@ func ahoj(){
                 ahoj()
                 dobry_den("ahoj", 24)
                 preco(25, 4, 8.5)
+                main()
 
                 ///id, od = dobry_den("ahoj", 24.5)  //hadze syntakticku chybu vzdy ked priradujeme funkciu premennej, treba dorobit spravne express.
                 // takze nemozem poriadne otestovat ci sa zhoduje lava strana priradenia s poctom a navratov. hodnotami volanej funckie
@@ -72,6 +73,7 @@ func ahoj(){
 
 func dobry_den (s string, i int) (int,string){
 
+        dobry_den()
 }
 
 func preco(i int, j int, k float64){

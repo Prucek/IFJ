@@ -676,7 +676,7 @@ bool statement()
         {
             if (!strcmp(id_name, "_"))
             {
-                other_error();
+                other_error(m.current_line);
             }
             tmp = search_symtable(array_of_trees[tree_index], id_name);
             if (tmp == false)
@@ -745,6 +745,11 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
         GET_TOKEN();
         if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
         {
+            if (!strcmp(id.data.s, "main"))     //< calling main is not allowed
+            {
+                other_error(m.current_line);
+                break;
+            }
             if (!(is_built))
             {
                 if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure

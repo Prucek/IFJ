@@ -251,10 +251,12 @@ void check_built(TNode *root)
                     sem_error = true;
                 }*/
             }
-        }
-        if (sem_error)
-        {
-            param_error(root->key, root->data.line);
+        
+            if (sem_error)
+            {
+                param_error(root->key, root->data.line);
+            }
+            m.global_table = delete_node(m.global_table, root->key);
         }
     }
 }
@@ -801,7 +803,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
         else if (CHECK_NO_ERROR(INT))
         {
             act_param_counter++;
-            if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
+            if ((node = search_symtable(m.global_table, id.data.s)) != NULL && !(is_built))    //< func is defined for sure
             {
                 if (node->data.arg_arr[m.index++] != T_INT)     //< data type of calling func not same
                 {
@@ -821,7 +823,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
         else if (CHECK_NO_ERROR(FLOAT64))
         {
             act_param_counter++;
-            if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
+            if ((node = search_symtable(m.global_table, id.data.s)) != NULL && !(is_built))    //< func is defined for sure
             {
                 if (node->data.arg_arr[m.index++] != T_FLOAT64)     //< data type of calling func not same
                 {
@@ -841,7 +843,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
         else if (CHECK_NO_ERROR(STRING))
         {
             act_param_counter++;
-            if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
+            if ((node = search_symtable(m.global_table, id.data.s)) != NULL && !(is_built))    //< func is defined for sure
             {
                 if (node->data.arg_arr[m.index++] != T_STRING)     //< data type of calling func not same
                 {

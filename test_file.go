@@ -74,6 +74,8 @@ func ahoj(){
 func dobry_den (s string, i int) (int,string){
 
         dobry_den()
+        print("STRNIG =" ,s, "error =", code, "\n")
+        print(25, ":", "Ahoj")
 }
 
 func preco(i int, j int, k float64){

@@ -28,24 +28,7 @@ typedef struct
     int index;          //< for searching of retval_arr and arg_arr
     
 }Metadata;
-
-// // Type of action being performed at the moment 
-// typedef enum 
-// {
-//     CA_Definition,
-//     CA_Assignment,
-//     CA_If,
-//     CA_For,
-//     CA_Return
-
-// } CurrentAction; //< Used in expression type determination
-
-// typedef enum
-// {
-//     EXPR_SIMPLE,  //< Parsed as "operand => operator => operand" expr   
-//     EXPR_GROUPPED //< Parsed as "... operator => operand" expr, ommiting left operand
-
-// } tExpr; 
+ 
 
 TData new_data_func, new_data_var;
 
@@ -90,17 +73,5 @@ void return_s();
 bool expression();
 
 bool input(int *input_token, bool *func_call);
-
-// bool __expression();
-
-// bool comparison();
-
-// bool term();
-
-// bool factor();
-
-// bool literal();
-
-// bool curtok_matches(Token_type checkList[], int listSize);
 
 #endif

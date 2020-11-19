@@ -46,7 +46,7 @@ char *built_in[] = {"inputs", "inputf", "inputi", "print", "int2float", "float2i
 // bez nich nemozem dorobit semantiku funkcii, lava strana priradenia je zatial bez datoveho typu
 // takze nemozem skontrolovat zhodu medzi typmi ktore vracia fun a typmi na lavej strane
 // preto sa v mojej implementacii nachadzaju zakomentovane casti, ktore bez expressions nemaju vyznam
-// pri priradeni funkcie hadze syntakticku chybu : od, id = dobry_den("ahoj", 24)
+// cize potrebujem aby kazde id vyskytujuce sa pri volani funckie(ci uz parameter alebo id na lavo) malo datovy typ
 
 /**
  * @brief Inits data structure of symtable to eliminate multi. insertion of one symbol
@@ -994,6 +994,10 @@ void return_s()
     while (true)
     {
         expression();
+        // potrebujem datove typy kazdeho vyrazu
+        // idealne v metadatach nejake int pole
+        // kazda bunka bude reprezentovat datovy typ vyrazu(T_INT...)
+        // potom si to uz skontrolujem s danym id funkcie ci je return validny
 
         if (CHECK_NO_ERROR(COMMA))
         {

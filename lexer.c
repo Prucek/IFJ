@@ -190,7 +190,8 @@ Token get_next_token(FILE *f)
                 }
 
                 // Any other character
-                else {
+                else
+                {
                     state = S_ERROR;
                 }
                 break;
@@ -277,14 +278,11 @@ Token get_next_token(FILE *f)
             case S_ID_OR_KEY:
                 if (isalnum(c) || c == '_')
                 {
-                    //state = S_ID_OR_KEY;
                     add_char(&buffer, c);
                 }
                 else
                 {
                     ungetc(c, f);
-                    //state = S_START;
-
                     Keyword kw = get_keywordID(buffer.buff);
                     if (kw == K_ERROR)
                     {
@@ -362,14 +360,14 @@ Token get_next_token(FILE *f)
                     add_char(&buffer, c);
                     state = S_EXPO_1;
                 }
-                else if (isalpha(c))
-                {
-                    state = S_ERROR;
-                }
+                // else if (isalpha(c))
+                // {
+                //     state = S_ERROR;
+                // }
                 else
                 {
                     ungetc(c, f);
-                    if (buffer.buff[buffer.len-1] == '.')
+                    if (buffer.buff[buffer.len-1] == '.') //if there is a decimal point, but no decimal part of number
                     {
                         state = S_ERROR;
                     }

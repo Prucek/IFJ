@@ -88,6 +88,7 @@ bool expr(Data_type *expr_type, bool *func_call)
                         }
                     }
 
+                    /** @todo Free if id came */
                     if (input_terminal.dataType == T_STRING)
                     {
                         free(input_terminal.token.data.s); //< Stop holding on to IDs

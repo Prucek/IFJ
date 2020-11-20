@@ -14,6 +14,7 @@
 #include "lexer.h"
 
 extern int error_value; //< Represents exit code of compiler
+extern int lasterror_line; //< Represents last line on which error was thrown
 
 enum eError {
     ERR_LEX = 1, // 

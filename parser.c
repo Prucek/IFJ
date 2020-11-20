@@ -50,16 +50,14 @@
 #define CONSUME_FAILED_EXPR() \
         while (!IS_EXPR_END(m.current_token.type)) \
         { \
-            /* printf("I AM USEFUL!\n"); IT IS */ \
             GET_TOKEN(); \
         } // LEAKS ?
 
 #define CONSUME_LINE() \
         while (!CHECK_NO_ERROR(EOL) && !CHECK_NO_ERROR(EoF)) \
         { \
-            /* printf("I AM USEFULL TOO!\n"); NOT SURE  */ \
             GET_TOKEN(); \
-        } // LEAKS ?
+        }
 
 #define GENERATE(func) if ((!func)) intern_error()
 
@@ -414,8 +412,10 @@ void program()
     {
         no_definition_error("main", -1);    //< func main was not defined
     }
+    
     if (suspected_tree_idx > -1)    //< check funcs suspected from no_definition
     {
+        lasterror_line = 0;
         check_suspected();
         delete_arr_suspected();
     }
@@ -520,6 +520,7 @@ bool func_header(bool *is_main)
         func_id = m.current_token.data.s;  //< store func id cause insertion to symtable will be later
         
         size_t func_id_len = sizeof(char) * (strlen(func_id) + 1);
+
         m.current_func_id = malloc(func_id_len);
         strncpy(m.current_func_id, func_id, func_id_len);
 
@@ -770,7 +771,6 @@ bool statement()
             }
             else
             { 
-                //mozno je nelegalne - ESTE FURT ? Neviem, povec mi
                 asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
                 no_definition_error(id_name, m.current_line);
             }
@@ -832,7 +832,8 @@ bool statement()
             }
 
             Data_type expr_type = expression();
-            define_id_type(id_name, expr_type, true);
+            if (expr_type != T_UNDEFINED)
+                define_id_type(id_name, expr_type, true);
 
             // Do not free again if the failing expr token was ID or STR (Already free'd)
             if (!CHECK_TOKEN_NOFREE(EOL))
@@ -880,7 +881,6 @@ bool statement()
     else
     {
         // Invalid statement
-        syntax_error(m.current_token.type, m.current_line);
         CONSUME_LINE();
     }
 
@@ -1160,7 +1160,6 @@ void return_s()
 
     if (func_data == NULL)
     {
-        no_definition_error(m.current_func_id, m.current_line);
         // Consume the rest of the line (cannot determine how many expressions are required)
         // Is this a valid use case ?
         CONSUME_LINE();

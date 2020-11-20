@@ -203,7 +203,7 @@ void other_error(int line)
 
 void div_zero_error()
 {
-    fprintf(stderr, "****  Semantic error : division with zero !  ****\n");
+    fprintf(stderr, "****  Semantic error : Division with zero !  ****\n");
     if (error_value == 0)
     {
         error_value = ERR_ZERODIV;

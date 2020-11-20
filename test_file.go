@@ -12,7 +12,7 @@ func main(){
 
                 }
         } else {
-                for i:= ((())) + 1; i<10; i = i +1{
+                for i:= ((())) + "toj" + "tak"; i<10; i = i +1{
 
                 }
         }
@@ -24,7 +24,7 @@ func main(){
 
         // a = a + 3
 
-        // {}
+        {}
         // i = 3
 
         // a = i + 3 
@@ -182,6 +182,9 @@ func test_void_expr_return_morexD() (int, int, string, float64) {
 }
 
 func test_for_expressions() {
+        test_brace_bug()
+        tichobujkkt()
+
         for ;d < 4; {
 
         }
@@ -231,4 +234,6 @@ func test_brace_bug() {
         i = i+1
         f = f+1.1
         s = s+"s"
+
+        s, s, s = funcafds()
 }

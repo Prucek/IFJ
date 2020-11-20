@@ -7,6 +7,14 @@
 
 #include "symtable.h"
 
+char *data_types[] = 
+{
+    "T_UNDEFINED",
+    "T_INT",
+    "T_STRING",
+    "T_FLOAT64",
+    "T_NIL"
+};
 
 TNode* init_symtable(TNode *root)
 {
@@ -74,7 +82,6 @@ TNode* create_node(TData d, char *k)
         return NULL;
     }
 
-    //new_node->key = k;
     strcpy(new_node->key, k);
     new_node->lptr = NULL;
     new_node->rptr = NULL;

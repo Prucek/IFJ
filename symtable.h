@@ -22,8 +22,8 @@ typedef enum
 {
     T_UNDEFINED,
     T_INT,
-    T_FLOAT64,
     T_STRING,
+    T_FLOAT64,
     T_NIL,
     //T_BOOL  bonusove riesenie??? 
 
@@ -39,8 +39,8 @@ typedef struct tData
     bool in_block;                  //< whether we are in block
     unsigned param_counter;         //< num of arguments
     unsigned ret_counter;           //< num of ret values
-    int retval_arr[MAX_RET_VAL];    //< stores data types of ret values
-    int arg_arr[MAX_ARG];           //< stores data types of arg values
+    Data_type retval_arr[MAX_RET_VAL];    //< stores data types of ret values
+    Data_type arg_arr[MAX_ARG];           //< stores data types of arg values
     int line;                       //< line of symbol
     unsigned id_counter;            //< counts num of id on left side of var_assign in case of func call
     //int id_type[MAX_RET_VAL];     //< stores data types of id's on left side of var_assign in case of func call
@@ -57,6 +57,7 @@ typedef struct tnode
 
 } TNode;
 
+extern char* data_types[];
 
 TNode* init_symtable(TNode *root);
 TNode* search_symtable(TNode *root, char *k);

@@ -709,7 +709,7 @@ bool statement()
                 re_definition_error(id_name, m.current_line);
             }
 
-            expression();
+            expression(NO_ASSIGN);
             CHECK_TOKEN(EOL);
         }
         // assignment to var statement
@@ -889,7 +889,7 @@ void if_s()
     array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
 
-    expression();
+    expression(NO_ASSIGN);
     CHECK_TOKEN(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
 
@@ -919,7 +919,7 @@ void assignment_s(unsigned number_of_id)
 {
     for (unsigned i = 1; i <= number_of_id; i++)
     {
-        if (!expression())
+        if (!expression(number_of_id))
         {
             GET_AND_CHECK(EOL);
             return;
@@ -957,13 +957,13 @@ void for_s()
         GET_AND_CHECK(DEF_OF_VAR);
         array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
         free(id_name);
-        expression();
+        expression(NO_ASSIGN);
         CHECK_TOKEN(SEMICLN);
     }
     else if (CHECK_TOKEN(SEMICLN)){;}
 
     // condition
-    expression();
+    expression(NO_ASSIGN);
     CHECK_TOKEN(SEMICLN);
 
     // increment / decrement (can be epmty)
@@ -972,7 +972,7 @@ void for_s()
     {
         free(m.current_token.data.s);
         GET_AND_CHECK(VAR_ASSIGN);
-        expression(); //only one ???
+        expression(NO_ASSIGN); //only one ???
         CHECK_TOKEN(BRACKET_LEFT);
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
@@ -993,7 +993,7 @@ void return_s()
 {
     while (true)
     {
-        expression();
+        expression(NO_ASSIGN);
         // potrebujem datove typy kazdeho vyrazu
         // idealne v metadatach nejake int pole
         // kazda bunka bude reprezentovat datovy typ vyrazu(T_INT...)
@@ -1022,14 +1022,14 @@ void return_s()
 /**
  * @brief Parses a single expression
  */
-bool expression()
+bool expression(unsigned num_of_id)
 {
     /** @todo Implement semantic analysis for variables & functions within expressions
      *        When reading ID and then "(" call function call and return
      */
 
     bool func_call = false;
-    if (!expr(&func_call))
+    if (!expr(&func_call, num_of_id))
     {
         syntax_error(m.current_token.type,m.current_line);
     }
@@ -1043,7 +1043,7 @@ bool expression()
 /**
  * @brief Reads input for expressions and ajusts it
  */
-bool input(int *input_token, bool *func_call)
+bool expr_input(int *input_token, bool *func_call, unsigned num_of_id)
 {
     m.previous_token = m.current_token;
     GET_TOKEN();
@@ -1059,7 +1059,8 @@ bool input(int *input_token, bool *func_call)
     {
         if (m.previous_token.type == ID)
         {
-            function_call(m.previous_token,1,false); // todo 
+            bool is_built = is_built_fun(m.previous_token.data.s);
+            function_call(m.previous_token,num_of_id,is_built); // todo 
             *func_call = true;
         }
         *input_token = LP;
@@ -1077,7 +1078,7 @@ bool input(int *input_token, bool *func_call)
             {
                 m.previous_token = m.current_token;
             }
-            free(m.current_token.data.s);
+            //free(m.current_token.data.s); !!! leak will be done later, maybe in expr()
         }
         *input_token = II;
     }
@@ -1096,6 +1097,7 @@ bool input(int *input_token, bool *func_call)
     {
         return false;
     }
+
     return true;
 }
 

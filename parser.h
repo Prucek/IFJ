@@ -17,6 +17,7 @@
 
 #define ARR_TREE_RANGE 1000 //< range of tree arrays
 #define BUILT_FUNC_NUM 10   //< we have 10 built_in functions
+#define NO_ASSIGN 0
 
 typedef struct
 {
@@ -70,8 +71,8 @@ void for_s();
 
 void return_s();
 
-bool expression();
+bool expression(unsigned num_of_id);
 
-bool input(int *input_token, bool *func_call);
+bool expr_input(int *input_token, bool *func_call, unsigned num_of_id);
 
 #endif

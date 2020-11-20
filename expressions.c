@@ -30,7 +30,7 @@ void printStack(Stack *s)
 /**
  * @brief Adding tokens to stack an selecting action to be done by precedence table
  */
-bool expr(bool *func_call)
+bool expr(bool *func_call, unsigned num_of_id)
 {
     Stack *s = createStack(STACK_SIZE);
     push(s,EN);
@@ -40,7 +40,7 @@ bool expr(bool *func_call)
     {
         if (read)
         {
-            if (!input(&input_token,func_call))
+            if (!expr_input(&input_token,func_call,num_of_id))
             {
                 deleteStack(s);
                 return false;

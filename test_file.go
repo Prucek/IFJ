@@ -42,6 +42,8 @@ func ahoj(){
     od := (5*8)/0
     id := (od*2)/4+5 != 1 +9
     len("ahoj")
+    id, od = maine(9,"hnusna skola")
+    id, od = dobry_den(9,"vysrata matika")
     inputf(25.4)
     inputf()
     int2float(25, 45)

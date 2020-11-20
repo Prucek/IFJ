@@ -62,7 +62,7 @@ typedef enum
 //  $ || < ||   || <  || <  || < || < || OK|| !!!
 
 
-bool expr();
+bool expr(bool *func_call, unsigned num_of_id);
 
 bool reduce(Stack *s);
 

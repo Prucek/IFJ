@@ -9,7 +9,7 @@
 
 int main()
 {
-    if (expr(EOL))
+    if (expr(false,0))
         printf("Correct\n");
     else
         printf("False\n");

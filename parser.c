@@ -9,7 +9,8 @@
 
 #define GET_TOKEN()  \
         do{ m.current_token = get_next_token(stdin); \
-            (m.current_token.type == EOL)? m.current_line++ : 0 ; \
+            if (inc_line_on_next) m.current_line++; inc_line_on_next=false;\
+            if (m.current_token.type == EOL) inc_line_on_next = true; \
             (m.current_token.type == ERROR)? (lexical_error(m.current_line), 1) : 0 ;\
         }while(0)
 
@@ -18,6 +19,10 @@
         (syntax_error(m.current_token.type,m.current_line), \
         ((m.current_token.type == ID || m.current_token.type == STRING)? \
         free(m.current_token.data.s),false : false), false))
+
+#define CHECK_TOKEN_NOFREE(Type) \
+        ((m.current_token.type == (Type))? true : \
+        (syntax_error(m.current_token.type,m.current_line), false))
 
 #define CHECK_NO_ERROR(Type) ((m.current_token.type == (Type))? true : false)
 
@@ -30,15 +35,45 @@
          m.current_token.data.k == K_FLOAT64))? \
          true : (syntax_error(m.current_token.type,m.current_line),false)
 
+#define IS_EXPR_END(toktype) \
+    (  (toktype) == EOL      \
+    || (toktype) == COMMA    \
+    || (toktype) == SEMICLN  \
+    || (toktype) == BRACKET_LEFT \
+    || (toktype) == EoF )
+
+/**
+ * for i:=(((())));i<5;i = i+1 {
+ *      // Valid example for CONSUME_FAILED_EXPR()
+ * }
+ */
+#define CONSUME_FAILED_EXPR() \
+        while (!IS_EXPR_END(m.current_token.type)) \
+        { \
+            GET_TOKEN(); \
+        } // LEAKS ?
+
+#define CONSUME_LINE() \
+        while (!CHECK_NO_ERROR(EOL) && !CHECK_NO_ERROR(EoF)) \
+        { \
+            GET_TOKEN(); \
+        }
+
 #define GENERATE(func) if ((!func)) intern_error()
 
 //global
-Metadata m = {.current_line = 1, .index = 0, .local_table = NULL};
+bool inc_line_on_next = false;
+
+Metadata m = {.current_line = 1, .index = 0, .local_table = NULL, .current_func_id = NULL};
+
 TNode *node;
+
 TNode *array_of_trees[100]; // this could be macro
-TNode *arr_suspected[ARR_TREE_RANGE];  //< stores all funcs suspected from no_definition
 int tree_index = -1;
+
+TNode *arr_suspected[ARR_TREE_RANGE];  //< stores all funcs suspected from no_definition
 int suspected_tree_idx = -1;
+
 char *built_in[] = {"inputs", "inputf", "inputi", "print", "int2float", "float2int",
 "len", "substr", "ord", "chr"};
 
@@ -296,6 +331,58 @@ bool search_all_trees(char *key)
     return false;
 }
 
+
+TData *get_func_data(char *id)
+{
+    node = search_symtable(m.global_table, id);
+    if (node != NULL)
+        return &node->data;
+    return NULL;
+}
+
+/**
+ * @brief Retrieve ID's data from symtable if it exists in current scope
+ * @param id Identifier to search for
+ * @return Pointer to id's dataset if found, else NULL
+ */
+TData *get_id_data(char *id)
+{
+    for (int idx = 0; idx <= tree_index; idx++)
+    {
+        node = search_symtable(array_of_trees[idx], id);
+        if (node != NULL)
+            return &node->data;
+    }
+
+    return NULL;
+}
+
+TData *get_curscope_id_data(char *id)
+{
+    node = search_symtable(array_of_trees[tree_index], id);
+
+    if (node != NULL)
+        return &node->data;
+    return NULL;
+}
+
+bool define_id_type(char *id, Data_type type, bool in_curr_scope)
+{
+    TData *id_data;
+    if (in_curr_scope)
+        id_data = get_curscope_id_data(id);
+    else 
+        id_data = get_id_data(id);
+
+    if (id_data != NULL)
+    {
+        id_data->type = type;
+        return true;
+    }
+
+    return false;
+}
+
 void delete_tree() //deletes youngest tree
 {
     array_of_trees[tree_index] = NULL;
@@ -325,8 +412,10 @@ void program()
     {
         no_definition_error("main", -1);    //< func main was not defined
     }
+    
     if (suspected_tree_idx > -1)    //< check funcs suspected from no_definition
     {
+        lasterror_line = 0;
         check_suspected();
         delete_arr_suspected();
     }
@@ -391,7 +480,6 @@ bool func()
     }
 
     delete_symtable(array_of_trees[tree_index]);
-    //delete_symtable(root);
     delete_tree();
     return true;
 }
@@ -416,14 +504,26 @@ bool func_header(bool *is_main)
     Token last_func;
     char *func_id;
 
+    if (m.current_func_id != NULL)
+    {
+        free(m.current_func_id);
+    }
+
     GET_TOKEN();
     if (!CHECK_TOKEN(ID))
     {
         missing_id = true;
+        m.current_func_id = NULL;
     }
     else 
     {
         func_id = m.current_token.data.s;  //< store func id cause insertion to symtable will be later
+        
+        size_t func_id_len = sizeof(char) * (strlen(func_id) + 1);
+
+        m.current_func_id = malloc(func_id_len);
+        strncpy(m.current_func_id, func_id, func_id_len);
+
         bool is_built = is_built_fun(func_id);
 
         if ((node = search_symtable(m.global_table, func_id)) != NULL || is_built)
@@ -476,7 +576,7 @@ bool func_header(bool *is_main)
 
             if (new_data_func.param_counter != 0 || new_data_func.ret_counter != 0)
             {
-                param_error(func_id, m.current_line);    //< func main cant have param or ret value
+                main_definition_error(m.current_line);    //< func main cant have param or ret value
             }
         }
 
@@ -618,6 +718,7 @@ bool statement()
     }
     else if (CHECK_NO_ERROR(BRACKET_RIGHT))
     {
+        // Function body end
         return false;
     }
     else if (CHECK_NO_ERROR(KEYWORD))
@@ -639,7 +740,7 @@ bool statement()
             syntax_error(m.current_token.type,m.current_line);
         }
     }
-    else if (CHECK_TOKEN(ID))
+    else if (CHECK_TOKEN(ID)) //< At this point token must be ID. If not -> syn error
     {
         Token last_id = m.current_token;     //< need to store token's id in case of function call
         TData new_data;
@@ -655,16 +756,25 @@ bool statement()
         GET_TOKEN();
         unsigned number_of_id = 1;
         bool tmp;
-        // assignment to var statement with multiple ID
+        TData *id_data;
+        AssignMetadata asgn_meta;
 
+        // assignment to var statement with multiple IDs
         if (CHECK_NO_ERROR(COMMA))
         {
-            tmp = search_all_trees(id_name);
+            asgn_meta.id_names[number_of_id - 1] = id_name; //< First id on left side of assignment
 
-            if (tmp == false)
-            { //mozno je nelegalne
+            id_data = get_id_data(id_name); 
+            if (id_data != NULL) //< Check if first id is defined
+            {
+                asgn_meta.id_types[number_of_id - 1] = id_data->type;
+            }
+            else
+            { 
+                asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
                 no_definition_error(id_name, m.current_line);
             }
+
             while(!CHECK_NO_ERROR(VAR_ASSIGN))
             {
                 if (!CHECK_TOKEN(COMMA))
@@ -677,19 +787,30 @@ bool statement()
                     break;
                 }
 
-                tmp = search_all_trees(m.current_token.data.s);
-                if (tmp == false)
+                number_of_id++;
+                
+                id_name = m.current_token.data.s;
+                asgn_meta.id_names[number_of_id - 1] = id_name;
+                id_data = get_id_data(id_name);
+
+                if (id_data != NULL)
                 {
-                    no_definition_error(m.current_token.data.s, m.current_line);
+                    asgn_meta.id_types[number_of_id - 1] = id_data->type;
+                }
+                else
+                { 
+                    //mozno je nelegalne - ESTE FURT ? Neviem, povec mi
+                    asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
+                    no_definition_error(id_name, m.current_line);
                 }
 
-                free(m.current_token.data.s);
+                // Id name will be freed in assignment_s
 
-                number_of_id++;
                 GET_TOKEN();
             }
 
-            assignment_s(number_of_id);
+            assignment_s(asgn_meta, number_of_id);
+            return true; // Don't perform free on last_id (already freed)
         }
         // definition of var statement
         else if (CHECK_NO_ERROR(DEF_OF_VAR))
@@ -702,6 +823,7 @@ bool statement()
             if (tmp == false)
             {
                 new_data.defined = true;
+                new_data.type = T_UNDEFINED;
                 array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
             }
             else
@@ -709,24 +831,38 @@ bool statement()
                 re_definition_error(id_name, m.current_line);
             }
 
-            expression();
-            CHECK_TOKEN(EOL);
+            Data_type expr_type = expression();
+            if (expr_type != T_UNDEFINED)
+                define_id_type(id_name, expr_type, true);
+
+            // Do not free again if the failing expr token was ID or STR (Already free'd)
+            if (!CHECK_TOKEN_NOFREE(EOL))
+                syntax_error(m.current_token.type,m.current_line);
+
+            return true;
         }
         // assignment to var statement
         else if (CHECK_NO_ERROR(VAR_ASSIGN))
         {
-            tmp = search_all_trees(id_name);
-            if (tmp == false)
+            asgn_meta.id_names[number_of_id - 1] = id_name;
+            id_data = get_id_data(id_name);
+            if (id_data != NULL)
             {
+                asgn_meta.id_types[number_of_id - 1] = id_data->type;
+            }
+            else
+            { 
+                asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
                 no_definition_error(id_name, m.current_line);
             }
 
-            assignment_s(number_of_id);
+            assignment_s(asgn_meta, number_of_id);
+            return true; // Don't perform free on last_id (already free'd)
         }
         else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
         {
             bool is_built = is_built_fun(last_id.data.s);
-            number_of_id--;     //< func's id must be reduced
+            number_of_id--;     //< func's id count starts from zero
             function_call(last_id, number_of_id, is_built);
             m.index = 0;
             
@@ -742,6 +878,11 @@ bool statement()
 
         free(last_id.data.s);   //< free token's id
     }
+    else
+    {
+        // Invalid statement
+        CONSUME_LINE();
+    }
 
     return true;
 }
@@ -754,7 +895,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
 {
     Token_type previous = PARENTHESIS_LEFT;
     unsigned act_param_counter = 0;
-    bool sem_error = false;                     //< indicates semantic error
+    bool arg_type_error = false;                     //< indicates semantic error
     new_data_func = init_new_data(new_data_func);
     new_data_func.is_function = true;
     new_data_func.line = m.current_line;
@@ -774,10 +915,19 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             {
                 if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
                 {
-                    if (node->data.param_counter != act_param_counter || node->data.ret_counter != num_of_id)      //< num of params or ret vals not same
+                    // Dal som prednost jednemu sem erroru (6) pred druhym
+                    if (node->data.param_counter != act_param_counter)  //< num of params vals not same
                     {
-                        sem_error = true;
+                        // arg_type_error = true;
+                        param_num_error(id.data.s, m.current_line);
                     }
+                    else {
+                        // Num of ids on left side of assignment is not equal to function return counter
+                        if (node->data.ret_counter != num_of_id)
+                            // arg_type_error = true;
+                            return_unpack_error(id.data.s, m.current_line);
+                    }
+                    
                 }
                 else        //< not sure whether func defined
                 {
@@ -807,7 +957,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             {
                 if (node->data.arg_arr[m.index++] != T_INT)     //< data type of calling func not same
                 {
-                    sem_error = true;
+                    arg_type_error = true;
                 }
             }
             else        //< not sure whether func defined
@@ -827,7 +977,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             {
                 if (node->data.arg_arr[m.index++] != T_FLOAT64)     //< data type of calling func not same
                 {
-                    sem_error = true;
+                    arg_type_error = true;
                 }
             }
             else        //< not sure whether func defined
@@ -847,7 +997,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             {
                 if (node->data.arg_arr[m.index++] != T_STRING)     //< data type of calling func not same
                 {
-                    sem_error = true;
+                    arg_type_error = true;
                 }
             }
             else        //< not sure whether func defined
@@ -874,9 +1024,9 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             break;
         }
     }
-    if (sem_error)
+    if (arg_type_error)
     {
-        param_error(id.data.s, m.current_line);
+        param_type_error(id.data.s, m.current_line);
     }
 }
 
@@ -888,9 +1038,9 @@ void if_s()
     add_tree();
     array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
-
+    // Expression must be of type T_INT ??
     expression();
-    CHECK_TOKEN(BRACKET_LEFT);
+    CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
 
     while(statement());
@@ -913,24 +1063,30 @@ void if_s()
 
 /**
  * @brief Checks syntax of assignment to var statement
- * @param number_of_id is number of ID before =
+ * @param asgn_meta Assignment metadata - left side identifiers and their data types
+ * @param number_of_id Number of left side identifiers
  */
-void assignment_s(unsigned number_of_id)
+void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
 {
-    for (unsigned i = 1; i <= number_of_id; i++)
+    for (unsigned i = 0; i <= number_of_id - 1; i++)
     {
-        if (!expression())
-        {
-            GET_AND_CHECK(EOL);
-            return;
-        }
+        Data_type expr_type = expression();
+
         if (i == number_of_id)
         {
+            free(asgn_meta.id_names[i]);
             break;
         }
-        CHECK_TOKEN(COMMA);
+
+        if (expr_type != asgn_meta.id_types[i])
+            type_error(asgn_meta.id_names[i], data_types[expr_type], m.current_line);
+
+        free(asgn_meta.id_names[i]);
+
+        if (i != number_of_id-1) // Was the last expr assigned ?
+            CHECK_TOKEN_NOFREE(COMMA);
     }
-    CHECK_TOKEN(EOL);
+    CHECK_TOKEN_NOFREE(EOL);
 }
 
 /**
@@ -941,30 +1097,34 @@ void for_s()
     add_tree();
     array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
-
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
         char *id_name;
         id_name = m.current_token.data.s;
         TData new_data;
-        new_data.type = m.current_token.type;
+        new_data.type = T_UNDEFINED;
         new_data.is_var = true;
         new_data.in_block = true;
         new_data.defined = true;
         new_data.is_function = false;
 
         GET_AND_CHECK(DEF_OF_VAR);
+        
         array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
+        
+        Data_type expr_type = expression();
+        if (expr_type != T_UNDEFINED)
+            define_id_type(id_name, expr_type, true);
+        
         free(id_name);
-        expression();
-        CHECK_TOKEN(SEMICLN);
+        CHECK_TOKEN_NOFREE(SEMICLN);
     }
     else if (CHECK_TOKEN(SEMICLN)){;}
 
     // condition
     expression();
-    CHECK_TOKEN(SEMICLN);
+    CHECK_TOKEN_NOFREE(SEMICLN);
 
     // increment / decrement (can be epmty)
     GET_TOKEN();
@@ -973,7 +1133,7 @@ void for_s()
         free(m.current_token.data.s);
         GET_AND_CHECK(VAR_ASSIGN);
         expression(); //only one ???
-        CHECK_TOKEN(BRACKET_LEFT);
+        CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
 
@@ -991,30 +1151,76 @@ void for_s()
  */
 void return_s()
 {
-    while (true)
-    {
-        expression();
-        // potrebujem datove typy kazdeho vyrazu
-        // idealne v metadatach nejake int pole
-        // kazda bunka bude reprezentovat datovy typ vyrazu(T_INT...)
-        // potom si to uz skontrolujem s danym id funkcie ci je return validny
+    // potrebujem datove typy kazdeho vyrazu
+    // idealne v metadatach nejake int pole
+    // kazda bunka bude reprezentovat datovy typ vyrazu(T_INT...)
+    // potom si to uz skontrolujem s danym id funkcie ci je return validny
 
-        if (CHECK_NO_ERROR(COMMA))
+    TData *func_data = get_func_data(m.current_func_id);
+
+    if (func_data == NULL)
+    {
+        // Consume the rest of the line (cannot determine how many expressions are required)
+        // Is this a valid use case ?
+        CONSUME_LINE();
+    }
+    else 
+    { 
+        if (func_data->ret_counter == 0) //< return should not be in void func
         {
-            continue;
+            no_return_error(m.current_func_id, m.current_line);
+            CONSUME_LINE();
         }
-        else if (CHECK_NO_ERROR(EOL))
+        else 
         {
-            break;
-        }
-        else if (CHECK_NO_ERROR(EoF))
-        {
-            syntax_error(m.current_token.type,m.current_line);
-            break;
-        }
-        else
-        {
-            syntax_error(m.current_token.type,m.current_line);
+            unsigned expr_idx = 0;
+            bool ret_type_error = false; //< Delay type errors so syntax is checked first
+
+            while (true)
+            {
+                Data_type expr_type = expression();
+
+                // If expr_type is undefined, error was already thrown or an empty expr was parsed
+                if (expr_type != T_UNDEFINED && expr_idx < func_data->ret_counter) {
+                    if (expr_type != func_data->retval_arr[expr_idx])
+                        // Returning wrong data type
+                        ret_type_error = true;
+                }
+
+                if (CHECK_NO_ERROR(COMMA))
+                {
+                    // If expr is undefined, error was thrown or no expression was parsed (empty return)
+                    if (expr_type != T_UNDEFINED)
+                    {
+                        expr_idx++;
+                        continue;
+                    }
+                    // Continue to syntax error
+                }
+                else if (CHECK_NO_ERROR(EOL))
+                {
+                    // Expr type is undefined on the end of the return statement
+                    // if no error was thrown yet, expr is missng = syntax error
+                    if (expr_type != T_UNDEFINED)
+                    {
+                        if (expr_idx != func_data->ret_counter - 1)
+                        {
+                            // Insufiicient or too many return values (expressions)
+                            return_num_error(m.current_func_id, m.current_line);
+                        }
+                        break;
+                    }
+                    
+                    // Continue to syntax error
+                }
+                
+                // Missing return value or EOF
+                syntax_error(m.current_token.type,m.current_line);
+                break;
+            }
+
+            if (ret_type_error) 
+                return_type_error(m.current_func_id, m.current_line);
         }
     }
 }
@@ -1022,38 +1228,52 @@ void return_s()
 /**
  * @brief Parses a single expression
  */
-bool expression()
+Data_type expression()
 {
-    /** @todo Implement semantic analysis for variables & functions within expressions
-     *        When reading ID and then "(" call function call and return
-     */
+    /** @todo Implement semantic analysis for FUNCTIONS within expressions */
 
     bool func_call = false;
-    if (!expr(&func_call))
+    Data_type expr_type = T_UNDEFINED;
+
+    if (!expr(&expr_type, &func_call))
     {
         syntax_error(m.current_token.type,m.current_line);
+
+        CONSUME_FAILED_EXPR();
+
+        return T_UNDEFINED; //< Invalid expression's data type ?
     }
-    if (func_call)
-        return false;
-    else
-        return true;
     
+    if (func_call)
+        return T_UNDEFINED;
+    else
+        return expr_type;
 }
 
 /**
  * @brief Reads input for expressions and ajusts it
+ * @param input_terminal Next token's relevant data - passed by reference to be collected
+ * @param func_call Identifier for function calls - is set to true if input is function call
+ * @return true on successful read & data collection, else false
  */
-bool input(int *input_token, bool *func_call)
+bool input(Terminal *input_terminal, bool *func_call)
 {
     m.previous_token = m.current_token;
     GET_TOKEN();
+
+    input_terminal->current_line = m.current_line;
+    input_terminal->token.type = m.current_token.type;
+    input_terminal->token.data.s = NULL;
+
     if (CHECK_NO_ERROR(ADD) || CHECK_NO_ERROR(SUB))
     {
-        *input_token = PM;
+        input_terminal->terType = PM;
+        input_terminal->dataType = T_NIL;
     }
     else if (CHECK_NO_ERROR(MUL) || CHECK_NO_ERROR(DIV))
     {
-        *input_token = MD;
+        input_terminal->terType = MD;
+        input_terminal->dataType = T_NIL;
     }
     else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
     {
@@ -1062,35 +1282,64 @@ bool input(int *input_token, bool *func_call)
             function_call(m.previous_token,1,false); // todo 
             *func_call = true;
         }
-        *input_token = LP;
+        input_terminal->terType = LP;
+        // Function return type from symtable
     }
     else if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
     {
-        *input_token = RP;
+        input_terminal->terType = RP;
+        input_terminal->dataType = T_NIL;
     }
     else if (CHECK_NO_ERROR(ID) || CHECK_NO_ERROR(INT) ||
              CHECK_NO_ERROR(STRING) || CHECK_NO_ERROR(FLOAT64))
     {
+        input_terminal->terType = II;
+
         if (CHECK_NO_ERROR(ID) || CHECK_NO_ERROR(STRING))
         {
+            input_terminal->token.data.s = m.current_token.data.s;
+
             if (CHECK_NO_ERROR(ID))
             {
                 m.previous_token = m.current_token;
+
+                // ID data type from symtable
+                TData *id_data = get_id_data(m.current_token.data.s);
+                if (id_data != NULL)
+                    input_terminal->dataType = id_data->type;
+                else
+                    input_terminal->dataType = T_UNDEFINED;
+                
             }
-            free(m.current_token.data.s);
+            else
+            {
+                input_terminal->dataType = T_STRING;
+            }
+            // free(m.current_token.data.s);
         }
-        *input_token = II;
+        else
+        {
+            if (CHECK_NO_ERROR(INT))
+                input_terminal->token.data.i = m.current_token.data.i;
+            else 
+                input_terminal->token.data.d = m.current_token.data.d;
+
+            // Hack - Data_type and Token_type have the same values for INT, STR & FLOAT
+            input_terminal->dataType = m.current_token.type;
+        }
     }
     else if (CHECK_NO_ERROR(GT) || CHECK_NO_ERROR(LT) ||
              CHECK_NO_ERROR(EQ) || CHECK_NO_ERROR(NE) ||
              CHECK_NO_ERROR(LE) || CHECK_NO_ERROR(GE)   )
     {
-        *input_token = RO;
+        input_terminal->terType = RO;
+        input_terminal->dataType = T_NIL;
     }
     else if (CHECK_NO_ERROR(EOL) || CHECK_NO_ERROR(COMMA) ||
              CHECK_NO_ERROR(SEMICLN) || CHECK_NO_ERROR(BRACKET_LEFT))
     {
-        *input_token = EN;
+        input_terminal->terType = EN;
+        input_terminal->dataType = T_NIL;
     }
     else
     {

@@ -17,7 +17,9 @@
 
 #define ARR_TREE_RANGE 1000 //< range of tree arrays
 #define BUILT_FUNC_NUM 10   //< we have 10 built_in functions
+#define MAX_FUNCNAME_LEN 100 //< Max function length
 
+//// Global parser data ////
 typedef struct
 {
     Token current_token;
@@ -26,9 +28,41 @@ typedef struct
     TNode *global_table;
     TNode *local_table;
     int index;          //< for searching of retval_arr and arg_arr
+    char *current_func_id;
     
 }Metadata;
- 
+
+
+//// Expression parsing ////
+typedef enum
+{
+    LP, // Left  Para (
+    RP, // Right Para )
+    PM, // Plus Minus +-
+    MD, // Mul  Div   * /
+    RO, // Relational operators <,>,<=,>=,==,!=
+    II, // id, float, string, int
+    EN, // $
+    NT, // Non Terminal
+    SH, // SHift
+} Terminal_type;
+
+typedef struct
+{
+    Token token;
+    Terminal_type terType;
+    Data_type dataType;
+    int current_line;
+    
+} Terminal;
+
+
+//// Utility types ////
+typedef struct 
+{
+    Data_type id_types[MAX_RET_VAL]; //< IDs on left side of assignment - types
+    char* id_names[MAX_RET_VAL];       //< IDs of left side of assignment - identifiers
+} AssignMetadata;
 
 TData new_data_func, new_data_var;
 
@@ -64,14 +98,14 @@ void function_call(Token id, unsigned num_of_id, bool is_built);
 
 void if_s();
 
-void assignment_s(unsigned number_of_id);
+void assignment_s(AssignMetadata assignment, unsigned number_of_id);
 
 void for_s();
 
 void return_s();
 
-bool expression();
+Data_type expression();
 
-bool input(int *input_token, bool *func_call);
+bool input(Terminal *input_terminal, bool *func_call);
 
 #endif

@@ -95,7 +95,7 @@ func ahoj(){
                 ///id, od = dobry_den("ahoj", 24.5)  //hadze syntakticku chybu vzdy ked priradujeme funkciu premennej, treba dorobit spravne express.
                 // takze nemozem poriadne otestovat ci sa zhoduje lava strana priradenia s poctom a navratov. hodnotami volanej funckie
                 
-                blablabla()
+                blablabla() // here too not reporting ERROR
         }
     bebi := "hello"+"its"-"me"
     id = 5

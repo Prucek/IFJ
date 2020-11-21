@@ -168,7 +168,7 @@ void return_type_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Unmatched type/s of return value/s in function: '%s' on line: %d !  ****\n", ERR_PARAM, id, line);
+        THROW_ERROR("****  Semantic error : Unmatched type/s of return value/s in/when calling function: '%s' on line: %d !  ****\n", ERR_PARAM, id, line);
         lasterror_line = line;
     }
 }
@@ -177,7 +177,7 @@ void return_unpack_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Wrong number of ID's for function: '%s' to unpack return values to on line: %d !  ****\n", ERR_PARAM, id, line);
+        THROW_ERROR("****  Semantic error : Wrong number of ID's on left side when calling function: '%s' to unpack return values to on line: %d !  ****\n", ERR_PARAM, id, line);
         lasterror_line = line;
     }
 }

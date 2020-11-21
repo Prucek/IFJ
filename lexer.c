@@ -582,15 +582,12 @@ Token get_next_token(FILE *f)
             // Unwanted lexeme
             case S_ERROR:
                 t.type = ERROR; //< (null)
-                t.data.i = 1;   //< E_LEXICAL
+                t.data.s = NULL;
                 return t;
                 break;
 
             default:
                 break;
         }
-
-        if (state == S_ERROR) //< Return last char which caused error state, in order to make correct error output
-            ungetc(c, f);
     }
 }

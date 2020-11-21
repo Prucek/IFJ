@@ -30,44 +30,105 @@ void printStack(Stack *s)
 /**
  * @brief Adding tokens to stack an selecting action to be done by precedence table
  */
-bool expr(bool *func_call, unsigned num_of_id)
+bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id)
 {
+    /** 
+     * @todo Forbid - * / operations for strings 
+     *       Catch division by zero
+     *       Generate arithmetic operations assembly
+     */ 
+
+    Terminal input_terminal;
+    bool expr_isbool = false; //< Wait for logical operator to override expression to boolean
+    bool expr_semerror = false; //< Wait for data type collisions or undefined IDs and if any occur, be sure to return false
+    bool can_be_func = false;
+    Terminal previous;
+
     Stack *s = createStack(STACK_SIZE);
     push(s,EN);
-    int input_token;
+
     bool read = true;
+    
     while(true)
     {
         if (read)
         {
-            if (!expr_input(&input_token,func_call,num_of_id))
+            if (!expr_input(&input_terminal,func_call,num_of_id))
             {
                 deleteStack(s);
                 return false;
             }
             else
             {
-                if (*func_call)
+                if (can_be_func) // id was read without data type
                 {
-                    deleteStack(s);
-                    return true;
-                }   
+                    if (input_terminal.terType == LP && *func_call)
+                    {
+                        deleteStack(s);
+                        return true;
+                    }
+                    else
+                    {
+                        no_definition_error(previous.token.data.s, previous.current_line);
+                        free(previous.token.data.s);
+                        if (!expr_semerror) expr_semerror = true;
+                    }
+                    can_be_func = false;
+                }
+
+                if (input_terminal.terType == II) //< Operand
+                {
+                    // Check terminal's data type
+                    if (*expr_type == T_UNDEFINED) //< Still not determined expr type
+                    {
+                        if (input_terminal.dataType != T_UNDEFINED)
+                            *expr_type = input_terminal.dataType;
+                        else 
+                        {
+                            // can be error or func call
+                            can_be_func = true;
+                            previous = input_terminal;
+                        }
+                    }
+                    else 
+                    {
+                        if (input_terminal.dataType != *expr_type)
+                        {
+                            // Invalid operand types
+                            compatibility_error(data_types[*expr_type], input_terminal.current_line);
+                            if (!expr_semerror) expr_semerror = true;
+                        }
+                    }
+
+                    /** @todo Free if id came */
+                    if (input_terminal.dataType == T_STRING) // || input_terminal.token.type == ID)   not working, invalid read
+                    {
+                        free(input_terminal.token.data.s); //< Stop holding on to IDs
+                        input_terminal.token.data.s = NULL;
+                    }
+                }
+                else if (input_terminal.terType == RO) //< Logical Operator
+                    if (!expr_isbool) expr_isbool = true;
             }
         }
 
         int f = find_terminal(s);
-        if (f < 0 || input_token < 0) 
+        if (f < 0 || input_terminal.terType < 0) 
         {
             deleteStack(s);
             return false;
         }
-        TabItem to_perform = precedence_table[f][input_token];
+        TabItem to_perform = precedence_table[f][input_terminal.terType];
 
         if (to_perform == T_ERR)
         {
             deleteStack(s);
-            if (input_token == EN && f == EN) // input token == first terminal on stack == EN
+            if (input_terminal.terType == EN && f == EN) // input token == first terminal on stack == EN
             {
+                if (expr_isbool && *expr_type != T_INT) 
+                    *expr_type = T_INT; //< Override expr type to bool expr
+                
+                if (expr_semerror) return false;
                 return true;
             }
             else
@@ -86,23 +147,23 @@ bool expr(bool *func_call, unsigned num_of_id)
         }
         else if (to_perform == SHIFT)
         {
-            if (input_token == II)
+            if (input_terminal.terType == II)
             {
                 push(s,SH);
             }
-            else if (input_token == PM || input_token == MD || input_token == RO)
+            else if (input_terminal.terType == PM || input_terminal.terType == MD || input_terminal.terType == RO)
             {
                 int tmp = pop(s);
                 push(s,SH);
                 push(s,tmp);
             }
-            push(s,input_token);
+            push(s,input_terminal.terType);
             read = true; 
             continue;       
         }
         else if (to_perform == EQUAL)
         {
-            push(s,input_token);
+            push(s,input_terminal.terType);
             if (!reduce(s))
             {
                 deleteStack(s);

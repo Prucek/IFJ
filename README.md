@@ -31,19 +31,3 @@ make compiler-test
 * Add customized test cases by implementing new `test_*` functions inside of respective test suites
 
 <!-- ## Bugs -->
-
-____________
-
-## Assignments
-
-* xcerni13:
-  * Continue with semantic analysis
-
-* xjurik12:
-  * Expression analysis
-
-* xmicek08:
-  * Continue with semantic analysis
-
-* xrucek00:
-  * Start with generetion of code

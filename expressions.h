@@ -11,18 +11,7 @@
 #include "parser.h"
 #include "stack.h"
 
-typedef enum
-{
-    LP, // Left  Para (
-    RP, // Right Para )
-    PM, // Plus Minus +-
-    MD, // Mul  Div   */
-    RO, // Relations Operands <,>,<=,>=,==,!=
-    II, // id, float, string, int
-    EN, // $
-    NT, // Non Terminal
-    SH, // SHift
-} Terminal;
+//// Relocated typedef struct Terminal  to parser.h (cyclic dependency)
 
 typedef enum
 {
@@ -62,7 +51,7 @@ typedef enum
 //  $ || < ||   || <  || <  || < || < || OK|| !!!
 
 
-bool expr(bool *func_call, unsigned num_of_id);
+bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id);
 
 bool reduce(Stack *s);
 

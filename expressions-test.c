@@ -9,9 +9,9 @@
 
 int main()
 {
-    if (expr(false,0))
-        printf("Correct\n");
-    else
-        printf("False\n");
-    return 0;
+    // if (expr(EOL))
+    //     printf("Correct\n");
+    // else
+    //     printf("False\n");
+    // return 0;
 }

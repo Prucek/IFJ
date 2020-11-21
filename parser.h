@@ -17,6 +17,7 @@
 
 #define ARR_TREE_RANGE 1000 //< range of tree arrays
 #define BUILT_FUNC_NUM 10   //< we have 10 built_in functions
+#define NO_ASSIGN 0
 #define MAX_FUNCNAME_LEN 100 //< Max function length
 
 //// Global parser data ////
@@ -104,8 +105,8 @@ void for_s();
 
 void return_s();
 
-Data_type expression();
+bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id);
 
-bool input(Terminal *input_terminal, bool *func_call);
+Data_type expression(unsigned num_of_id);
 
 #endif

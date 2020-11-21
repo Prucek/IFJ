@@ -72,6 +72,7 @@ func ahoj(){
     len("ahoj")
     id, od = maine(9,"hnusna skola")
     id, od = dobry_den(9,"vysrata matika")
+    id, od = test_missing_expr_return()
     inputf(25.4)
     inputf()
     int2float(25, 45)

@@ -831,7 +831,7 @@ bool statement()
                 re_definition_error(id_name, m.current_line);
             }
 
-            Data_type expr_type = expression();
+            Data_type expr_type = expression(NO_ASSIGN);
             if (expr_type != T_UNDEFINED)
                 define_id_type(id_name, expr_type, true);
 
@@ -1039,7 +1039,7 @@ void if_s()
     array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
     // Expression must be of type T_INT ??
-    expression();
+    expression(NO_ASSIGN);
     CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
 
@@ -1070,14 +1070,18 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
 {
     for (unsigned i = 0; i <= number_of_id - 1; i++)
     {
-        Data_type expr_type = expression();
-
+        Data_type expr_type = expression(number_of_id);
         if (i == number_of_id)
         {
             free(asgn_meta.id_names[i]);
             break;
         }
-
+        if (expr_type == T_FCALL)
+        {
+            GET_TOKEN();
+            break;
+        }
+            
         if (expr_type != asgn_meta.id_types[i])
             type_error(asgn_meta.id_names[i], data_types[expr_type], m.current_line);
 
@@ -1113,7 +1117,7 @@ void for_s()
         
         array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
         
-        Data_type expr_type = expression();
+        Data_type expr_type = expression(NO_ASSIGN);
         if (expr_type != T_UNDEFINED)
             define_id_type(id_name, expr_type, true);
         
@@ -1123,7 +1127,7 @@ void for_s()
     else if (CHECK_TOKEN(SEMICLN)){;}
 
     // condition
-    expression();
+    expression(NO_ASSIGN);
     CHECK_TOKEN_NOFREE(SEMICLN);
 
     // increment / decrement (can be epmty)
@@ -1132,7 +1136,7 @@ void for_s()
     {
         free(m.current_token.data.s);
         GET_AND_CHECK(VAR_ASSIGN);
-        expression(); //only one ???
+        expression(NO_ASSIGN);
         CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
@@ -1178,7 +1182,7 @@ void return_s()
 
             while (true)
             {
-                Data_type expr_type = expression();
+                Data_type expr_type = expression(NO_ASSIGN);
 
                 // If expr_type is undefined, error was already thrown or an empty expr was parsed
                 if (expr_type != T_UNDEFINED && expr_idx < func_data->ret_counter) {
@@ -1228,14 +1232,14 @@ void return_s()
 /**
  * @brief Parses a single expression
  */
-Data_type expression()
+Data_type expression(unsigned num_of_id)
 {
     /** @todo Implement semantic analysis for FUNCTIONS within expressions */
-
+    
     bool func_call = false;
     Data_type expr_type = T_UNDEFINED;
 
-    if (!expr(&expr_type, &func_call))
+    if (!expr(&expr_type, &func_call, num_of_id))
     {
         syntax_error(m.current_token.type,m.current_line);
 
@@ -1245,7 +1249,10 @@ Data_type expression()
     }
     
     if (func_call)
-        return T_UNDEFINED;
+    {
+        return T_FCALL;
+    }
+        
     else
         return expr_type;
 }
@@ -1256,7 +1263,7 @@ Data_type expression()
  * @param func_call Identifier for function calls - is set to true if input is function call
  * @return true on successful read & data collection, else false
  */
-bool input(Terminal *input_terminal, bool *func_call)
+bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
 {
     m.previous_token = m.current_token;
     GET_TOKEN();
@@ -1279,7 +1286,8 @@ bool input(Terminal *input_terminal, bool *func_call)
     {
         if (m.previous_token.type == ID)
         {
-            function_call(m.previous_token,1,false); // todo 
+            bool is_built = is_built_fun(m.previous_token.data.s);
+            function_call(m.previous_token,num_of_id,is_built); // todo           
             *func_call = true;
         }
         input_terminal->terType = LP;
@@ -1315,7 +1323,7 @@ bool input(Terminal *input_terminal, bool *func_call)
             {
                 input_terminal->dataType = T_STRING;
             }
-            // free(m.current_token.data.s);
+            //free(m.current_token.data.s);
         }
         else
         {
@@ -1345,6 +1353,7 @@ bool input(Terminal *input_terminal, bool *func_call)
     {
         return false;
     }
+
     return true;
 }
 

@@ -25,6 +25,7 @@ typedef enum
     T_STRING,
     T_FLOAT64,
     T_NIL,
+    T_FCALL,
     //T_BOOL  bonusove riesenie??? 
 
 } Data_type;

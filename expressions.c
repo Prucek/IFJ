@@ -30,7 +30,7 @@ void printStack(Stack *s)
 /**
  * @brief Adding tokens to stack an selecting action to be done by precedence table
  */
-bool expr(Data_type *expr_type, bool *func_call)
+bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id)
 {
     /** 
      * @todo Forbid - * / operations for strings 
@@ -41,6 +41,8 @@ bool expr(Data_type *expr_type, bool *func_call)
     Terminal input_terminal;
     bool expr_isbool = false; //< Wait for logical operator to override expression to boolean
     bool expr_semerror = false; //< Wait for data type collisions or undefined IDs and if any occur, be sure to return false
+    bool can_be_func = false;
+    Terminal previous;
 
     Stack *s = createStack(STACK_SIZE);
     push(s,EN);
@@ -51,18 +53,28 @@ bool expr(Data_type *expr_type, bool *func_call)
     {
         if (read)
         {
-            if (!input(&input_terminal,func_call))
+            if (!expr_input(&input_terminal,func_call,num_of_id))
             {
                 deleteStack(s);
                 return false;
             }
             else
             {
-                if (*func_call)
+                if (can_be_func) // id was read without data type
                 {
-                    deleteStack(s);
-                    return true;
-                }   
+                    if (input_terminal.terType == LP && *func_call)
+                    {
+                        deleteStack(s);
+                        return true;
+                    }
+                    else
+                    {
+                        no_definition_error(previous.token.data.s, previous.current_line);
+                        free(previous.token.data.s);
+                        if (!expr_semerror) expr_semerror = true;
+                    }
+                    can_be_func = false;
+                }
 
                 if (input_terminal.terType == II) //< Operand
                 {
@@ -73,9 +85,9 @@ bool expr(Data_type *expr_type, bool *func_call)
                             *expr_type = input_terminal.dataType;
                         else 
                         {
-                            // Undefined id or void func
-                            no_definition_error(input_terminal.token.data.s, input_terminal.current_line);
-                            if (!expr_semerror) expr_semerror = true;
+                            // can be error or func call
+                            can_be_func = true;
+                            previous = input_terminal;
                         }
                     }
                     else 
@@ -89,7 +101,7 @@ bool expr(Data_type *expr_type, bool *func_call)
                     }
 
                     /** @todo Free if id came */
-                    if (input_terminal.dataType == T_STRING)
+                    if (input_terminal.dataType == T_STRING) // || input_terminal.token.type == ID)   not working, invalid read
                     {
                         free(input_terminal.token.data.s); //< Stop holding on to IDs
                         input_terminal.token.data.s = NULL;

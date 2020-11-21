@@ -63,9 +63,9 @@ TNode *rewrite_data(TNode *node, TData new_data)
 
         for (unsigned j = 0; j < new_data.param_counter; j++)
             node->data.arg_arr[j] = new_data.arg_arr[j];
-        /*
+        
         for (unsigned k = 0; k < new_data.id_counter; k++)
-            node->data.id_type[k] = new_data.id_type[k];*/
+            node->data.id_type[k] = new_data.id_type[k];
     }
 
     return node;

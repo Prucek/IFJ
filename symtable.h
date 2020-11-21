@@ -44,7 +44,7 @@ typedef struct tData
     Data_type arg_arr[MAX_ARG];           //< stores data types of arg values
     int line;                       //< line of symbol
     unsigned id_counter;            //< counts num of id on left side of var_assign in case of func call
-    //int id_type[MAX_RET_VAL];     //< stores data types of id's on left side of var_assign in case of func call
+    Data_type id_type[MAX_RET_VAL];     //< stores data types of id's on left side of var_assign in case of func call
 
 } TData;
 

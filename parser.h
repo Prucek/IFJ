@@ -66,8 +66,11 @@ typedef struct
 } AssignMetadata;
 
 TData new_data_func, new_data_var;
+AssignMetadata asgn_meta;
 
 TData init_new_data(TData new_data);
+
+AssignMetadata init_asgn_data(AssignMetadata asgn_meta);
 
 void check_suspected();
 

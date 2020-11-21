@@ -32,6 +32,7 @@ func main(){
         // i = a + 3
 
         a = 1 +5 * (1 / 5)
+        main()  // moze byt volany rekurzivne ????
 }
 func main(){
 
@@ -42,6 +43,7 @@ func maine (i int, b string)(){
         b := "Kurna"
         b = "nyeeee"
         b, i = "precooo", 44
+        b = maine(i, b)
         ahoj := a
         id := 5
         ahoj, id = a, b
@@ -58,7 +60,7 @@ func maine (i int, b string)(){
                 //id1 , id2 , id3,_ = a, b,c,d
         }
         //ahoj := b
-        ahoj(24) // here not reporting error
+        ahoj(24)
         ahoj()
         id = 25.3
         return masci,aj
@@ -69,13 +71,27 @@ func ahoj(){
     //i = 5
     od := (5*8)/0
     id := (od*2)/4+5 != 1 +9
-    len("ahoj")
-    id, od = maine(9,"hnusna skola")
-    id, od = dobry_den(9,"vysrata matika")
-    id, od = test_missing_expr_return()
+    ny := 5
+    yn := 10
+    f := 5.5
+    s := "Letim jak apac"
+    monsignour := "Misko Kmet"
+    //ny = len(5)
+    //id, od = maine(9,"hnusna skola")
+    ny, yn = test_missing_expr_return()
+    print(monsignour)
     inputf(25.4)
-    inputf()
+    ny, f = inputf()
+    f, ny = inputf()
     int2float(25, 45)
+    f = int2float(77.5)
+    ny = float2int(448)
+    ny = float2int(xx, f)
+    ny = float2int(f)
+    monsignour, ny = substr(s, 2, ny)
+    ny, yn = ord(s, 4)
+
+
 
         for ;a ;  {
                 if a{
@@ -92,11 +108,7 @@ func ahoj(){
                 dobry_den("ahoj", 24)
                 preco(25, 4, 8.5)
                 main()
-
-                ///id, od = dobry_den("ahoj", 24.5)  //hadze syntakticku chybu vzdy ked priradujeme funkciu premennej, treba dorobit spravne express.
-                // takze nemozem poriadne otestovat ci sa zhoduje lava strana priradenia s poctom a navratov. hodnotami volanej funckie
-                
-                blablabla() // here too not reporting ERROR
+                blablabla() 
         }
     bebi := "hello"+"its"-"me"
     id = 5
@@ -107,6 +119,14 @@ func dobry_den (s string, i int) (int,string){
         dobry_den()
         print("STRNIG =" ,s, "error =", code, "\n")
         print(25, ":", "Ahoj")
+        print()         //je to korektne ???
+        a := 5
+        b := 10
+        preco(a, b, 75.42)
+        a, s = dobry_den(s, b)
+        s, a = dobry_den(s, 25)
+        a, s, b = dobry_den(s, 25)
+        maine(k, "ahoj")
 }
 
 func preco(i int, j int, k float64){

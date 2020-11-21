@@ -77,12 +77,6 @@ int suspected_tree_idx = -1;
 char *built_in[] = {"inputs", "inputf", "inputi", "print", "int2float", "float2int",
 "len", "substr", "ord", "chr"};
 
-//TODO EXPRESSIONS !!!!!
-// bez nich nemozem dorobit semantiku funkcii, lava strana priradenia je zatial bez datoveho typu
-// takze nemozem skontrolovat zhodu medzi typmi ktore vracia fun a typmi na lavej strane
-// preto sa v mojej implementacii nachadzaju zakomentovane casti, ktore bez expressions nemaju vyznam
-// cize potrebujem aby kazde id vyskytujuce sa pri volani funckie(ci uz parameter alebo id na lavo) malo datovy typ
-
 /**
  * @brief Inits data structure of symtable to eliminate multi. insertion of one symbol
  * @param new_data Data unit that will be initionalized
@@ -97,12 +91,28 @@ TData init_new_data(TData new_data)
     for (int i = 0; i < MAX_RET_VAL; i++)
     {
         new_data.retval_arr[i] = T_UNDEFINED;
-        //new_data.id_type[i] = T_UNDEFINED;      //< bude sa pouzivat po dorobeni expressions
+        new_data.id_type[i] = T_UNDEFINED;
     }
     for (int j = 0; j < MAX_ARG; j++)
         new_data.arg_arr[j] = T_UNDEFINED;
 
     return new_data;
+}
+
+/**
+ * @brief Inits new instance of asgn_meta
+ * @param asgn_meta Current metadata that will be initionalized
+ * @return Initionalized metadata ready for next use
+ */
+ AssignMetadata init_asgn_data(AssignMetadata asgn_meta)
+{
+    for (int i = 0; i < MAX_RET_VAL; i++)
+        asgn_meta.id_types[i] = T_UNDEFINED;
+
+    for (int j = 0; j < MAX_RET_VAL; j++)
+        asgn_meta.id_names[j] = "";
+    
+    return asgn_meta;
 }
 
 /**
@@ -133,7 +143,6 @@ void check_suspected()
     for (int idx = 0; idx <= suspected_tree_idx; idx++)
     {
         TNode *root = arr_suspected[idx];
-        bool sem_error = false;
 
         if ((node = search_symtable(m.global_table, root->key)) == NULL)    //< func is not defined
         {
@@ -141,9 +150,9 @@ void check_suspected()
         }
         else  //< func is defined, check params
         {
-            if (node->data.param_counter != root->data.param_counter) //|| node->data.ret_counter != root->data.id_counter)
+            if (node->data.param_counter != root->data.param_counter)
             {
-                sem_error = true;
+                param_num_error(root->key, root->data.line);
             }
             else
             {
@@ -151,14 +160,26 @@ void check_suspected()
                 {
                     if (node->data.arg_arr[i] != root->data.arg_arr[i])     //< data type not same
                     {
-                        sem_error = true;
+                        param_type_error(root->key, root->data.line);           
                         break;
                     }
                 }
             }
-            if (sem_error)
+            // check semantics of left side of var assignment
+            if (node->data.ret_counter != root->data.id_counter)
             {
-                param_error(root->key, root->data.line);
+                return_unpack_error(root->key, root->data.line);
+            }
+            else 
+            {
+                for (unsigned idx = 0; idx < node->data.ret_counter; idx++)
+                {
+                    if (node->data.retval_arr[idx] != root->data.id_type[idx])  //< unmatched data type of left id and ret value
+                    {
+                        return_type_error(root->key, root->data.line);
+                        break;
+                    }
+                }
             }
        }
     }
@@ -176,121 +197,116 @@ void check_built(TNode *root)
         check_built(root->lptr);
         check_built(root->rptr);
 
-        bool sem_error = false;
         bool is_built = is_built_fun(root->key);    //< whether current func is built_in
         if (is_built)
         {
             if (!strcmp(root->key, "inputs"))
             {
-                if (root->data.param_counter != 0) // || root->data.id_counter != 2)
+                if (root->data.param_counter != 0 || root->data.id_counter != 2)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
-                /*else if (root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
+                else if (root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
                 {
-                    sem_error = true;
-                }*/
+                    param_error(root->key, root->data.line);
+                }
             }
             else if (!strcmp(root->key, "inputi"))
             {
-                if (root->data.param_counter != 0)  // || root->data.id_counter != 2)
+                if (root->data.param_counter != 0 || root->data.id_counter != 2)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
-                /*else if (root->data.id_type[0] != T_INT || root->data.id_type[1] != T_INT)
+                else if (root->data.id_type[0] != T_INT || root->data.id_type[1] != T_INT)
                 {
-                    sem_error = true;
-                }*/
+                    param_error(root->key, root->data.line);
+                }
             }
             else if (!strcmp(root->key, "inputf"))
             {
-                if (root->data.param_counter != 0) // root->data.id_counter != 2)
+                if (root->data.param_counter != 0 || root->data.id_counter != 2)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
-                /*else if (root->data.id_type[0] != T_FLOAT64 || root->data.id_type[1] != T_INT)
+                else if (root->data.id_type[0] != T_FLOAT64 || root->data.id_type[1] != T_INT)
                 {
-                    sem_error = true;
-                }*/
+                    param_error(root->key, root->data.line);
+                }
             }
             else if (!strcmp(root->key, "int2float"))
             {
-                if (root->data.param_counter != 1)  // || root->data.id_counter != 1)
+                if (root->data.param_counter != 1 || root->data.id_counter != 1)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_INT) // || root->data.id_type[0] != T_FLOAT64)
+                else if (root->data.arg_arr[0] != T_INT || root->data.id_type[0] != T_FLOAT64)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
             }
             else if (!strcmp(root->key, "float2int"))
             {
-                if (root->data.param_counter != 1) // || root->data.id_counter != 1)
+                if (root->data.param_counter != 1 || root->data.id_counter != 1)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_FLOAT64) // || root->data.id_type[0] != T_INT)
+                else if (root->data.arg_arr[0] != T_FLOAT64 || root->data.id_type[0] != T_INT)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
             }
             else if (!strcmp(root->key, "len"))
             {
-                if (root->data.param_counter != 1) // || root->data.id_counter != 1)
+                if (root->data.param_counter != 1 || root->data.id_counter != 1)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_STRING) // || root->data.id_type[0] != T_INT)
+                else if (root->data.arg_arr[0] != T_STRING || root->data.id_type[0] != T_INT)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
             }
             else if (!strcmp(root->key, "substr"))
             {
-                if (root->data.param_counter != 3)  // || root->data.id_counter != 2)
+                if (root->data.param_counter != 3 || root->data.id_counter != 2)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT || root->data.arg_arr[2] != T_INT) //|| root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
+                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT || root->data.arg_arr[2] != T_INT || root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
             }
             else if (!strcmp(root->key, "ord"))
             {
-                if (root->data.param_counter != 2) // || root->data.id_counter != 2)
+                if (root->data.param_counter != 2 || root->data.id_counter != 2)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT) //|| root->data.id_type[0] != T_INT || root->data.id_type[1] != T_INT)
+                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT || root->data.id_type[0] != T_INT || root->data.id_type[1] != T_INT)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
             }
             else if (!strcmp(root->key, "chr"))
             {
-                if (root->data.param_counter != 1) // || root->data.id_counter != 2)
+                if (root->data.param_counter != 1 || root->data.id_counter != 2)
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_INT) // || root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT) 
+                else if (root->data.arg_arr[0] != T_INT || root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT) 
                 {
-                    sem_error = true;
+                    param_error(root->key, root->data.line);
                 }
             }
             else //< print
             {
-                /*if (root->data.id_counter != 0)
+                if (root->data.id_counter != 0)
                 {
-                    sem_error = true;
-                }*/
+                    param_error(root->key, root->data.line);
+                }
             }
-        
-            if (sem_error)
-            {
-                param_error(root->key, root->data.line);
-            }
+    
             m.global_table = delete_node(m.global_table, root->key);
         }
     }
@@ -757,7 +773,8 @@ bool statement()
         unsigned number_of_id = 1;
         bool tmp;
         TData *id_data;
-        AssignMetadata asgn_meta;
+        //AssignMetadata asgn_meta; //< potreboval som to mat globalne dostupne
+        asgn_meta = init_asgn_data(asgn_meta);
 
         // assignment to var statement with multiple IDs
         if (CHECK_NO_ERROR(COMMA))
@@ -890,6 +907,8 @@ bool statement()
 /**
  * @brief Checks syntax of function call
  * @param id Stores the id of calling function
+ * @param num_of_id Stores number of ids on the left side of assignment
+ * @param is_built Informs whether calling function is built_in or not
  */
 void function_call(Token id, unsigned num_of_id, bool is_built)
 {
@@ -900,13 +919,15 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
     new_data_func.is_function = true;
     new_data_func.line = m.current_line;
     new_data_func.id_counter = num_of_id;
+    for (unsigned i = 0; i < num_of_id; i++)
+        new_data_func.id_type[i] = asgn_meta.id_types[i];
 
     while(true)
     {
         GET_TOKEN();
         if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
         {
-            if (!strcmp(id.data.s, "main"))     //< calling main is not allowed
+            if ((strcmp(m.current_func_id, "main")) != 0 && !strcmp(id.data.s, "main")) //< main can be called only recursively 
             {
                 other_error(m.current_line);
                 break;
@@ -915,19 +936,26 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             {
                 if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
                 {
-                    // Dal som prednost jednemu sem erroru (6) pred druhym
-                    if (node->data.param_counter != act_param_counter)  //< num of params vals not same
+                    if (node->data.param_counter != act_param_counter)  //< unmatched number of parameters
                     {
-                        // arg_type_error = true;
                         param_num_error(id.data.s, m.current_line);
                     }
-                    else {
-                        // Num of ids on left side of assignment is not equal to function return counter
-                        if (node->data.ret_counter != num_of_id)
-                            // arg_type_error = true;
-                            return_unpack_error(id.data.s, m.current_line);
+
+                    if (node->data.ret_counter != num_of_id)    //< unmatched number of ids on left with function return counter
+                    {
+                        return_unpack_error(id.data.s, m.current_line);
                     }
-                    
+                    else 
+                    { 
+                        for (unsigned idx = 0; idx < num_of_id; idx++)
+                        {
+                            if (node->data.retval_arr[idx] != asgn_meta.id_types[idx])  //< unmatched data type of id on left side with expected return data type
+                            {
+                                return_type_error(id.data.s, m.current_line);
+                                break;
+                            }  
+                        }
+                    }
                 }
                 else        //< not sure whether func defined
                 {
@@ -955,7 +983,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             act_param_counter++;
             if ((node = search_symtable(m.global_table, id.data.s)) != NULL && !(is_built))    //< func is defined for sure
             {
-                if (node->data.arg_arr[m.index++] != T_INT)     //< data type of calling func not same
+                if (node->data.arg_arr[m.index++] != T_INT)     //< unmatched data type of parameter
                 {
                     arg_type_error = true;
                 }
@@ -975,7 +1003,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             act_param_counter++;
             if ((node = search_symtable(m.global_table, id.data.s)) != NULL && !(is_built))    //< func is defined for sure
             {
-                if (node->data.arg_arr[m.index++] != T_FLOAT64)     //< data type of calling func not same
+                if (node->data.arg_arr[m.index++] != T_FLOAT64)     ///< unmatched data type of parameter
                 {
                     arg_type_error = true;
                 }
@@ -995,7 +1023,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             act_param_counter++;
             if ((node = search_symtable(m.global_table, id.data.s)) != NULL && !(is_built))    //< func is defined for sure
             {
-                if (node->data.arg_arr[m.index++] != T_STRING)     //< data type of calling func not same
+                if (node->data.arg_arr[m.index++] != T_STRING)     //< unmatched data type of parameter
                 {
                     arg_type_error = true;
                 }
@@ -1011,9 +1039,32 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             previous = STRING;
             continue;
         }
-        //TODO prienik s Rebekinou castou
         else if (CHECK_NO_ERROR(ID))
         {
+            act_param_counter++;
+            TData *id_data = get_id_data(m.current_token.data.s);
+            if (id_data != NULL)    //< id is defined
+            {
+                if ((node = search_symtable(m.global_table, id.data.s)) != NULL && !(is_built))    //< func is defined for sure
+                {
+                    if (node->data.arg_arr[m.index++] != id_data->type) //< unmatched data type of parameter
+                    {
+                        arg_type_error = true;
+                    }
+                }
+                else    //< not sure whether func defined
+                {
+                    new_data_func.param_counter++;
+                    new_data_func.arg_arr[m.index++] = id_data->type;
+                }
+            }
+            else    //< id is not defined
+            {
+                new_data_func.param_counter++;
+                new_data_func.arg_arr[m.index++] = T_UNDEFINED;
+                no_definition_error(m.current_token.data.s, m.current_line);
+            }
+
             free(m.current_token.data.s);
             previous = ID;
             continue;
@@ -1289,6 +1340,12 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
             bool is_built = is_built_fun(m.previous_token.data.s);
             function_call(m.previous_token,num_of_id,is_built); // todo           
             *func_call = true;
+
+            m.index = 0;
+            if (is_built)
+            {
+                check_built(m.global_table);  //< check semantic of built_in function
+            }
         }
         input_terminal->terType = LP;
         // Function return type from symtable

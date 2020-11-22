@@ -42,6 +42,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
     bool expr_isbool = false; //< Decide wheater exrpessions is type of bool
     bool expr_semerror = false; //< Wait for data type collisions or undefined IDs and if any occur, be sure to return false
     bool can_be_func = false; //< Will not print error if ID is not defined, can still be a func call, and if not then print error
+    bool check_zero_div = false;
     Terminal previous;
 
     Stack *s = createStack(STACK_SIZE);
@@ -78,6 +79,14 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
 
                 if (input_terminal.terType == II) //< Operand
                 {
+                    if (check_zero_div)
+                    {
+                        if (input_terminal.token.data.i == 0 || input_terminal.token.data.d == (double)0)
+                        {
+                            div_zero_error(input_terminal.current_line);
+                        }
+                        check_zero_div = false;
+                    }
                     // Check terminal's data type
                     if (*expr_type == T_UNDEFINED) //< Still not determined expr type
                     {
@@ -107,8 +116,14 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                         input_terminal.token.data.s = NULL;
                     }
                 }
+                else if (input_terminal.terType == MD && input_terminal.token.type == DIV)
+                {
+                    check_zero_div = true;
+                }    
                 else if (input_terminal.terType == RO) //< Logical Operator
+                {
                     if (!expr_isbool) expr_isbool = true;
+                }
             }
         }
 

@@ -233,6 +233,10 @@ func test_expression_eval(str string, i int, j int, f float64, d float64) {
         f = str + f // COMPATIBILITY ERROR (expression types do not match) before TYPE ERRROR (assignment)
         f = f + str
 
+        // div by zero
+        a := i/i/0
+        b := 7.0/0.00000
+
         str = str + str + str // ok
         str = str + str / str - str // isto nie ok - momentalne nefunguje 
 }

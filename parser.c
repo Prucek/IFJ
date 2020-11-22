@@ -111,7 +111,7 @@ TData init_new_data(TData new_data)
 
     for (int j = 0; j < MAX_RET_VAL; j++)
         asgn_meta.id_names[j] = "";
-    
+
     return asgn_meta;
 }
 
@@ -160,7 +160,7 @@ void check_suspected()
                 {
                     if (node->data.arg_arr[i] != root->data.arg_arr[i])     //< data type not same
                     {
-                        param_type_error(root->key, root->data.line);           
+                        param_type_error(root->key, root->data.line);
                         break;
                     }
                 }
@@ -170,7 +170,7 @@ void check_suspected()
             {
                 return_unpack_error(root->key, root->data.line);
             }
-            else 
+            else
             {
                 for (unsigned idx = 0; idx < node->data.ret_counter; idx++)
                 {
@@ -294,7 +294,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_INT || root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT) 
+                else if (root->data.arg_arr[0] != T_INT || root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -306,7 +306,7 @@ void check_built(TNode *root)
                     param_error(root->key, root->data.line);
                 }
             }
-    
+
             m.global_table = delete_node(m.global_table, root->key);
         }
     }
@@ -314,7 +314,7 @@ void check_built(TNode *root)
 
 /**
  * @brief Compares current func id with all possible built_in function
- * @return True if func id is one of built_in function, else false 
+ * @return True if func id is one of built_in function, else false
  */
 bool is_built_fun(char *func_id)
 {
@@ -387,7 +387,7 @@ bool define_id_type(char *id, Data_type type, bool in_curr_scope)
     TData *id_data;
     if (in_curr_scope)
         id_data = get_curscope_id_data(id);
-    else 
+    else
         id_data = get_id_data(id);
 
     if (id_data != NULL)
@@ -428,7 +428,7 @@ void program()
     {
         no_definition_error("main", -1);    //< func main was not defined
     }
-    
+
     if (suspected_tree_idx > -1)    //< check funcs suspected from no_definition
     {
         lasterror_line = 0;
@@ -476,6 +476,7 @@ bool func()
     new_data.in_block = true;
 
     array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, "_");
+    define_id_type("_", T_UNDEFINED, true);
 
     bool is_main = false;
     if(!func_header(&is_main))
@@ -531,10 +532,10 @@ bool func_header(bool *is_main)
         missing_id = true;
         m.current_func_id = NULL;
     }
-    else 
+    else
     {
         func_id = m.current_token.data.s;  //< store func id cause insertion to symtable will be later
-        
+
         size_t func_id_len = sizeof(char) * (strlen(func_id) + 1);
 
         m.current_func_id = malloc(func_id_len);
@@ -552,7 +553,7 @@ bool func_header(bool *is_main)
         new_data_func = init_new_data(new_data_func);
         new_data_func.defined = true;
         new_data_func.is_function = true;
-        last_func = m.current_token;   //< to make correct free later        
+        last_func = m.current_token;   //< to make correct free later
     }
 
     // function parameters
@@ -726,7 +727,7 @@ bool statement()
     {
         GET_TOKEN();
     }
-    
+
     if (CHECK_NO_ERROR(EoF))
     {
         syntax_error(m.current_token.type, m.current_line);
@@ -781,13 +782,13 @@ bool statement()
         {
             asgn_meta.id_names[number_of_id - 1] = id_name; //< First id on left side of assignment
 
-            id_data = get_id_data(id_name); 
+            id_data = get_id_data(id_name);
             if (id_data != NULL) //< Check if first id is defined
             {
                 asgn_meta.id_types[number_of_id - 1] = id_data->type;
             }
             else
-            { 
+            {
                 asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
                 no_definition_error(id_name, m.current_line);
             }
@@ -805,7 +806,7 @@ bool statement()
                 }
 
                 number_of_id++;
-                
+
                 id_name = m.current_token.data.s;
                 asgn_meta.id_names[number_of_id - 1] = id_name;
                 id_data = get_id_data(id_name);
@@ -815,7 +816,7 @@ bool statement()
                     asgn_meta.id_types[number_of_id - 1] = id_data->type;
                 }
                 else
-                { 
+                {
                     //mozno je nelegalne - ESTE FURT ? Neviem, povec mi
                     asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
                     no_definition_error(id_name, m.current_line);
@@ -868,7 +869,7 @@ bool statement()
                 asgn_meta.id_types[number_of_id - 1] = id_data->type;
             }
             else
-            { 
+            {
                 asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
                 no_definition_error(id_name, m.current_line);
             }
@@ -882,7 +883,7 @@ bool statement()
             number_of_id--;     //< func's id count starts from zero
             function_call(last_id, number_of_id, is_built);
             m.index = 0;
-            
+
             if (is_built)
             {
                 check_built(m.global_table);  //< check semantic of built_in function
@@ -927,7 +928,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
         GET_TOKEN();
         if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
         {
-            if ((strcmp(m.current_func_id, "main")) != 0 && !strcmp(id.data.s, "main")) //< main can be called only recursively 
+            if ((strcmp(m.current_func_id, "main")) != 0 && !strcmp(id.data.s, "main")) //< main can be called only recursively
             {
                 other_error(m.current_line);
                 break;
@@ -945,15 +946,15 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                     {
                         return_unpack_error(id.data.s, m.current_line);
                     }
-                    else 
-                    { 
+                    else
+                    {
                         for (unsigned idx = 0; idx < num_of_id; idx++)
                         {
                             if (node->data.retval_arr[idx] != asgn_meta.id_types[idx])  //< unmatched data type of id on left side with expected return data type
                             {
                                 return_type_error(id.data.s, m.current_line);
                                 break;
-                            }  
+                            }
                         }
                     }
                 }
@@ -1132,10 +1133,16 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
             GET_TOKEN();
             break;
         }
-            
-        if (expr_type != asgn_meta.id_types[i])
-            type_error(asgn_meta.id_names[i], data_types[expr_type], m.current_line);
 
+        if (expr_type != asgn_meta.id_types[i])
+        {
+
+            if (strcmp(asgn_meta.id_names[i], "_"))
+            {
+                printf("%s\n", asgn_meta.id_names[i]);
+                type_error(asgn_meta.id_names[i], data_types[expr_type], m.current_line);
+            }
+        }
         free(asgn_meta.id_names[i]);
 
         if (i != number_of_id-1) // Was the last expr assigned ?
@@ -1165,13 +1172,13 @@ void for_s()
         new_data.is_function = false;
 
         GET_AND_CHECK(DEF_OF_VAR);
-        
+
         array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
-        
+
         Data_type expr_type = expression(NO_ASSIGN);
         if (expr_type != T_UNDEFINED)
             define_id_type(id_name, expr_type, true);
-        
+
         free(id_name);
         CHECK_TOKEN_NOFREE(SEMICLN);
     }
@@ -1219,14 +1226,14 @@ void return_s()
         // Is this a valid use case ?
         CONSUME_LINE();
     }
-    else 
-    { 
+    else
+    {
         if (func_data->ret_counter == 0) //< return should not be in void func
         {
             no_return_error(m.current_func_id, m.current_line);
             CONSUME_LINE();
         }
-        else 
+        else
         {
             unsigned expr_idx = 0;
             bool ret_type_error = false; //< Delay type errors so syntax is checked first
@@ -1265,16 +1272,16 @@ void return_s()
                         }
                         break;
                     }
-                    
+
                     // Continue to syntax error
                 }
-                
+
                 // Missing return value or EOF
                 syntax_error(m.current_token.type,m.current_line);
                 break;
             }
 
-            if (ret_type_error) 
+            if (ret_type_error)
                 return_type_error(m.current_func_id, m.current_line);
         }
     }
@@ -1286,7 +1293,7 @@ void return_s()
 Data_type expression(unsigned num_of_id)
 {
     /** @todo Implement semantic analysis for FUNCTIONS within expressions */
-    
+
     bool func_call = false;
     Data_type expr_type = T_UNDEFINED;
 
@@ -1298,12 +1305,12 @@ Data_type expression(unsigned num_of_id)
 
         return T_UNDEFINED; //< Invalid expression's data type ?
     }
-    
+
     if (func_call)
     {
         return T_FCALL;
     }
-        
+
     else
         return expr_type;
 }
@@ -1338,7 +1345,7 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
         if (m.previous_token.type == ID)
         {
             bool is_built = is_built_fun(m.previous_token.data.s);
-            function_call(m.previous_token,num_of_id,is_built); // todo           
+            function_call(m.previous_token,num_of_id,is_built); // todo
             *func_call = true;
 
             m.index = 0;
@@ -1374,7 +1381,7 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
                     input_terminal->dataType = id_data->type;
                 else
                     input_terminal->dataType = T_UNDEFINED;
-                
+
             }
             else
             {
@@ -1386,7 +1393,7 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
         {
             if (CHECK_NO_ERROR(INT))
                 input_terminal->token.data.i = m.current_token.data.i;
-            else 
+            else
                 input_terminal->token.data.d = m.current_token.data.d;
 
             // Hack - Data_type and Token_type have the same values for INT, STR & FLOAT

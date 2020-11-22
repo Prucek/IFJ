@@ -30,7 +30,7 @@ void printStack(Stack *s)
 /**
  * @brief Adding tokens to stack an selecting action to be done by precedence table
  */
-bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id)
+bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_bool)
 {
     /** 
      * @todo Forbid - * / operations for strings 
@@ -39,9 +39,9 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id)
      */ 
 
     Terminal input_terminal;
-    bool expr_isbool = false; //< Wait for logical operator to override expression to boolean
+    bool expr_isbool = false; //< Decide wheater exrpessions is type of bool
     bool expr_semerror = false; //< Wait for data type collisions or undefined IDs and if any occur, be sure to return false
-    bool can_be_func = false;
+    bool can_be_func = false; //< Will not print error if ID is not defined, can still be a func call, and if not then print error
     Terminal previous;
 
     Stack *s = createStack(STACK_SIZE);
@@ -125,11 +125,15 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id)
             deleteStack(s);
             if (input_terminal.terType == EN && f == EN) // input token == first terminal on stack == EN
             {
-                if (expr_isbool && *expr_type != T_INT) 
-                    *expr_type = T_INT; //< Override expr type to bool expr
-                
-                if (expr_semerror) return false;
-                return true;
+                if (expr_semerror) 
+                    return false;
+                if (expr_isbool == is_bool)
+                    return true;
+                else
+                {
+                    compatibility_error(data_types[*expr_type], input_terminal.current_line);
+                    return false;
+                }
             }
             else
             {

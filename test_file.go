@@ -143,12 +143,15 @@ func achj(a int, b int) (string, float64, int) {
         // Assignment semantics
         a, b = 1, 1
         a, b = "s", 6.5
+        q := a > b
 
         a = "neno nepo to kurna"
 
         // Repete with local defined vars
         c:= 6.5
         d:= "str"
+        
+        e := c == d 
 
         c, d = 1, 1
         d = 1

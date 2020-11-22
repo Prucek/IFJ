@@ -45,7 +45,7 @@ void return_type_error(char *id, int line); // ERR_PARAM 6
 void return_unpack_error(char *id, int line); // ERR_PARAM 6
 void no_return_error(char *id, int line); // ERR_PARAM 6
 void other_error(int line);
-void div_zero_error();
+void div_zero_error(int line);
 void intern_error();
 
 

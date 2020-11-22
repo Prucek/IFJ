@@ -145,12 +145,15 @@ func achj(a int, b int) (string, float64, int) {
         // Assignment semantics
         a, b = 1, 1
         a, b = "s", 6.5
+        q := a > b
 
         a = "neno nepo to kurna"
 
         // Repete with local defined vars
         c:= 6.5
         d:= "str"
+        
+        e := c == d 
 
         c, d = 1, 1
         d = 1
@@ -231,6 +234,18 @@ func test_expression_eval(str string, i int, j int, f float64, d float64) {
         f = f + d
         f = str + f // COMPATIBILITY ERROR (expression types do not match) before TYPE ERRROR (assignment)
         f = f + str
+
+        // string only concat, is SEM ERROR ??
+        a := "ahoj"
+	b := "prde"
+	c := a/b
+	b = a-b*b
+        e := a != b
+        g := a+b
+
+        // div by zero
+        a := i/i/0
+        b := 7.0/0.00000
 
         str = str + str + str // ok
         str = str + str / str - str // isto nie ok - momentalne nefunguje

@@ -201,9 +201,9 @@ void other_error(int line)
 }
 
 
-void div_zero_error()
+void div_zero_error(int line)
 {
-    fprintf(stderr, "****  Semantic error : Division with zero !  ****\n");
+    fprintf(stderr, "****  Semantic error : Division with zero on line: %d!  ****\n", line);
     if (error_value == 0)
     {
         error_value = ERR_ZERODIV;

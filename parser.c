@@ -849,7 +849,7 @@ bool statement()
                 re_definition_error(id_name, m.current_line);
             }
 
-            Data_type expr_type = expression(NO_ASSIGN);
+            Data_type expr_type = expression(NO_ASSIGN,false);
             if (expr_type != T_UNDEFINED)
                 define_id_type(id_name, expr_type, true);
 
@@ -1090,8 +1090,8 @@ void if_s()
     add_tree();
     array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
-    // Expression must be of type T_INT ??
-    expression(NO_ASSIGN);
+    // Expression must be of type bool
+    expression(NO_ASSIGN,true);
     CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
 
@@ -1122,7 +1122,7 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
 {
     for (unsigned i = 0; i <= number_of_id - 1; i++)
     {
-        Data_type expr_type = expression(number_of_id);
+        Data_type expr_type = expression(number_of_id,false);
         if (i == number_of_id)
         {
             free(asgn_meta.id_names[i]);
@@ -1175,7 +1175,7 @@ void for_s()
 
         array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
 
-        Data_type expr_type = expression(NO_ASSIGN);
+        Data_type expr_type = expression(NO_ASSIGN,false);
         if (expr_type != T_UNDEFINED)
             define_id_type(id_name, expr_type, true);
 
@@ -1185,7 +1185,7 @@ void for_s()
     else if (CHECK_TOKEN(SEMICLN)){;}
 
     // condition
-    expression(NO_ASSIGN);
+    expression(NO_ASSIGN,true);
     CHECK_TOKEN_NOFREE(SEMICLN);
 
     // increment / decrement (can be epmty)
@@ -1194,7 +1194,7 @@ void for_s()
     {
         free(m.current_token.data.s);
         GET_AND_CHECK(VAR_ASSIGN);
-        expression(NO_ASSIGN);
+        expression(NO_ASSIGN,false);
         CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
@@ -1240,7 +1240,7 @@ void return_s()
 
             while (true)
             {
-                Data_type expr_type = expression(NO_ASSIGN);
+                Data_type expr_type = expression(NO_ASSIGN,false);
 
                 // If expr_type is undefined, error was already thrown or an empty expr was parsed
                 if (expr_type != T_UNDEFINED && expr_idx < func_data->ret_counter) {
@@ -1290,14 +1290,14 @@ void return_s()
 /**
  * @brief Parses a single expression
  */
-Data_type expression(unsigned num_of_id)
+Data_type expression(unsigned num_of_id, bool is_bool)
 {
     /** @todo Implement semantic analysis for FUNCTIONS within expressions */
 
     bool func_call = false;
     Data_type expr_type = T_UNDEFINED;
 
-    if (!expr(&expr_type, &func_call, num_of_id))
+    if (!expr(&expr_type, &func_call, num_of_id, is_bool))
     {
         syntax_error(m.current_token.type,m.current_line);
 

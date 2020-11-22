@@ -233,6 +233,14 @@ func test_expression_eval(str string, i int, j int, f float64, d float64) {
         f = str + f // COMPATIBILITY ERROR (expression types do not match) before TYPE ERRROR (assignment)
         f = f + str
 
+        // string only concat, is SEM ERROR ??
+        a := "ahoj"
+	b := "prde"
+	c := a/b
+	b = a-b*b
+        e := a != b
+        g := a+b
+
         // div by zero
         a := i/i/0
         b := 7.0/0.00000

@@ -116,11 +116,20 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                         input_terminal.token.data.s = NULL;
                     }
                 }
-                else if (input_terminal.terType == MD && input_terminal.token.type == DIV)
+                if (*expr_type == T_STRING)
+                {
+                    if (input_terminal.terType == PM || input_terminal.terType == MD )
+                        if (input_terminal.token.type != ADD)
+                        {
+                            compatibility_error(data_types[*expr_type], input_terminal.current_line);
+                            if (!expr_semerror) expr_semerror = true;
+                        }
+                }
+                if (input_terminal.terType == MD && input_terminal.token.type == DIV)
                 {
                     check_zero_div = true;
                 }    
-                else if (input_terminal.terType == RO) //< Logical Operator
+                if (input_terminal.terType == RO) //< Logical Operator
                 {
                     if (!expr_isbool) expr_isbool = true;
                 }
@@ -140,10 +149,14 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
             deleteStack(s);
             if (input_terminal.terType == EN && f == EN) // input token == first terminal on stack == EN
             {
-                if (expr_semerror) 
+                if (expr_semerror)
+                {
                     return false;
+                }
                 if (expr_isbool == is_bool)
+                {
                     return true;
+                }                
                 else
                 {
                     compatibility_error(data_types[*expr_type], input_terminal.current_line);

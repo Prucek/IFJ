@@ -10,10 +10,10 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 all: lexer-test dynamicstring-test symtable-test parser-test codegenerator-test expressions-test
 
-compiler-test: 
+compiler-test:
 	@bash ./tests/run_tests.sh
-	
-compiler-test-debug: 
+
+compiler-test-debug:
 	@bash ./tests/run_tests.sh --dbg
 
 parser-test: parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o codegenerator.o stack.o expressions.o
@@ -28,7 +28,7 @@ dynamicstring-test: dynamicstring-test.o dynamicstring.o error.o
 symtable-test: symtable-test.o symtable.o error.o
 	$(CC) $(CFLAGS) -o $@ $^
 
-codegenerator-test: dynamicstring.o codegenerator-test.o codegenerator.o error.o
+codegenerator-test: dynamicstring.o codegenerator-test.o codegenerator.o error.o stack.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 expressions-test: parser.o expressions-test.o expressions.o dynamicstring.o stack.o error.o lexer.o symtable.o codegenerator.o

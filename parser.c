@@ -77,6 +77,7 @@ int suspected_tree_idx = -1;
 char *built_in[] = {"inputs", "inputf", "inputi", "print", "int2float", "float2int",
 "len", "substr", "ord", "chr"};
 
+
 /**
  * @brief Inits data structure of symtable to eliminate multi. insertion of one symbol
  * @param new_data Data unit that will be initionalized
@@ -1091,7 +1092,10 @@ void if_s()
     array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
     // Expression must be of type bool
+    GENERATE(if_label());
     expression(NO_ASSIGN,true);
+    GENERATE(else_jump());
+
     CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
 
@@ -1103,12 +1107,14 @@ void if_s()
     {
         syntax_error(m.current_token.type,m.current_line);
     }
+    GENERATE(if_jump()); //skips else branch
+    GENERATE(else_label());
     GET_AND_CHECK(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
 
     while(statement());
     GET_AND_CHECK(EOL);
-
+    GENERATE(if_end_label());
     delete_symtable(array_of_trees[tree_index]);
     delete_tree();
 }

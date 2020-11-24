@@ -6,7 +6,7 @@
  */
 
 //zvolil som konvencie mien premennych na generovanie labelov, parametrov, retval
-// LABEL $name, %param(i), %retval(i) 
+// LABEL $name, %param(i), %retval(i)
 #include "codegenerator.h"
 #include "stack.h"
 
@@ -28,6 +28,9 @@ dynamic_string code; // code will be stored here and flushed in the end of compi
 char *index;
 char *els;
 Stack *index_stack;
+char *for_index;
+char *index2;
+Stack *for_index_stack;
 
 /**
  * @brief Creates new TF for params of function before function_call
@@ -94,14 +97,14 @@ bool gen_param_val(Token current_token)
                 {
                     add_char(&tmp_str, (char) c);
                 }
-                
+
             }
             CODELN("string@", tmp_str.buff, "\n");
             break;
 
         case ID:
             CODELN("LF@", current_token.data.s, "\n");
-    
+
         default:
             break;
     }
@@ -118,18 +121,22 @@ bool gen_header()
 
     CODE(".IFJcode20\n");
     index = malloc(sizeof(char));
+    index2 = malloc(sizeof(char));
     els = malloc(sizeof(char));
-    if (index == NULL || els == NULL)
+    for_index = malloc(sizeof(char));
+    if (index == NULL || els == NULL || for_index == NULL || index2 == NULL)
     {
         intern_error();
     }
     *index = 64;
+    *index2 = 64;
     index_stack = createStack(100);
+    for_index_stack = createStack(100);
     // constants needed, to add
     CODE("DEFVAR GF@_\n");
     CODE("DEFVAR GF@expr_result\n");
     CODE("MOVE GF@expr_result bool@true\n");
-    CODE("JUMP main\n");
+    CODE("JUMP $main\n");
 
     return true;
 }
@@ -166,7 +173,7 @@ bool gen_func_retval(unsigned ret_counter)
 {
     for (unsigned i = 0; i < ret_counter; i++)
     {
-        CODE("DEFVAR LF@%retval"); CODE_INT(i+1); CODE("\n"); 
+        CODE("DEFVAR LF@%retval"); CODE_INT(i+1); CODE("\n");
     }
     return true;
 }
@@ -181,7 +188,7 @@ bool gen_func_return(char *func_id, unsigned ret_counter)
     for (unsigned i = 0; i < ret_counter; i++)
     {
         //HERE call for expression result
-        CODE("MOVE LF@%retval"); CODE_INT(i+1); CODE(" GF@expr_result\n"); 
+        CODE("MOVE LF@%retval"); CODE_INT(i+1); CODE(" GF@expr_result\n");
     }
     CODELN("JUMP $", func_id, "&return", "\n");
     return true;
@@ -232,6 +239,7 @@ bool gen_print()
     CODE("WRITE string@Hello\\032World!\\010\n");
     return true;
 }
+
 /**
  * @brief Generate if branch
  */
@@ -242,6 +250,7 @@ bool if_label()
     CODELN("LABEL if", index, "\n");
     return true;
 }
+
 /**
  * @brief Generate jump over else branch to end of if
  */
@@ -251,6 +260,7 @@ bool if_jump()
     CODELN("JUMP end", els, "\n");
     return true;
 }
+
 /**
  * @brief Generate jump over if branch to else
  */
@@ -259,6 +269,7 @@ bool else_jump()
     CODELN("JUMPIFEQ else", index, " GF@expr_result bool@false", "\n");
     return true;
 }
+
 /**
  * @brief Generate else branch
  */
@@ -268,6 +279,7 @@ bool else_label()
     CODELN("LABEL else", els, "\n");
     return true;
 }
+
 /**
  * @brief Generate end of if
  */
@@ -276,6 +288,55 @@ bool if_end_label()
     *els = top(index_stack);
     CODELN("LABEL end", els, "\n");
     pop(index_stack);
+    return true;
+}
+
+/**
+ * @brief Generate for header
+ */
+bool for_header()
+{
+    (*index2)++;
+    push(for_index_stack, *index2);
+    *for_index = top(for_index_stack);
+    CODELN("LABEL for", for_index, "\n");
+    CODELN("LABEL condition", for_index, "\n");
+    return true;
+}
+
+
+/**
+ * @brief Generate for header
+ */
+bool for_condition_eval()
+{
+    *for_index = top(for_index_stack);
+    CODELN("JUMPIFEQ end", for_index," GF@expr_result bool@true", "\n");
+    CODELN("JUMP body", for_index, "\n");
+    CODELN("LABEL increment", for_index, "\n");
+    return true;
+}
+
+/**
+ * @brief Generate for header
+ */
+bool for_body()
+{
+    *for_index = top(for_index_stack);
+    CODELN("JUMP condition", for_index, "\n");
+    CODELN("LABEL body", for_index, "\n");
+    return true;
+}
+
+/**
+ * @brief Generate for header
+ */
+bool for_end()
+{
+    *for_index = top(for_index_stack);
+    CODELN("JUMP increment", for_index, "\n");
+    CODELN("LABEL end", for_index, "\n");
+    pop(for_index_stack);
     return true;
 }
 
@@ -330,6 +391,7 @@ void gen_dispose()
     dynstr_free(&code);
     free(index);
     free(els);
+    free(for_index);
 }
 
 /**

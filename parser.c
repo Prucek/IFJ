@@ -1206,9 +1206,13 @@ void for_s()
     }
     else if (CHECK_TOKEN(SEMICLN)){;}
 
+    GENERATE(for_header());
+
     // condition
     expression(NO_ASSIGN,true);
     CHECK_TOKEN_NOFREE(SEMICLN);
+
+    GENERATE(for_condition_eval());
 
     // increment / decrement (can be epmty)
     GET_TOKEN();
@@ -1222,10 +1226,10 @@ void for_s()
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
 
     GET_AND_CHECK(EOL);
-
+    GENERATE(for_body());
     // body
     while(statement());
-
+    GENERATE(for_end());
     delete_symtable(array_of_trees[tree_index]);
     delete_tree();
 }

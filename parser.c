@@ -778,7 +778,7 @@ bool statement()
 
         GET_TOKEN();
         unsigned number_of_id = 1;
-        bool tmp;
+        TNode* tmp;
         TData *id_data;
         //AssignMetadata asgn_meta; //< potreboval som to mat globalne dostupne
         asgn_meta = init_asgn_data(asgn_meta);

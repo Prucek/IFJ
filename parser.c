@@ -494,7 +494,7 @@ bool func()
     }
     else
     {
-        GENERATE(gen_func_end());
+        GENERATE(gen_func_end(m.current_func_id));
     }
 
     delete_symtable(array_of_trees[tree_index]);
@@ -549,7 +549,8 @@ bool func_header(bool *is_main)
             re_definition_error(func_id, m.current_line);    //< redefinition of func is forrbiden
         }
 
-        GENERATE(gen_func_header(func_id));
+        if (strcmp(func_id, "main") != 0)       //< main's label is created separately
+            GENERATE(gen_func_header(func_id));
 
         new_data_func = init_new_data(new_data_func);
         new_data_func.defined = true;
@@ -591,6 +592,7 @@ bool func_header(bool *is_main)
         if (!strcmp(func_id, "main"))
         {
             *is_main = true;
+            GENERATE(gen_main_start());
 
             if (new_data_func.param_counter != 0 || new_data_func.ret_counter != 0)
             {
@@ -600,6 +602,9 @@ bool func_header(bool *is_main)
 
         m.global_table = insert_symtable(m.global_table, new_data_func, func_id);    //< insert whole func
         free(last_func.data.s);     //< to free token id
+
+        GENERATE(gen_func_retval(new_data_func.ret_counter));
+        // GENERATION of params when func_call
     }
 
     GET_AND_CHECK(EOL);
@@ -858,6 +863,7 @@ bool statement()
             if (!CHECK_TOKEN_NOFREE(EOL))
                 syntax_error(m.current_token.type,m.current_line);
 
+            GENERATE(gen_var_def(id_name));
             return true;
         }
         // assignment to var statement
@@ -924,6 +930,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
     for (unsigned i = 0; i < num_of_id; i++)
         new_data_func.id_type[i] = asgn_meta.id_types[i];
 
+    GENERATE(gen_createframe()); //< create new TF for func params
     while(true)
     {
         GET_TOKEN();
@@ -997,6 +1004,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
 
             }   // end of semantic analysis
 
+            GENERATE(gen_param_pass(m.current_token, act_param_counter));
             previous = INT;
             continue;
         }
@@ -1017,6 +1025,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
 
             }   // end of semantic analysis
 
+            GENERATE(gen_param_pass(m.current_token, act_param_counter));
             previous = FLOAT64;
             continue;
         }
@@ -1037,6 +1046,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
 
             }   // end of semantic analysis
 
+            GENERATE(gen_param_pass(m.current_token, act_param_counter));
             free(m.current_token.data.s);
             previous = STRING;
             continue;
@@ -1067,6 +1077,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                 no_definition_error(m.current_token.data.s, m.current_line);
             }
 
+            GENERATE(gen_param_pass(m.current_token, act_param_counter));
             free(m.current_token.data.s);
             previous = ID;
             continue;
@@ -1081,6 +1092,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
     {
         param_type_error(id.data.s, m.current_line);
     }
+    GENERATE(gen_func_call(id.data.s));
 }
 
 /**
@@ -1136,6 +1148,10 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
         }
         if (expr_type == T_FCALL)
         {
+            for (unsigned j = 0; j < number_of_id; j++)
+            {
+                GENERATE(gen_retval_assign(asgn_meta.id_names[j], j+1));
+            }
             GET_TOKEN();
             break;
         }
@@ -1234,6 +1250,7 @@ void return_s()
     }
     else
     {
+        GENERATE(gen_func_return(m.current_func_id, func_data->ret_counter));
         if (func_data->ret_counter == 0) //< return should not be in void func
         {
             no_return_error(m.current_func_id, m.current_line);

@@ -87,13 +87,35 @@
 #define _CODEGENERATOR_H_
 
 #include "dynamicstring.h"
+#include "symtable.h"
+
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
 bool gen_header();
 
 void gen_dispose();
 
+bool gen_main_start();
+
 bool gen_func_header(char *func_name);
+
+bool gen_func_call(char *func_id);
+
+bool gen_func_retval(unsigned ret_counter);
+
+bool gen_func_return(char *func_id, unsigned ret_counter);
+
+bool gen_retval_assign(char *id, unsigned retval_index);
+
+bool gen_param_pass(Token current_token, int param_index);
+
+bool gen_param_val(Token current_token);
+
+bool gen_var_def(char *id);
+
+bool gen_createframe();
 
 bool gen_main_end();
 
@@ -111,7 +133,7 @@ bool if_end_label();
 
 bool gen_code_end();
 
-bool gen_func_end();
+bool gen_func_end(char *func_id);
 
 void flush();
 

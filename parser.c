@@ -1322,14 +1322,24 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
     input_terminal->token.type = m.current_token.type;
     input_terminal->token.data.s = NULL;
 
-    if (CHECK_NO_ERROR(ADD) || CHECK_NO_ERROR(SUB))
+    if (CHECK_NO_ERROR(ADD))
     {
-        input_terminal->terType = PM;
+        input_terminal->terType = ADDS;
         input_terminal->dataType = T_NIL;
     }
-    else if (CHECK_NO_ERROR(MUL) || CHECK_NO_ERROR(DIV))
+    else if (CHECK_NO_ERROR(SUB))
     {
-        input_terminal->terType = MD;
+        input_terminal->terType = SUBS;
+        input_terminal->dataType = T_NIL;
+    }
+    else if (CHECK_NO_ERROR(MUL))
+    {
+        input_terminal->terType = MULS;
+        input_terminal->dataType = T_NIL;
+    }
+    else if (CHECK_NO_ERROR(DIV))
+    {
+        input_terminal->terType = DIVS;
         input_terminal->dataType = T_NIL;
     }
     else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
@@ -1392,11 +1402,34 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
             input_terminal->dataType = m.current_token.type;
         }
     }
-    else if (CHECK_NO_ERROR(GT) || CHECK_NO_ERROR(LT) ||
-             CHECK_NO_ERROR(EQ) || CHECK_NO_ERROR(NE) ||
-             CHECK_NO_ERROR(LE) || CHECK_NO_ERROR(GE)   )
+    else if (CHECK_NO_ERROR(GT))
     {
-        input_terminal->terType = RO;
+        input_terminal->terType = GTS;
+        input_terminal->dataType = T_NIL;
+    }
+    else if (CHECK_NO_ERROR(LT))
+    {
+        input_terminal->terType = LTS;
+        input_terminal->dataType = T_NIL;
+    }
+    else if (CHECK_NO_ERROR(EQ))
+    {
+        input_terminal->terType = EQS;
+        input_terminal->dataType = T_NIL;
+    }
+    else if (CHECK_NO_ERROR(NE))
+    {
+        input_terminal->terType = NES;
+        input_terminal->dataType = T_NIL;
+    }
+    else if (CHECK_NO_ERROR(LE))
+    {
+        input_terminal->terType = LES;
+        input_terminal->dataType = T_NIL;
+    }
+    else if (CHECK_NO_ERROR(GE))
+    {
+        input_terminal->terType = GES;
         input_terminal->dataType = T_NIL;
     }
     else if (CHECK_NO_ERROR(EOL) || CHECK_NO_ERROR(COMMA) ||

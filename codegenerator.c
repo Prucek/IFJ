@@ -12,15 +12,11 @@
 // Variadic args MUST be strings (otherwise segfault) & last arg must be "\n" (otherwise infinite cycle)
 #define CODELN(...) if(!add_strings(&code, ##__VA_ARGS__)) return false;
 
-#define CODELN_EX(...) if(!add_strings(&stack_intructions[instructions_iterator], ##__VA_ARGS__)) return false;
-
-#define CODE_EX(_code) if(!add_string(&stack_intructions[instructions_iterator],(_code)))return false;
-
 #define MAX 100
 
 dynamic_string code; // code will be stored here and flushed in the end of compilation to stdout if compilation went successful
-dynamic_string stack_intructions[MAX];
-unsigned instructions_iterator = 0;
+
+
 /**
  * @brief Generate needed header and alloc code buffer
  */
@@ -91,63 +87,6 @@ bool gen_code_end()
     return true;
 }
 
-bool gen_stack_inst(int instruction, bool is_float) // instruction should be Token_type
-{
-    if (instruction == ADD)
-    {
-        dynstr_init(&stack_intructions[instructions_iterator++]);
-        CODE_EX("ADDS\n");
-    }
-    if (instruction == SUB)
-    {
-        dynstr_init(&stack_intructions[instructions_iterator++]);
-        CODE_EX("SUBS\n");
-    }
-    if (instruction == MUL)
-    {
-        dynstr_init(&stack_intructions[instructions_iterator++]);
-        CODE_EX("MULS\n");
-    }
-    if (instruction == DIV)
-    {
-        dynstr_init(&stack_intructions[instructions_iterator++]);
-        if (is_float)
-        {
-            CODE_EX("IDIVS\n");
-        }
-        else
-            CODE_EX("DIVS\n");
-    }
-    if (instruction == LE)
-    {
-        
-    }
-    if (instruction == GE)
-    {
-        
-    }
-    if (instruction == GT)
-    {
-        dynstr_init(&stack_intructions[instructions_iterator++]);
-        CODE_EX("GTS\n");
-    }
-    if (instruction == LT)
-    {
-        dynstr_init(&stack_intructions[instructions_iterator++]);
-        CODE_EX("LTS\n");
-    }
-    if (instruction == EQ)
-    {
-        dynstr_init(&stack_intructions[instructions_iterator++]);
-        CODE_EX("EQS\n");
-    }
-    if (instruction == NE)
-    {
-        dynstr_init(&stack_intructions[instructions_iterator++]);
-        CODE_EX("EQS\nNOTS\n");
-    }
-    return true;
-}
 
 void float2hex(double d, char *buf) 
 {
@@ -251,6 +190,32 @@ void str2our_str(char *dst, char *src)
 bool gen_term(char *type, char* constant)
 {
     CODELN("PUSHS ",type,"@",constant,"\n");
+    return true;
+}
+
+bool gen_operation(int type)
+{
+    if (type == 2) 
+        CODE("ADDS\n");
+    if (type == 3)
+        CODE("SUBS\n");
+    if (type == 4)
+        CODE("MULS\n");
+    if (type == 5) // !!!
+        CODE("DIVS\n");
+    if (type == 6)
+        CODE("GTS\n");
+    if (type == 7)
+        CODE("LTS\n");
+    if (type == 8)
+        CODE("EQS\nNOTS\n");
+    if (type == 9) //LES
+        CODE("\n");
+    if (type == 10) //GES
+        CODE("\n");
+    if (type == 11)
+        CODE("EQS\n");
+    
     return true;
 }
 

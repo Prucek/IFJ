@@ -106,6 +106,7 @@ bool gen_term(char *type, char* constant);
 void float2hex(double d, char *buf);
 void int2str(int n, char *buf);
 void str2our_str(char *dst, char *src);
+bool gen_operation(int type);
 
 bool gen_code_end();
 

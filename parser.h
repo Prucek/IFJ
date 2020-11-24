@@ -42,9 +42,19 @@ typedef enum
 {
     LP, // Left  Para (
     RP, // Right Para )
-    PM, // Plus Minus +-
-    MD, // Mul  Div   * /
-    RO, // Relational operators <,>,<=,>=,==,!=
+
+    ADDS, 
+    SUBS, 
+    MULS, 
+    DIVS, 
+
+    GTS, // >
+    LTS, // <
+    NES, // !=
+    LES, // <=
+    GES, // >=
+    EQS, // ==    
+    
     II, // id, float, string, int
     EN, // $
     NT, // Non Terminal

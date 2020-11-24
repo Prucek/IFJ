@@ -21,7 +21,7 @@ typedef enum
     EQUAL
 } TabItem;
 
-#define TABLE_SIZE 7
+#define TABLE_SIZE 14
 
 // Rules:
 // E -> (E)     

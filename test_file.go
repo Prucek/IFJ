@@ -16,10 +16,12 @@ func main(){
 
                 }
         }
-
+        _ = 3
+        _ = a
+        _ = "abc"
         a = 3
-        a = 3 + 3 
-        
+        a = 3 + 3
+
         a, a = 3, 3 // OTHER ERROR ????
 
         // a = a + 3
@@ -27,7 +29,7 @@ func main(){
         {}
         // i = 3
 
-        // a = i + 3 
+        // a = i + 3
 
         // i = a + 3
 
@@ -108,7 +110,7 @@ func ahoj(){
                 dobry_den("ahoj", 24)
                 preco(25, 4, 8.5)
                 main()
-                blablabla() 
+                blablabla()
         }
     bebi := "hello"+"its"-"me"
     id = 5
@@ -131,7 +133,7 @@ func dobry_den (s string, i int) (int,string){
 
 func preco(i int, j int, k float64){
 
-}       
+}
 
 func achoj(i int) (string) {
 
@@ -246,7 +248,7 @@ func test_expression_eval(str string, i int, j int, f float64, d float64) {
         b := 7.0/0.00000
 
         str = str + str + str // ok
-        str = str + str / str - str // isto nie ok - momentalne nefunguje 
+        str = str + str / str - str // isto nie ok - momentalne nefunguje
 }
 
 func test_brace_bug() {

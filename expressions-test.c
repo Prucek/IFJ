@@ -9,9 +9,9 @@
 
 int main()
 {
-    // if (expr(EOL))
-    //     printf("Correct\n");
-    // else
-    //     printf("False\n");
-    // return 0;
+    char buf[3];
+    sprintf(buf, "%d", 42);
+    printf("%s\n",buf);
+
+
 }

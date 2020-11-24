@@ -109,12 +109,46 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                         }
                     }
 
+                    char *type = malloc(100);
+                    char *data = malloc(1000);
+                    if (input_terminal.token.type == STRING)
+                    {
+                        strcpy(type,"string");
+                        str2our_str(data,input_terminal.token.data.s);
+                        
+                    }
+                    if (input_terminal.token.type == INT)
+                    {
+                        strcpy(type,"int");
+                        int2str(input_terminal.token.data.i,data);
+                    }
+                    if (input_terminal.token.type == FLOAT64)
+                    {
+                        strcpy(type,"float");
+                        float2hex(input_terminal.token.data.d,data);
+                    }
+                    if (input_terminal.token.type == ID)
+                    {
+                        strcpy(type,"LF");
+                        strcpy(data,input_terminal.token.data.s);
+                    }
+                    GENERATE(gen_term(type,data));
+                    free(type);
+                    free(data);
+
                     /** @todo Free if id came */
                     if (input_terminal.dataType == T_STRING) // || input_terminal.token.type == ID)   not working, invalid read
                     {
                         free(input_terminal.token.data.s); //< Stop holding on to IDs
                         input_terminal.token.data.s = NULL;
                     }
+                }
+                if (input_terminal.terType == MD || input_terminal.terType == PM || input_terminal.terType == RO)
+                {
+                    bool is_float = false;
+                    if (*expr_type == T_FLOAT64)
+                        is_float = true;
+                    GENERATE(gen_stack_inst(input_terminal.token.type,is_float));
                 }
                 if (*expr_type == T_STRING)
                 {

@@ -20,6 +20,9 @@
 #define NO_ASSIGN 0 //< if expression is not in assignment
 #define MAX_FUNCNAME_LEN 100 //< Max function length
 
+#define GENERATE(func) if ((!func)) intern_error()
+
+
 //// Global parser data ////
 typedef struct
 {

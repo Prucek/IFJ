@@ -59,7 +59,6 @@
             GET_TOKEN(); \
         }
 
-#define GENERATE(func) if ((!func)) intern_error()
 
 //global
 bool inc_line_on_next = false;

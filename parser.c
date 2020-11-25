@@ -206,7 +206,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
+                else if ((root->data.id_type[0] != T_STRING && root->data.id_type[0] != T_UNDEFINED) || (root->data.id_type[1] != T_INT && root->data.id_type[1] != T_UNDEFINED))
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -217,7 +217,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.id_type[0] != T_INT || root->data.id_type[1] != T_INT)
+                else if ((root->data.id_type[0] != T_INT && root->data.id_type[0] != T_UNDEFINED) || (root->data.id_type[1] != T_INT && root->data.id_type[1] != T_UNDEFINED))
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -228,7 +228,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.id_type[0] != T_FLOAT64 || root->data.id_type[1] != T_INT)
+                else if ((root->data.id_type[0] != T_FLOAT64 && root->data.id_type[0] != T_UNDEFINED) || (root->data.id_type[1] != T_INT && root->data.id_type[1] != T_UNDEFINED))
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -239,7 +239,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_INT || root->data.id_type[0] != T_FLOAT64)
+                else if (root->data.arg_arr[0] != T_INT || (root->data.id_type[0] != T_FLOAT64 && root->data.id_type[0] != T_UNDEFINED))
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -250,7 +250,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_FLOAT64 || root->data.id_type[0] != T_INT)
+                else if (root->data.arg_arr[0] != T_FLOAT64 || (root->data.id_type[0] != T_INT && root->data.id_type[0] != T_UNDEFINED))
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -261,7 +261,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_STRING || root->data.id_type[0] != T_INT)
+                else if (root->data.arg_arr[0] != T_STRING || (root->data.id_type[0] != T_INT && root->data.id_type[0] != T_UNDEFINED))
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -272,7 +272,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT || root->data.arg_arr[2] != T_INT || root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
+                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT || root->data.arg_arr[2] != T_INT || (root->data.id_type[0] != T_STRING && root->data.id_type[0] != T_UNDEFINED) || (root->data.id_type[1] != T_INT && root->data.id_type[1] != T_UNDEFINED))
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -283,7 +283,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT || root->data.id_type[0] != T_INT || root->data.id_type[1] != T_INT)
+                else if (root->data.arg_arr[0] != T_STRING || root->data.arg_arr[1] != T_INT || (root->data.id_type[0] != T_INT && root->data.id_type[0] != T_UNDEFINED) || (root->data.id_type[1] != T_INT && root->data.id_type[1] != T_UNDEFINED))
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -294,7 +294,7 @@ void check_built(TNode *root)
                 {
                     param_error(root->key, root->data.line);
                 }
-                else if (root->data.arg_arr[0] != T_INT || root->data.id_type[0] != T_STRING || root->data.id_type[1] != T_INT)
+                else if (root->data.arg_arr[0] != T_INT || (root->data.id_type[0] != T_STRING && root->data.id_type[0] != T_UNDEFINED) || (root->data.id_type[1] != T_INT && root->data.id_type[1] != T_UNDEFINED))
                 {
                     param_error(root->key, root->data.line);
                 }
@@ -957,7 +957,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                     {
                         for (unsigned idx = 0; idx < num_of_id; idx++)
                         {
-                            if (node->data.retval_arr[idx] != asgn_meta.id_types[idx])  //< unmatched data type of id on left side with expected return data type
+                            if (node->data.retval_arr[idx] != asgn_meta.id_types[idx] && asgn_meta.id_types[idx] != T_UNDEFINED)  //< unmatched data type of id on left side with expected return data type
                             {
                                 return_type_error(id.data.s, m.current_line);
                                 break;

@@ -129,7 +129,7 @@ bool gen_header()
     CODE("DEFVAR GF@_\n");
     CODE("DEFVAR GF@expr_result\n");
     CODE("MOVE GF@expr_result bool@true\n");
-    CODE("JUMP main\n");
+    CODE("JUMP $main\n");
 
     return true;
 }
@@ -239,7 +239,7 @@ bool if_label()
 {
     (*index)++;
     push(index_stack, *index);
-    CODELN("LABEL if", index, "\n");
+    CODELN("LABEL $if", index, "\n");
     return true;
 }
 /**
@@ -248,7 +248,7 @@ bool if_label()
 bool if_jump()
 {
     *els = top(index_stack);
-    CODELN("JUMP end", els, "\n");
+    CODELN("JUMP $end", els, "\n");
     return true;
 }
 /**
@@ -256,7 +256,7 @@ bool if_jump()
  */
 bool else_jump()
 {
-    CODELN("JUMPIFEQ else", index, " GF@expr_result bool@false", "\n");
+    CODELN("JUMPIFEQ $else", index, " GF@expr_result bool@false", "\n");
     return true;
 }
 /**
@@ -265,7 +265,7 @@ bool else_jump()
 bool else_label()
 {
     *els = top(index_stack);
-    CODELN("LABEL else", els, "\n");
+    CODELN("LABEL $else", els, "\n");
     return true;
 }
 /**
@@ -274,7 +274,7 @@ bool else_label()
 bool if_end_label()
 {
     *els = top(index_stack);
-    CODELN("LABEL end", els, "\n");
+    CODELN("LABEL $end", els, "\n");
     pop(index_stack);
     return true;
 }
@@ -287,7 +287,7 @@ bool if_end_label()
 bool gen_var_def(char *id)
 {
     CODELN("DEFVAR LF@", id, "\n");
-    CODELN("MOV LF@", id, " GF@expr_result", "\n");
+    CODELN("MOVE LF@", id, " GF@expr_result", "\n");
     return true;
 }
 

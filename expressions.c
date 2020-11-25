@@ -174,13 +174,6 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                         input_terminal.token.data.s = NULL;
                     }
                 }
-                // if (input_terminal.terType == MD || input_terminal.terType == PM || input_terminal.terType == RO)
-                // {
-                //     bool is_float = false;
-                //     if (*expr_type == T_FLOAT64)
-                //         is_float = true;
-                //     GENERATE(gen_stack_inst(input_terminal.token.type,is_float));
-                // }
                 if (*expr_type == T_STRING)
                 {
                     if (input_terminal.terType != ADDS)

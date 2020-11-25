@@ -93,6 +93,8 @@
 #include <string.h>
 #include <ctype.h>
 
+bool gen_built_func();
+
 bool gen_header();
 
 void gen_dispose();
@@ -123,6 +125,23 @@ bool gen_inputs();
 
 bool gen_print();
 
+bool gen_stack_inst(int instruction, bool is_float);
+
+bool gen_term(char *type, char* constant);
+
+void float2hex(double d, char *buf);
+
+void int2str(int n, char *buf);
+
+void str2our_str(char *dst, char *src);
+
+bool gen_operation(int type);
+
+bool gen_expr_result();
+
+bool gen_expr_begin();
+
+bool gen_expr_end();
 bool if_label();
 
 bool if_jump();

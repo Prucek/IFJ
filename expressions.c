@@ -7,17 +7,41 @@
 
 #include "expressions.h"
 
+    // LP, // Left  Para (
+    // RP, // Right Para )
+
+    // ADDS, 
+    // SUBS, 
+    // MULS, 
+    // DIVS, 
+
+    // GTS, // >
+    // LTS, // <
+    // NES, // !=
+    // LES, // <=
+    // GES, // >=
+    // EQS, // ==    
+    
+    // II, // id, float, string, int
+    // EN, // $
 
 TabItem precedence_table[TABLE_SIZE][TABLE_SIZE] =
-{ //||_(__||_)__||_+-_||_*/_||_r__||_i__||_$__||
-    {SHIFT,EQUAL,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR}, // (
-    {T_ERR,REDUC,REDUC,REDUC,REDUC,T_ERR,REDUC}, // )
-    {SHIFT,REDUC,REDUC,SHIFT,REDUC,SHIFT,REDUC}, // +-
-    {SHIFT,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // */
-    {SHIFT,REDUC,SHIFT,SHIFT,T_ERR,SHIFT,REDUC}, // r
-    {T_ERR,REDUC,REDUC,REDUC,REDUC,T_ERR,REDUC}, // i
-    {SHIFT,T_ERR,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR}  // $
-                                        //^^^ only ok variation
+{ //||_(__||_)__||_+_||__-_||_*__||_/__||__>__||__<_||_!=_||_<=_||_>=_||_==_||_i__||_$__||
+    {SHIFT,EQUAL,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR}, // (
+    {T_ERR,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,T_ERR,REDUC}, // )
+    {SHIFT,REDUC,REDUC,REDUC,SHIFT,SHIFT,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // +
+    {SHIFT,REDUC,REDUC,REDUC,SHIFT,SHIFT,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // - 
+    {SHIFT,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // *
+    {SHIFT,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // /
+    {SHIFT,REDUC,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,SHIFT,REDUC}, // >
+    {SHIFT,REDUC,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,SHIFT,REDUC}, // <
+    {SHIFT,REDUC,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,SHIFT,REDUC}, // !=
+    {SHIFT,REDUC,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,SHIFT,REDUC}, // <=
+    {SHIFT,REDUC,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,SHIFT,REDUC}, // >=
+    {SHIFT,REDUC,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,SHIFT,REDUC}, // ==
+    {T_ERR,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,T_ERR,REDUC}, // i
+    {SHIFT,T_ERR,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR}  // $
+                                                                                 //^^^ only ok variation
 };
 
 // for debugging
@@ -32,18 +56,14 @@ void printStack(Stack *s)
  */
 bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_bool)
 {
-    /** 
-     * @todo Forbid - * / operations for strings 
-     *       Catch division by zero
-     *       Generate arithmetic operations assembly
-     */ 
-
     Terminal input_terminal;
     bool expr_isbool = false; //< Decide wheater exrpessions is type of bool
     bool expr_semerror = false; //< Wait for data type collisions or undefined IDs and if any occur, be sure to return false
     bool can_be_func = false; //< Will not print error if ID is not defined, can still be a func call, and if not then print error
     bool check_zero_div = false;
     Terminal previous;
+    int num_of_reads = 0;
+    int begin_counter = 0;
 
     Stack *s = createStack(STACK_SIZE);
     push(s,EN);
@@ -61,6 +81,8 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
             }
             else
             {
+                num_of_reads++;
+
                 if (can_be_func) // id was read without data type
                 {
                     if (input_terminal.terType == LP && *func_call)
@@ -108,6 +130,42 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                             if (!expr_semerror) expr_semerror = true;
                         }
                     }
+           
+                    if (begin_counter == 0)
+                    {
+                        GENERATE(gen_expr_begin());
+                        begin_counter++;
+                    }
+
+                    char *type = malloc(100);
+                    char *data = malloc(1000);
+                    if (input_terminal.token.type == STRING)
+                    {
+                        strcpy(type,"string");
+                        str2our_str(data,input_terminal.token.data.s);
+                        GENERATE(gen_term(type,data));    
+                    }
+                    if (input_terminal.token.type == INT)
+                    {
+                        strcpy(type,"int");
+                        int2str(input_terminal.token.data.i,data);
+                        GENERATE(gen_term(type,data));
+                    }
+                    if (input_terminal.token.type == FLOAT64)
+                    {
+                        strcpy(type,"float");
+                        float2hex(input_terminal.token.data.d,data);
+                        GENERATE(gen_term(type,data));
+                    }
+                    if (input_terminal.token.type == ID && !can_be_func)
+                    {
+                        strcpy(type,"LF");
+                        strcpy(data,input_terminal.token.data.s);
+                        GENERATE(gen_term(type,data));
+                    }
+                    
+                    free(type);
+                    free(data);
 
                     /** @todo Free if id came */
                     if (input_terminal.dataType == T_STRING) // || input_terminal.token.type == ID)   not working, invalid read
@@ -118,18 +176,18 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                 }
                 if (*expr_type == T_STRING)
                 {
-                    if (input_terminal.terType == PM || input_terminal.terType == MD )
-                        if (input_terminal.token.type != ADD)
-                        {
-                            compatibility_error(data_types[*expr_type], input_terminal.current_line);
-                            if (!expr_semerror) expr_semerror = true;
-                        }
+                    if (input_terminal.terType != ADDS)
+                    {
+                        compatibility_error(data_types[*expr_type], input_terminal.current_line);
+                        if (!expr_semerror) expr_semerror = true;
+                    }
                 }
-                if (input_terminal.terType == MD && input_terminal.token.type == DIV)
+                if (input_terminal.terType == DIVS)
                 {
                     check_zero_div = true;
                 }    
-                if (input_terminal.terType == RO) //< Logical Operator
+                if (input_terminal.terType == GTS || input_terminal.terType == NES || input_terminal.terType == GES|| 
+                    input_terminal.terType == LTS || input_terminal.terType == EQS || input_terminal.terType == LES ) //< Logical Operator
                 {
                     if (!expr_isbool) expr_isbool = true;
                 }
@@ -155,7 +213,12 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                 }
                 if (expr_isbool == is_bool)
                 {
-                    return true;
+                    if (num_of_reads > 1)
+                    {
+                        GENERATE(gen_expr_result());
+                        return true;
+                    }
+                    else return false;
                 }                
                 else
                 {
@@ -183,7 +246,8 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
             {
                 push(s,SH);
             }
-            else if (input_terminal.terType == PM || input_terminal.terType == MD || input_terminal.terType == RO)
+            else if (input_terminal.terType != LP && input_terminal.terType != RP && 
+                     input_terminal.terType != II && input_terminal.terType != EN  )
             {
                 int tmp = pop(s);
                 push(s,SH);
@@ -241,12 +305,21 @@ bool reduce(Stack *s)
 
     // implmented rules
     if((token[0] == II && token[1] == SH) ||
-       (token[0] == RP && token[1] == NT && token[2] == LP ) ||
-       (token[0] == NT && token[1] == PM && token[2] == NT && token[3] == SH) ||
-       (token[0] == NT && token[1] == MD && token[2] == NT && token[3] == SH) ||
-       (token[0] == NT && token[1] == RO && token[2] == NT && token[3] == SH)   )
+       (token[0] == RP && token[1] == NT   && token[2] == LP ) ||
+       (token[0] == NT && token[1] == ADDS && token[2] == NT && token[3] == SH) ||
+       (token[0] == NT && token[1] == SUBS && token[2] == NT && token[3] == SH) ||
+       (token[0] == NT && token[1] == MULS && token[2] == NT && token[3] == SH) ||
+       (token[0] == NT && token[1] == DIVS && token[2] == NT && token[3] == SH) ||
+       (token[0] == NT && token[1] == NES  && token[2] == NT && token[3] == SH) ||
+       (token[0] == NT && token[1] == EQS  && token[2] == NT && token[3] == SH) ||
+       (token[0] == NT && token[1] == GES  && token[2] == NT && token[3] == SH) ||
+       (token[0] == NT && token[1] == LES  && token[2] == NT && token[3] == SH) ||
+       (token[0] == NT && token[1] == LTS  && token[2] == NT && token[3] == SH) ||
+       (token[0] == NT && token[1] == GTS  && token[2] == NT && token[3] == SH)   )
     {
         push(s,NT);
+        if (token[1] != NT && token[1] != SH)
+            GENERATE(gen_operation(token[1]));
         return true;
     }
     else

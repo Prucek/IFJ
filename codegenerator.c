@@ -17,12 +17,52 @@
 // Variadic args MUST be strings (otherwise segfault) & last arg must be "\n" (otherwise infinite cycle)
 #define CODELN(...) if(!add_strings(&code, ##__VA_ARGS__)) return false;
 
+#define MAX 100
+
 #define CODE_INT(_code) \
     do{ \
         char index[MAX_INDEX_LEN];   \
         sprintf(index, "%d", _code);    \
         CODE(index); \
     }while(0)
+
+#define GEN_INT2FLAOT   \
+    "LABEL $int2float\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "INT2FLOAT LF@%retval1 LF@%param1\n"    \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_FLOAT2INT   \
+    "LABEL $float2int\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "FLOAT2INT LF@%retval1 LF@%param1\n"    \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_LEN   \
+    "LABEL $len\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "STRLEN LF@%retval1 LF@%param1\n"    \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_INPUTS1  \
+    "LABEL $inputs\n" \
+    "PUSHFRAME\n"
+
+#define GEN_INPUTS2  \
+    "READ LF@%retval1 string\n" \
+    "DEFVAR LF@%str_len\n" \
+    "STRLEN LF@%str_len LF@%retval1\n" \
+    "JUMPIFNEQ $inputs_end LF@%str_len int@0\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $inputs_end\n" \
+    "POPFRAME\n" \
+    "RETURN\n"
 
 dynamic_string code; // code will be stored here and flushed in the end of compilation to stdout if compilation went successful
 char *index;
@@ -31,6 +71,20 @@ Stack *index_stack;
 char *for_index;
 char *index2;
 Stack *for_index_stack;
+
+/**
+ * @brief Generates all built_in functions
+ */
+bool gen_built_func()
+{
+    CODE(GEN_INT2FLAOT);
+    CODE(GEN_FLOAT2INT);
+    CODE(GEN_LEN);
+    CODE(GEN_INPUTS1);
+    gen_func_retval(2);
+    CODE(GEN_INPUTS2);
+    return true;
+}
 
 /**
  * @brief Creates new TF for params of function before function_call
@@ -112,6 +166,7 @@ bool gen_param_val(Token current_token)
     return true;
 }
 
+
 /**
  * @brief Generate needed header and alloc code buffer
  */
@@ -135,6 +190,8 @@ bool gen_header()
     // constants needed, to add
     CODE("DEFVAR GF@_\n");
     CODE("DEFVAR GF@expr_result\n");
+    CODE("DEFVAR GF@tmp1\n");
+    CODE("DEFVAR GF@tmp2\n");
     CODE("MOVE GF@expr_result bool@true\n");
     CODE("JUMP $main\n");
 
@@ -234,25 +291,6 @@ bool gen_param_pass(Token current_token, int param_index)
     return true;
 }
 
-bool gen_inputs()
-{
-    CODE("LABEL $inputs\n");
-    gen_func_retval(2);
-    CODE("READ LF@%retval1 string\n");
-    CODE("DEFVAR LF@%str_len\n");
-    CODE("STRLEN LF@%str_len LF@%retval1\n");
-    CODE("JUMPIFNEQ $inputs_end LF@%str_len int@0\n");
-    CODE("MOVE LF@%retval2 int@1\n");
-    CODE("LABEL $inputs_end\n");
-    CODE("RETURN\n");
-    return true;
-}
-
-// bool gen_inputs_call()
-// {
-//     CODE("JUMP inputs\n");
-//     return true;
-// }
 
 bool gen_print()
 {
@@ -400,6 +438,174 @@ bool gen_func_end(char *func_id)
 bool gen_code_end()
 {
     CODE("LABEL $end_of_code\n");
+    return true;
+}
+
+
+void float2hex(double d, char *buf)
+{
+    sprintf(buf, "%a", d);
+}
+
+void int2str(int n, char *buf)
+{
+    sprintf(buf, "%d", n);
+}
+
+void str2our_str(char *dst, char *src)
+{
+    unsigned j = 0;
+    bool escape = false;
+    for (unsigned i = 1; i < strlen(src)-1; i++, j++)
+    {
+        if ((src[i] >= 0 && src[i] <= 32 )|| src[i] == 34 || src[i] == 35 || src[i] == 92)
+        {
+            if (escape)// \", \\ ,
+            {
+                escape = false;
+                if (src[i] == '\\') src[i] = '\\';
+                if (src[i] == '\"') src[i] = '\"';
+            }
+            else if (src[i] == 92)
+            {
+                escape = true;
+                j--;
+                continue;
+            }
+
+            char buf[3];
+            dst[j++] = '\\'; dst[j++] = '0';
+            int2str(src[i],buf);
+            if(strlen(buf) == 1)
+            {
+                dst[j++] = '0';
+                dst[j] = buf[0];
+            }
+            if(strlen(buf) == 2)
+            {
+                dst[j++] = buf[0];
+                dst[j] = buf[1];
+            }
+        }
+        else if (escape) // \n, \t
+        {
+            escape = false;
+            if (src[i] == 'n') src[i] = '\n';
+            if (src[i] == 't') src[i] = '\t';
+            if (src[i] == 'x') // \xhh
+            {
+                char buf[3];
+                buf[0] = src[++i];
+                buf[1] = src[++i];
+                int num = (int)strtol(buf, NULL, 16); // from hex to int
+                int2str(num,buf);
+                dst[j++] = '\\';
+                if(strlen(buf) == 1)
+                {
+                    dst[j++] = '0';
+                    dst[j++] = '0';
+                    dst[j] = buf[0];
+                }
+                if(strlen(buf) == 2)
+                {
+                    dst[j++] = '0';
+                    dst[j++] = buf[0];
+                    dst[j] = buf[1];
+                }
+                if(strlen(buf) == 3)
+                {
+                    dst[j++] = buf[0];
+                    dst[j++] = buf[1];
+                    dst[j] = buf[2];
+                }
+                continue;
+            }
+            char buf[3];
+            dst[j++] = '\\'; dst[j++] = '0';
+            int2str(src[i],buf);
+            if(strlen(buf) == 1)
+            {
+                dst[j++] = '0';
+                dst[j] = buf[0];
+            }
+            if(strlen(buf) == 2)
+            {
+                dst[j++] = buf[0];
+                dst[j] = buf[1];
+            }
+        }
+        else
+        {
+            dst[j] = src[i];
+        }
+    }
+}
+
+bool gen_expr_begin()
+{
+    CODE("# EXPR BEGIN\n")
+    return true;
+}
+
+bool gen_expr_end()
+{
+    CODE("# EXPR END\n")
+    return true;
+}
+
+bool gen_term(char *type, char* constant)
+{
+    CODELN("PUSHS ",type,"@",constant,"\n");
+    return true;
+}
+
+bool gen_operation(int type)
+{
+    if (type == 2)
+        CODE("ADDS\n");
+    if (type == 3)
+        CODE("SUBS\n");
+    if (type == 4)
+        CODE("MULS\n");
+    if (type == 5) // !!!
+        CODE("DIVS\n");
+    if (type == 6)
+        CODE("GTS\n");
+    if (type == 7)
+        CODE("LTS\n");
+    if (type == 8)
+        CODE("EQS\nNOTS\n");
+    if (type == 9) //LES
+    {
+        CODE("POPS GF@tmp1\n");
+        CODE("POPS GF@tmp2\n");
+        CODE("LTS\n");
+        CODE("PUSHS GF@tmp1\n");
+        CODE("PUSHS GF@tmp2\n");
+        CODE("EQS\n");
+        CODE("ORS\n");
+    }
+
+    if (type == 10) //GES
+    {
+        CODE("POPS GF@tmp1\n");
+        CODE("POPS GF@tmp2\n");
+        CODE("GTS\n");
+        CODE("PUSHS GF@tmp1\n");
+        CODE("PUSHS GF@tmp2\n");
+        CODE("EQS\n");
+        CODE("ORS\n");
+    }
+    if (type == 11)
+        CODE("EQS\n");
+
+    return true;
+}
+
+bool gen_expr_result()
+{
+    CODE("POPS GF@expr_result\n");
+    gen_expr_end();
     return true;
 }
 

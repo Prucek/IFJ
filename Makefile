@@ -5,8 +5,8 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 # all: compiler
 
-# compiler : parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o
-# 	$(CC) $(CFLAGS) -o $@ $^
+# compiler : parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o codegenerator.o stack.o expressions.o
+	# $(CC) $(CFLAGS) -o $@ $^
 
 all: lexer-test dynamicstring-test symtable-test parser-test codegenerator-test expressions-test
 
@@ -48,4 +48,4 @@ clean:
 zip:
 	rm -rf *.o
 	rm -rf compiler
-	zip xrucek00.zip *.c *.h Makefile
+	zip xrucek00.zip *.c *.h Makefile rozdeleni

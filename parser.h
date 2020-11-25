@@ -20,6 +20,9 @@
 #define NO_ASSIGN 0 //< if expression is not in assignment
 #define MAX_FUNCNAME_LEN 100 //< Max function length
 
+#define GENERATE(func) if ((!func)) intern_error()
+
+
 //// Global parser data ////
 typedef struct
 {
@@ -39,9 +42,19 @@ typedef enum
 {
     LP, // Left  Para (
     RP, // Right Para )
-    PM, // Plus Minus +-
-    MD, // Mul  Div   * /
-    RO, // Relational operators <,>,<=,>=,==,!=
+
+    ADDS, 
+    SUBS, 
+    MULS, 
+    DIVS, 
+
+    GTS, // >
+    LTS, // <
+    NES, // !=
+    LES, // <=
+    GES, // >=
+    EQS, // ==    
+    
     II, // id, float, string, int
     EN, // $
     NT, // Non Terminal

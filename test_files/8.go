@@ -1,0 +1,1 @@
+// Pridajte co vbas napadne

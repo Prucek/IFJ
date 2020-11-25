@@ -62,6 +62,8 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
     bool can_be_func = false; //< Will not print error if ID is not defined, can still be a func call, and if not then print error
     bool check_zero_div = false;
     Terminal previous;
+    int num_of_reads = 0;
+    int begin_counter = 0;
 
     Stack *s = createStack(STACK_SIZE);
     push(s,EN);
@@ -79,6 +81,8 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
             }
             else
             {
+                num_of_reads++;
+
                 if (can_be_func) // id was read without data type
                 {
                     if (input_terminal.terType == LP && *func_call)
@@ -125,6 +129,12 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                             compatibility_error(data_types[*expr_type], input_terminal.current_line);
                             if (!expr_semerror) expr_semerror = true;
                         }
+                    }
+           
+                    if (begin_counter == 0)
+                    {
+                        GENERATE(gen_expr_begin());
+                        begin_counter++;
                     }
 
                     char *type = malloc(100);
@@ -210,8 +220,12 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                 }
                 if (expr_isbool == is_bool)
                 {
-                    // here generate to GF@exprresult
-                    return true;
+                    if (num_of_reads > 1)
+                    {
+                        GENERATE(gen_expr_result());
+                        return true;
+                    }
+                    else return false;
                 }                
                 else
                 {

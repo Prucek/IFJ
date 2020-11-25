@@ -187,6 +187,18 @@ void str2our_str(char *dst, char *src)
     }
 }
 
+bool gen_expr_begin()
+{
+    CODE("# EXPR BEGIN\n")
+    return true;
+}
+
+bool gen_expr_end()
+{
+    CODE("# EXPR END\n")
+    return true;
+}
+
 bool gen_term(char *type, char* constant)
 {
     CODELN("PUSHS ",type,"@",constant,"\n");
@@ -216,6 +228,13 @@ bool gen_operation(int type)
     if (type == 11)
         CODE("EQS\n");
     
+    return true;
+}
+
+bool gen_expr_result()
+{
+    CODE("POPS GF@expr_result\n");
+    gen_expr_end();
     return true;
 }
 

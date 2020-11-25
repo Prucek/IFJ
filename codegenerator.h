@@ -93,6 +93,8 @@
 #include <string.h>
 #include <ctype.h>
 
+bool gen_built_func();
+
 bool gen_header();
 
 void gen_dispose();

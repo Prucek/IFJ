@@ -26,6 +26,30 @@
         CODE(index); \
     }while(0)
 
+#define GEN_INT2FLAOT   \
+    "LABEL $int2float\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "INT2FLOAT LF@%retval1 LF@%param1\n"    \
+    "POFRAME\n" \
+    "RETURN\n"
+
+#define GEN_FLOAT2INT   \
+    "LABEL $float2int\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "FLOAT2INT LF@%retval1 LF@%param1\n"    \
+    "POFRAME\n" \
+    "RETURN\n"
+
+#define GEN_LEN   \
+    "LABEL $len\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "STRLEN LF@%retval1 LF@%param1\n"    \
+    "POFRAME\n" \
+    "RETURN\n"
+
 dynamic_string code; // code will be stored here and flushed in the end of compilation to stdout if compilation went successful
 char *index;
 char *els;
@@ -33,6 +57,17 @@ Stack *index_stack;
 char *for_index;
 char *index2;
 Stack *for_index_stack;
+
+/**
+ * @brief Generates all built_in functions
+ */
+bool gen_built_func()
+{
+    CODE(GEN_INT2FLAOT);
+    CODE(GEN_FLOAT2INT);
+    CODE(GEN_LEN);
+    return true;
+}
 
 /**
  * @brief Creates new TF for params of function before function_call

@@ -299,8 +299,8 @@ bool for_header()
     (*index2)++;
     push(for_index_stack, *index2);
     *for_index = top(for_index_stack);
-    CODELN("LABEL for", for_index, "\n");
-    CODELN("LABEL condition", for_index, "\n");
+    CODELN("LABEL $for", for_index, "\n");
+    CODELN("LABEL $condition", for_index, "\n");
     return true;
 }
 
@@ -311,9 +311,9 @@ bool for_header()
 bool for_condition_eval()
 {
     *for_index = top(for_index_stack);
-    CODELN("JUMPIFEQ end", for_index," GF@expr_result bool@true", "\n");
-    CODELN("JUMP body", for_index, "\n");
-    CODELN("LABEL increment", for_index, "\n");
+    CODELN("JUMPIFEQ $end", for_index," GF@expr_result bool@true", "\n");
+    CODELN("JUMP $body", for_index, "\n");
+    CODELN("LABEL $increment", for_index, "\n");
     return true;
 }
 
@@ -323,8 +323,8 @@ bool for_condition_eval()
 bool for_body()
 {
     *for_index = top(for_index_stack);
-    CODELN("JUMP condition", for_index, "\n");
-    CODELN("LABEL body", for_index, "\n");
+    CODELN("JUMP $condition", for_index, "\n");
+    CODELN("LABEL $body", for_index, "\n");
     return true;
 }
 
@@ -334,8 +334,8 @@ bool for_body()
 bool for_end()
 {
     *for_index = top(for_index_stack);
-    CODELN("JUMP increment", for_index, "\n");
-    CODELN("LABEL end", for_index, "\n");
+    CODELN("JUMP $increment", for_index, "\n");
+    CODELN("LABEL $end", for_index, "\n");
     pop(for_index_stack);
     return true;
 }

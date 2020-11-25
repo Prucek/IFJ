@@ -119,6 +119,8 @@ bool gen_createframe();
 
 bool gen_main_end();
 
+bool gen_inputs();
+
 bool gen_print();
 
 bool if_label();

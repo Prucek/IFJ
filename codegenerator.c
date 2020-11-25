@@ -234,6 +234,26 @@ bool gen_param_pass(Token current_token, int param_index)
     return true;
 }
 
+bool gen_inputs()
+{
+    CODE("LABEL $inputs\n");
+    gen_func_retval(2);
+    CODE("READ LF@%retval1 string\n");
+    CODE("DEFVAR LF@%str_len\n");
+    CODE("STRLEN LF@%str_len LF@%retval1\n");
+    CODE("JUMPIFNEQ $inputs_end LF@%str_len int@0\n");
+    CODE("MOVE LF@%retval2 int@1\n");
+    CODE("LABEL $inputs_end\n");
+    CODE("RETURN\n");
+    return true;
+}
+
+// bool gen_inputs_call()
+// {
+//     CODE("JUMP inputs\n");
+//     return true;
+// }
+
 bool gen_print()
 {
     CODE("WRITE string@Hello\\032World!\\010\n");
@@ -247,7 +267,7 @@ bool if_label()
 {
     (*index)++;
     push(index_stack, *index);
-    CODELN("LABEL if", index, "\n");
+    CODELN("LABEL $if", index, "\n");
     return true;
 }
 
@@ -257,7 +277,7 @@ bool if_label()
 bool if_jump()
 {
     *els = top(index_stack);
-    CODELN("JUMP end", els, "\n");
+    CODELN("JUMP $if_end", els, "\n");
     return true;
 }
 
@@ -266,7 +286,7 @@ bool if_jump()
  */
 bool else_jump()
 {
-    CODELN("JUMPIFEQ else", index, " GF@expr_result bool@false", "\n");
+    CODELN("JUMPIFEQ $else", index, " GF@expr_result bool@false", "\n");
     return true;
 }
 
@@ -276,7 +296,7 @@ bool else_jump()
 bool else_label()
 {
     *els = top(index_stack);
-    CODELN("LABEL else", els, "\n");
+    CODELN("LABEL $else", els, "\n");
     return true;
 }
 
@@ -286,7 +306,7 @@ bool else_label()
 bool if_end_label()
 {
     *els = top(index_stack);
-    CODELN("LABEL end", els, "\n");
+    CODELN("LABEL $if_end", els, "\n");
     pop(index_stack);
     return true;
 }
@@ -299,8 +319,8 @@ bool for_header()
     (*index2)++;
     push(for_index_stack, *index2);
     *for_index = top(for_index_stack);
-    CODELN("LABEL for", for_index, "\n");
-    CODELN("LABEL condition", for_index, "\n");
+    CODELN("LABEL $for", for_index, "\n");
+    CODELN("LABEL $condition", for_index, "\n");
     return true;
 }
 
@@ -311,9 +331,9 @@ bool for_header()
 bool for_condition_eval()
 {
     *for_index = top(for_index_stack);
-    CODELN("JUMPIFEQ end", for_index," GF@expr_result bool@true", "\n");
-    CODELN("JUMP body", for_index, "\n");
-    CODELN("LABEL increment", for_index, "\n");
+    CODELN("JUMPIFEQ $end_for", for_index," GF@expr_result bool@true", "\n");
+    CODELN("JUMP $for_body", for_index, "\n");
+    CODELN("LABEL $increment", for_index, "\n");
     return true;
 }
 
@@ -323,8 +343,8 @@ bool for_condition_eval()
 bool for_body()
 {
     *for_index = top(for_index_stack);
-    CODELN("JUMP condition", for_index, "\n");
-    CODELN("LABEL body", for_index, "\n");
+    CODELN("JUMP $condition", for_index, "\n");
+    CODELN("LABEL $for_body", for_index, "\n");
     return true;
 }
 
@@ -334,8 +354,8 @@ bool for_body()
 bool for_end()
 {
     *for_index = top(for_index_stack);
-    CODELN("JUMP increment", for_index, "\n");
-    CODELN("LABEL end", for_index, "\n");
+    CODELN("JUMP $increment", for_index, "\n");
+    CODELN("LABEL $end_for", for_index, "\n");
     pop(for_index_stack);
     return true;
 }
@@ -348,7 +368,7 @@ bool for_end()
 bool gen_var_def(char *id)
 {
     CODELN("DEFVAR LF@", id, "\n");
-    CODELN("MOV LF@", id, " GF@expr_result", "\n");
+    CODELN("MOVE LF@", id, " GF@expr_result", "\n");
     return true;
 }
 

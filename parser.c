@@ -411,9 +411,11 @@ void delete_tree() //deletes youngest tree
  */
 void program()
 {
+
     m.global_table = init_symtable(m.global_table);
 
     GENERATE(gen_header());
+    GENERATE(gen_inputs());
 
     prolog();
     while(true)

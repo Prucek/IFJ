@@ -131,6 +131,14 @@ bool else_label();
 
 bool if_end_label();
 
+bool for_header();
+
+bool for_condition_eval();
+
+bool for_body();
+
+bool for_end();
+
 bool gen_code_end();
 
 bool gen_func_end(char *func_id);

@@ -1004,8 +1004,14 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                 new_data_func.arg_arr[m.index++] = T_INT;
 
             }   // end of semantic analysis
-
-            GENERATE(gen_param_pass(m.current_token, act_param_counter));
+            if (strcmp(id.data.s, "print") != 0)
+            {
+                GENERATE(gen_param_pass(m.current_token, act_param_counter));
+            }
+            else
+            {   
+                GENERATE(gen_print(m.current_token, act_param_counter));
+            }
             previous = INT;
             continue;
         }
@@ -1025,8 +1031,14 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                 new_data_func.arg_arr[m.index++] = T_FLOAT64;
 
             }   // end of semantic analysis
-
-            GENERATE(gen_param_pass(m.current_token, act_param_counter));
+            if (strcmp(id.data.s, "print") != 0)
+            {
+                GENERATE(gen_param_pass(m.current_token, act_param_counter));
+            }
+            else
+            {   
+                GENERATE(gen_print(m.current_token, act_param_counter));
+            }
             previous = FLOAT64;
             continue;
         }
@@ -1046,8 +1058,15 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                 new_data_func.arg_arr[m.index++] = T_STRING;
 
             }   // end of semantic analysis
+            if (strcmp(id.data.s, "print") != 0)
+            {
+                GENERATE(gen_param_pass(m.current_token, act_param_counter));
+            }
+            else
+            {   
+                GENERATE(gen_print(m.current_token, act_param_counter));
+            }
 
-            GENERATE(gen_param_pass(m.current_token, act_param_counter));
             free(m.current_token.data.s);
             previous = STRING;
             continue;
@@ -1077,8 +1096,15 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                 new_data_func.arg_arr[m.index++] = T_UNDEFINED;
                 no_definition_error(m.current_token.data.s, m.current_line);
             }
+            if (strcmp(id.data.s, "print") != 0)
+            {
+                GENERATE(gen_param_pass(m.current_token, act_param_counter));
+            }
+            else
+            {   
+                GENERATE(gen_print(m.current_token, act_param_counter));
+            }
 
-            GENERATE(gen_param_pass(m.current_token, act_param_counter));
             free(m.current_token.data.s);
             previous = ID;
             continue;
@@ -1093,7 +1119,10 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
     {
         param_type_error(id.data.s, m.current_line);
     }
-    GENERATE(gen_func_call(id.data.s));
+    if (strcmp(id.data.s, "print") != 0)
+    {   
+        GENERATE(gen_func_call(id.data.s));
+    }
 }
 
 /**

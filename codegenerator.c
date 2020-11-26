@@ -68,6 +68,51 @@
     "RETURN\n"  \
     "\n"
 
+#define GEN_SUBSTR   \
+    "LABEL $substr\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"    \
+    "MOVE LF@%retval2 int@0\n"  \
+    "MOVE LF@%retval1 string@\n"   \
+    "DEFVAR LF@str_len\n"       \
+    "DEFVAR LF@condition\n"     \
+    "DEFVAR LF@loop_condition\n"    \
+    "DEFVAR LF@max_n\n"         \
+    "DEFVAR LF@char\n"          \
+    "CREATEFRAME\n"             \
+    "DEFVAR TF@%param1\n"         \
+    "MOVE TF@%param1 LF@%param1\n"    \
+    "CALL $len\n"                   \
+    "MOVE LF@str_len TF@%retval1\n" \
+    "JUMPIFEQ $substr&return LF@str_len int@0\n"    \
+    "LT LF@condition LF@%param2 int@0\n"      \
+    "JUMPIFEQ $substr_error LF@condition bool@true\n"   \
+    "GT LF@condition LF@%param2 LF@str_len\n"   \
+    "JUMPIFEQ $substr_error LF@condition bool@true\n"   \
+    "EQ LF@condition LF@%param2 LF@str_len\n"   \
+    "JUMPIFEQ $substr_error LF@condition bool@true\n"   \
+    "LT LF@condition LF@%param3 int@0\n"      \
+    "JUMPIFEQ $substr_error LF@condition bool@true\n"   \
+    "MOVE LF@max_n LF@str_len\n"    \
+    "SUB LF@max_n LF@max_n LF@%param2\n"    \
+    "GT LF@condition LF@%param3 LF@max_n\n" \
+    "JUMPIFNEQ $substr_loop LF@condition bool@true\n"   \
+    "MOVE LF@%param3 LF@max_n\n"    \
+    "LABEL $substr_loop\n"          \
+    "GETCHAR LF@char LF@%param1 LF@%param2\n"      \
+    "CONCAT LF@%retval1 LF@%retval1 LF@char\n"       \
+    "ADD LF@%param2 LF@%param2 int@1\n"             \
+    "SUB LF@%param3 LF@%param3 int@1\n"             \
+    "GT LF@loop_condition LF@%param3 int@0\n"       \
+    "JUMPIFEQ $substr_loop LF@loop_condition bool@true\n"   \
+    "JUMP $substr&return\n"         \
+    "LABEL $substr_error\n"         \
+    "MOVE LF@%retval2 int@1\n"      \
+    "LABEL $substr&return\n"        \
+    "POPFRAME\n" \
+    "RETURN\n"
+
 dynamic_string code; // code will be stored here and flushed in the end of compilation to stdout if compilation went successful
 char *index;
 char *els;
@@ -87,6 +132,7 @@ bool gen_built_func()
     CODE(GEN_INPUTS1);
     gen_func_retval(2);
     CODE(GEN_INPUTS2);
+    CODE(GEN_SUBSTR);
     return true;
 }
 
@@ -153,7 +199,7 @@ bool gen_param_val(Token current_token)
                 }
                 else
                 {
-                    add_char(&tmp_str, (char) c);
+                    if (c != '"') add_char(&tmp_str, (char) c);
                 }
 
             }
@@ -293,6 +339,19 @@ bool gen_param_pass(Token current_token, int param_index)
     {
         return false;
     }
+    return true;
+}
+
+/**
+ * @brief Genrates build_in function print
+ */
+bool gen_print(Token current_token, unsigned act_param_counter)
+{
+    if (act_param_counter == 1) CODE("DEFVAR TF@%param\n");
+    CODE("MOVE TF@%param ");
+    if (!gen_param_val(current_token)) return false;
+    CODE("WRITE TF@%param\n");
+    
     return true;
 }
 

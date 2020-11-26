@@ -50,17 +50,75 @@
     "POPFRAME\n" \
     "RETURN\n"
 
-#define GEN_INPUTS1  \
+#define GEN_INPUTS  \
     "LABEL $inputs\n" \
-    "PUSHFRAME\n"
-
-#define GEN_INPUTS2  \
-    "READ LF@%retval1 string\n" \
+    "PUSHFRAME\n" \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
     "DEFVAR LF@%str_len\n" \
-    "STRLEN LF@%str_len LF@%retval1\n" \
+    "DEFVAR LF@%type_check\n" \
+    "READ LF@%retval1 string\n" \
+    "TYPE LF@%type_check LF@%retval1\n" \
+    "STRLEN LF@%str_len LF@%type_check\n" \
     "JUMPIFNEQ $inputs_end LF@%str_len int@0\n" \
+    "JUMPIFEQ $inputs_end LF@type_check string@string\n" \
     "MOVE LF@%retval2 int@1\n" \
     "LABEL $inputs_end\n" \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_INPUTI  \
+    "LABEL $inputi\n" \
+    "PUSHFRAME\n" \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
+    "MOVE LF@%retval2 int@0\n" \
+    "DEFVAR LF@%str_len\n" \
+    "DEFVAR LF@%type_check\n" \
+    "READ LF@%retval1 int\n" \
+    "TYPE LF@%type_check LF@%retval1\n" \
+    "STRLEN LF@%str_len LF@%type_check\n" \
+    "JUMPIFNEQ $inputi_end LF@%str_len int@0\n" \
+    "JUMPIFEQ $inputi_end LF@type_check string@int\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $inputi_end\n" \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_INPUTF  \
+    "LABEL $inputf\n" \
+    "PUSHFRAME\n" \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
+    "MOVE LF@%retval2 int@0\n" \
+    "DEFVAR LF@%str_len\n" \
+    "DEFVAR LF@%type_check\n" \
+    "READ LF@%retval1 float\n" \
+    "TYPE LF@%type_check LF@%retval1\n" \
+    "STRLEN LF@%str_len LF@%type_check\n" \
+    "JUMPIFNEQ $inputf_end LF@%str_len int@0\n" \
+    "JUMPIFEQ $inputf_end LF@type_check string@float\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $inputf_end\n" \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_ORD   \
+    "LABEL $ord\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
+    "MOVE LF@%retval2 int@0\n" \
+    "STRI2INT LF@%retval1 LF@%param1 LF@%param2\n" \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_CHR   \
+    "LABEL $chr\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
+    "INT2CHAR LF@%retval1 LF@%param1\n" \
     "POPFRAME\n" \
     "RETURN\n"
 
@@ -80,9 +138,12 @@ bool gen_built_func()
     CODE(GEN_INT2FLAOT);
     CODE(GEN_FLOAT2INT);
     CODE(GEN_LEN);
-    CODE(GEN_INPUTS1);
-    gen_func_retval(2);
-    CODE(GEN_INPUTS2);
+    CODE(GEN_INPUTS);
+    CODE(GEN_INPUTI);
+    CODE(GEN_INPUTF);
+    CODE(GEN_ORD);
+    CODE(GEN_CHR);
+
     return true;
 }
 

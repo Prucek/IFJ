@@ -26,6 +26,44 @@
         CODE(index); \
     }while(0)
 
+#define GEN_INT2FLAOT   \
+    "LABEL $int2float\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "INT2FLOAT LF@%retval1 LF@%param1\n"    \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_FLOAT2INT   \
+    "LABEL $float2int\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "FLOAT2INT LF@%retval1 LF@%param1\n"    \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_LEN   \
+    "LABEL $len\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "STRLEN LF@%retval1 LF@%param1\n"    \
+    "POPFRAME\n" \
+    "RETURN\n"
+
+#define GEN_INPUTS1  \
+    "LABEL $inputs\n" \
+    "PUSHFRAME\n"
+
+#define GEN_INPUTS2  \
+    "READ LF@%retval1 string\n" \
+    "DEFVAR LF@%str_len\n" \
+    "STRLEN LF@%str_len LF@%retval1\n" \
+    "JUMPIFNEQ $inputs_end LF@%str_len int@0\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $inputs_end\n" \
+    "POPFRAME\n" \
+    "RETURN\n"
+
 dynamic_string code; // code will be stored here and flushed in the end of compilation to stdout if compilation went successful
 char *index;
 char *els;
@@ -33,6 +71,20 @@ Stack *index_stack;
 char *for_index;
 char *index2;
 Stack *for_index_stack;
+
+/**
+ * @brief Generates all built_in functions
+ */
+bool gen_built_func()
+{
+    CODE(GEN_INT2FLAOT);
+    CODE(GEN_FLOAT2INT);
+    CODE(GEN_LEN);
+    CODE(GEN_INPUTS1);
+    gen_func_retval(2);
+    CODE(GEN_INPUTS2);
+    return true;
+}
 
 /**
  * @brief Creates new TF for params of function before function_call
@@ -239,6 +291,7 @@ bool gen_param_pass(Token current_token, int param_index)
     return true;
 }
 
+
 bool gen_print()
 {
     CODE("WRITE string@Hello\\032World!\\010\n");
@@ -262,7 +315,7 @@ bool if_label()
 bool if_jump()
 {
     *els = top(index_stack);
-    CODELN("JUMP $end", els, "\n");
+    CODELN("JUMP $if_end", els, "\n");
     return true;
 }
 
@@ -291,7 +344,7 @@ bool else_label()
 bool if_end_label()
 {
     *els = top(index_stack);
-    CODELN("LABEL $end", els, "\n");
+    CODELN("LABEL $if_end", els, "\n");
     pop(index_stack);
     return true;
 }
@@ -316,8 +369,8 @@ bool for_header()
 bool for_condition_eval()
 {
     *for_index = top(for_index_stack);
-    CODELN("JUMPIFEQ $end", for_index," GF@expr_result bool@true", "\n");
-    CODELN("JUMP $body", for_index, "\n");
+    CODELN("JUMPIFEQ $end_for", for_index," GF@expr_result bool@true", "\n");
+    CODELN("JUMP $for_body", for_index, "\n");
     CODELN("LABEL $increment", for_index, "\n");
     return true;
 }
@@ -329,7 +382,7 @@ bool for_body()
 {
     *for_index = top(for_index_stack);
     CODELN("JUMP $condition", for_index, "\n");
-    CODELN("LABEL $body", for_index, "\n");
+    CODELN("LABEL $for_body", for_index, "\n");
     return true;
 }
 
@@ -340,7 +393,7 @@ bool for_end()
 {
     *for_index = top(for_index_stack);
     CODELN("JUMP $increment", for_index, "\n");
-    CODELN("LABEL $end", for_index, "\n");
+    CODELN("LABEL $end_for", for_index, "\n");
     pop(for_index_stack);
     return true;
 }
@@ -389,7 +442,7 @@ bool gen_code_end()
 }
 
 
-void float2hex(double d, char *buf) 
+void float2hex(double d, char *buf)
 {
     sprintf(buf, "%a", d);
 }
@@ -419,9 +472,9 @@ void str2our_str(char *dst, char *src)
                 j--;
                 continue;
             }
-            
+
             char buf[3];
-            dst[j++] = '\\'; dst[j++] = '0'; 
+            dst[j++] = '\\'; dst[j++] = '0';
             int2str(src[i],buf);
             if(strlen(buf) == 1)
             {
@@ -429,7 +482,7 @@ void str2our_str(char *dst, char *src)
                 dst[j] = buf[0];
             }
             if(strlen(buf) == 2)
-            {    
+            {
                 dst[j++] = buf[0];
                 dst[j] = buf[1];
             }
@@ -454,21 +507,21 @@ void str2our_str(char *dst, char *src)
                     dst[j] = buf[0];
                 }
                 if(strlen(buf) == 2)
-                {    
+                {
                     dst[j++] = '0';
-                    dst[j++] = buf[0];    
+                    dst[j++] = buf[0];
                     dst[j] = buf[1];
                 }
                 if(strlen(buf) == 3)
-                {    
-                    dst[j++] = buf[0];    
+                {
+                    dst[j++] = buf[0];
                     dst[j++] = buf[1];
                     dst[j] = buf[2];
                 }
                 continue;
             }
             char buf[3];
-            dst[j++] = '\\'; dst[j++] = '0'; 
+            dst[j++] = '\\'; dst[j++] = '0';
             int2str(src[i],buf);
             if(strlen(buf) == 1)
             {
@@ -476,7 +529,7 @@ void str2our_str(char *dst, char *src)
                 dst[j] = buf[0];
             }
             if(strlen(buf) == 2)
-            {    
+            {
                 dst[j++] = buf[0];
                 dst[j] = buf[1];
             }
@@ -484,7 +537,7 @@ void str2our_str(char *dst, char *src)
         else
         {
             dst[j] = src[i];
-        }         
+        }
     }
 }
 
@@ -508,7 +561,7 @@ bool gen_term(char *type, char* constant)
 
 bool gen_operation(int type)
 {
-    if (type == 2) 
+    if (type == 2)
         CODE("ADDS\n");
     if (type == 3)
         CODE("SUBS\n");
@@ -532,7 +585,7 @@ bool gen_operation(int type)
         CODE("EQS\n");
         CODE("ORS\n");
     }
-        
+
     if (type == 10) //GES
     {
         CODE("POPS GF@tmp1\n");
@@ -542,10 +595,10 @@ bool gen_operation(int type)
         CODE("PUSHS GF@tmp2\n");
         CODE("EQS\n");
         CODE("ORS\n");
-    }  
+    }
     if (type == 11)
         CODE("EQS\n");
-    
+
     return true;
 }
 

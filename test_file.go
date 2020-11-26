@@ -16,6 +16,7 @@ func main(){
 
                 }
         }
+        a, _ = inputi()
         _ = 3
         _ = a
         _ = "abc"
@@ -87,6 +88,7 @@ func ahoj(){
     f, ny = inputf()
     int2float(25, 45)
     f = int2float(77.5)
+    _ = int2float(5)
     ny = float2int(448)
     ny = float2int(xx, f)
     ny = float2int(f)

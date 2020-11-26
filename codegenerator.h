@@ -93,6 +93,8 @@
 #include <string.h>
 #include <ctype.h>
 
+bool gen_built_func();
+
 bool gen_header();
 
 void gen_dispose();
@@ -118,6 +120,8 @@ bool gen_var_def(char *id);
 bool gen_createframe();
 
 bool gen_main_end();
+
+bool gen_inputs();
 
 bool gen_print();
 

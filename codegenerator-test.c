@@ -11,7 +11,6 @@ int main()
 {
     gen_header();
     gen_func_header("main");
-    gen_print();
     gen_main_end();
     flush();
 

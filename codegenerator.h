@@ -123,8 +123,6 @@ bool gen_main_end();
 
 bool gen_inputs();
 
-bool gen_print();
-
 bool gen_stack_inst(int instruction, bool is_float);
 
 bool gen_term(char *type, char* constant);
@@ -142,6 +140,7 @@ bool gen_expr_result();
 bool gen_expr_begin();
 
 bool gen_expr_end();
+
 bool if_label();
 
 bool if_jump();

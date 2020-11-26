@@ -60,6 +60,7 @@
     "DEFVAR LF@%retval2\n"   \
     "DEFVAR LF@%str_len\n" \
     "DEFVAR LF@%type_check\n" \
+    "MOVE LF@%retval2 int@0\n" \
     "READ LF@%retval1 string\n" \
     "TYPE LF@%type_check LF@%retval1\n" \
     "STRLEN LF@%str_len LF@%type_check\n" \
@@ -87,7 +88,8 @@
     "MOVE LF@%retval2 int@1\n" \
     "LABEL $inputi_end\n" \
     "POPFRAME\n" \
-    "RETURN\n"
+    "RETURN\n" \
+    "\n"
 
 #define GEN_INPUTF  \
     "LABEL $inputf\n" \
@@ -105,26 +107,53 @@
     "MOVE LF@%retval2 int@1\n" \
     "LABEL $inputf_end\n" \
     "POPFRAME\n" \
-    "RETURN\n"
+    "RETURN\n" \
+    "\n"
 
 #define GEN_ORD   \
     "LABEL $ord\n"  \
     "PUSHFRAME\n"           \
     "DEFVAR LF@%retval1\n"   \
     "DEFVAR LF@%retval2\n"   \
+    "DEFVAR LF@%tmp_val\n"  \
+    "DEFVAR LF@%tmp_len\n"  \
+    "STRLEN LF@%tmp_len LF@%param1\n"  \
+    "MOVE LF@%retval1 int@0\n" \
     "MOVE LF@%retval2 int@0\n" \
+    "SUB LF@%retval2 LF@%retval2 int@1\n"  \
+    "LT LF@%tmp_val LF@%param2 int@0\n"  \
+    "JUMPIFEQ $ord_ret LF@%tmp_val bool@true\n"  \
+    "GT LF@%tmp_val LF@%param2 LF@%tmp_len\n"  \
+    "JUMPIFEQ $ord_ret LF@%tmp_val bool@true\n"  \
     "STRI2INT LF@%retval1 LF@%param1 LF@%param2\n" \
+    "JUMP $ord_end\n" \
+    "LABEL $ord_ret\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $ord_end\n" \
     "POPFRAME\n" \
-    "RETURN\n"
+    "RETURN\n" \
+    "\n"
 
 #define GEN_CHR   \
     "LABEL $chr\n"  \
     "PUSHFRAME\n"           \
     "DEFVAR LF@%retval1\n"   \
     "DEFVAR LF@%retval2\n"   \
+    "DEFVAR LF@%tmp_index\n"  \
+    "MOVE LF@%retval1 int@0\n" \
+    "MOVE LF@%retval2 int@0\n" \
+    "LT LF@%tmp_index LF@%param1 int@0\n" \
+    "JUMPIFEQ $chr_ret LF@%tmp_index bool@true\n" \
+    "GT LF@%tmp_index LF@%param1 int@255\n" \
+    "JUMPIFEQ $chr_ret LF@%tmp_index bool@true\n" \
     "INT2CHAR LF@%retval1 LF@%param1\n" \
+    "JUMP $chr_end\n" \
+    "LABEL $chr_ret\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $chr_end\n"  \
     "POPFRAME\n" \
-    "RETURN\n"
+    "RETURN\n" \
+    "\n"
 
 dynamic_string code; // code will be stored here and flushed in the end of compilation to stdout if compilation went successful
 char *index;
@@ -638,7 +667,7 @@ bool gen_term(char *type, char* constant)
 
 /**
  * @brief Generates operation to be performed on stack
- * @param type should be Terminal_type, but codegenerator.h would have needed parser.h 
+ * @param type should be Terminal_type, but codegenerator.h would have needed parser.h
  * @param type is enum of the operation
  */
 bool gen_operation(int type)
@@ -701,6 +730,7 @@ void gen_dispose()
 {
     dynstr_free(&code);
     free(index);
+    free(index2);
     free(els);
     free(for_index);
 }

@@ -32,7 +32,8 @@
     "DEFVAR LF@%retval1\n"   \
     "INT2FLOAT LF@%retval1 LF@%param1\n"    \
     "POPFRAME\n" \
-    "RETURN\n"
+    "RETURN\n"  \
+    "\n"
 
 #define GEN_FLOAT2INT   \
     "LABEL $float2int\n"  \
@@ -40,7 +41,8 @@
     "DEFVAR LF@%retval1\n"   \
     "FLOAT2INT LF@%retval1 LF@%param1\n"    \
     "POPFRAME\n" \
-    "RETURN\n"
+    "RETURN\n" \
+    "\n"
 
 #define GEN_LEN   \
     "LABEL $len\n"  \
@@ -48,7 +50,8 @@
     "DEFVAR LF@%retval1\n"   \
     "STRLEN LF@%retval1 LF@%param1\n"    \
     "POPFRAME\n" \
-    "RETURN\n"
+    "RETURN\n"  \
+    "\n"
 
 #define GEN_INPUTS  \
     "LABEL $inputs\n" \
@@ -65,7 +68,8 @@
     "MOVE LF@%retval2 int@1\n" \
     "LABEL $inputs_end\n" \
     "POPFRAME\n" \
-    "RETURN\n"
+    "RETURN\n"  \
+    "\n"
 
 #define GEN_INPUTI  \
     "LABEL $inputi\n" \
@@ -255,6 +259,7 @@ bool gen_header()
     CODE("DEFVAR GF@tmp2\n");
     CODE("MOVE GF@expr_result bool@true\n");
     CODE("JUMP $main\n");
+    CODE("\n");
 
     return true;
 }
@@ -266,8 +271,8 @@ bool gen_header()
 bool gen_main_start()
 {
     CODE("LABEL $main\n");
-    CODE("CREATEFRAME\n");
-    CODE("PUSHFRAME\n");
+    CODE(" CREATEFRAME\n");
+    CODE(" PUSHFRAME\n");
     return true;
 }
 
@@ -278,7 +283,7 @@ bool gen_func_header(char *func_name)
 {
     CODELN("LABEL $", func_name, "\n");
     //CODE("CREATEFRAME\n");    // vymazali by sme TF s posielajucimi parametrami
-    CODE("PUSHFRAME\n");
+    CODE(" PUSHFRAME\n");
     return true;
 }
 
@@ -291,7 +296,7 @@ bool gen_func_retval(unsigned ret_counter)
 {
     for (unsigned i = 0; i < ret_counter; i++)
     {
-        CODE("DEFVAR LF@%retval"); CODE_INT(i+1); CODE("\n");
+        CODE(" DEFVAR LF@%retval"); CODE_INT(i+1); CODE("\n");
     }
     return true;
 }
@@ -306,7 +311,7 @@ bool gen_func_return(char *func_id, unsigned ret_counter)
     for (unsigned i = 0; i < ret_counter; i++)
     {
         //HERE call for expression result
-        CODE("MOVE LF@%retval"); CODE_INT(i+1); CODE(" GF@expr_result\n");
+        CODE(" MOVE LF@%retval"); CODE_INT(i+1); CODE(" GF@expr_result\n");
     }
     CODELN("JUMP $", func_id, "&return", "\n");
     return true;
@@ -320,7 +325,7 @@ bool gen_func_return(char *func_id, unsigned ret_counter)
  */
 bool gen_retval_assign(char *id, unsigned retval_index)
 {
-    CODE("MOVE LF@"); CODE(id); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
+    CODE(" MOVE LF@"); CODE(id); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
     return true;
 }
 
@@ -331,7 +336,7 @@ bool gen_retval_assign(char *id, unsigned retval_index)
  */
 bool gen_func_call(char *func_id)
 {
-    CODELN("CALL $", func_id, "\n");
+    CODELN(" CALL $", func_id, "\n");
     return true;
 }
 
@@ -343,19 +348,12 @@ bool gen_func_call(char *func_id)
  */
 bool gen_param_pass(Token current_token, int param_index)
 {
-    CODE("DEFVAR TF@%param"); CODE_INT(param_index); CODE("\n");
-    CODE("MOVE TF@%param"); CODE_INT(param_index); CODE(" ");
+    CODE(" DEFVAR TF@%param"); CODE_INT(param_index); CODE("\n");
+    CODE(" MOVE TF@%param"); CODE_INT(param_index); CODE(" ");
     if (!gen_param_val(current_token))
     {
         return false;
     }
-    return true;
-}
-
-
-bool gen_print()
-{
-    CODE("WRITE string@Hello\\032World!\\010\n");
     return true;
 }
 
@@ -461,13 +459,13 @@ bool for_end()
 
 /**
  * @brief Defines new var in LF
- * @param id Id ov new var
- * @return True if generationa successful, else false
+ * @param id Id of new var
+ * @return True if generation successful, else false
  */
 bool gen_var_def(char *id)
 {
-    CODELN("DEFVAR LF@", id, "\n");
-    CODELN("MOVE LF@", id, " GF@expr_result", "\n");
+    CODELN(" DEFVAR LF@", id, "\n");
+    CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
     return true;
 }
 
@@ -479,6 +477,7 @@ bool gen_main_end()
     CODE("POPFRAME\n");
     CODE("CLEARS\n");
     CODE("JUMP $end_of_code\n");
+    CODE("\n");
     return true;
 }
 
@@ -490,6 +489,8 @@ bool gen_func_end(char *func_id)
     CODELN("LABEL $", func_id, "&return", "\n");
     CODE("POPFRAME\n");
     CODE("RETURN\n");
+    CODE("\n");
+
     return true;
 }
 
@@ -502,17 +503,25 @@ bool gen_code_end()
     return true;
 }
 
-
+/**
+ * @brief casts double number @param d into hex string @param buf
+ */
 void float2hex(double d, char *buf)
 {
     sprintf(buf, "%a", d);
 }
 
+/**
+ * @brief casts integer number @param n into string @param buf
+ */
 void int2str(int n, char *buf)
 {
     sprintf(buf, "%d", n);
 }
 
+/**
+ * @brief edits @param src string into @param dst string which is needed in 3AC
+ */
 void str2our_str(char *dst, char *src)
 {
     unsigned j = 0;
@@ -602,76 +611,91 @@ void str2our_str(char *dst, char *src)
     }
 }
 
+// for debugging
 bool gen_expr_begin()
 {
     CODE("# EXPR BEGIN\n")
     return true;
 }
 
+// for debugging
 bool gen_expr_end()
 {
     CODE("# EXPR END\n")
     return true;
 }
 
+/**
+ * @brief Generates term(string, int, float64, ID)
+ * @param type is type of term in string
+ * @param constant is the data/ value of term
+ */
 bool gen_term(char *type, char* constant)
 {
-    CODELN("PUSHS ",type,"@",constant,"\n");
+    CODELN("  PUSHS ",type,"@",constant,"\n");
     return true;
 }
 
+/**
+ * @brief Generates operation to be performed on stack
+ * @param type should be Terminal_type, but codegenerator.h would have needed parser.h 
+ * @param type is enum of the operation
+ */
 bool gen_operation(int type)
 {
     if (type == 2)
-        CODE("ADDS\n");
+        CODE("  ADDS\n");
     if (type == 3)
-        CODE("SUBS\n");
+        CODE("  SUBS\n");
     if (type == 4)
-        CODE("MULS\n");
+        CODE("  MULS\n");
     if (type == 5) // !!!
-        CODE("DIVS\n");
+        CODE("  DIVS\n");
     if (type == 6)
-        CODE("GTS\n");
+        CODE("  GTS\n");
     if (type == 7)
-        CODE("LTS\n");
+        CODE("  LTS\n");
     if (type == 8)
-        CODE("EQS\nNOTS\n");
+        CODE("  EQS\nNOTS\n");
     if (type == 9) //LES
     {
-        CODE("POPS GF@tmp1\n");
-        CODE("POPS GF@tmp2\n");
-        CODE("LTS\n");
-        CODE("PUSHS GF@tmp1\n");
-        CODE("PUSHS GF@tmp2\n");
-        CODE("EQS\n");
-        CODE("ORS\n");
+        CODE("  POPS GF@tmp1\n");
+        CODE("  POPS GF@tmp2\n");
+        CODE("  LTS\n");
+        CODE("  PUSHS GF@tmp1\n");
+        CODE("  PUSHS GF@tmp2\n");
+        CODE("  EQS\n");
+        CODE("  ORS\n");
     }
 
     if (type == 10) //GES
     {
-        CODE("POPS GF@tmp1\n");
-        CODE("POPS GF@tmp2\n");
-        CODE("GTS\n");
-        CODE("PUSHS GF@tmp1\n");
-        CODE("PUSHS GF@tmp2\n");
-        CODE("EQS\n");
-        CODE("ORS\n");
+        CODE("  POPS GF@tmp1\n");
+        CODE("  POPS GF@tmp2\n");
+        CODE("  GTS\n");
+        CODE("  PUSHS GF@tmp1\n");
+        CODE("  PUSHS GF@tmp2\n");
+        CODE("  EQS\n");
+        CODE("  ORS\n");
     }
     if (type == 11)
-        CODE("EQS\n");
+        CODE("  EQS\n");
 
     return true;
 }
 
+/**
+ * @brief expression result is poped into global GF@expr_result, where others can read it form
+ */
 bool gen_expr_result()
 {
-    CODE("POPS GF@expr_result\n");
+    CODE("  POPS GF@expr_result\n");
     gen_expr_end();
     return true;
 }
 
 /**
- * @brief free allocated code buffer
+ * @brief free allocated code buffers
  */
 void gen_dispose()
 {

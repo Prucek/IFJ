@@ -3,7 +3,7 @@ package main
 func foo(){
 
 	for i := 0; i < 5; i = i+1{
-		if (i > 0 && i < 5) {
+		if (i > 0) {
 			print(":)")
 		} else{
 			print("Chyba jak svina")

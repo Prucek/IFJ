@@ -1202,8 +1202,12 @@ void for_s()
         if (expr_type != T_UNDEFINED)
             define_id_type(id_name, expr_type, true);
 
-        free(id_name);
+        
         CHECK_TOKEN_NOFREE(SEMICLN);
+
+        GENERATE(gen_var_def(id_name));
+
+        free(id_name);
     }
     else if (CHECK_TOKEN(SEMICLN)){;}
 

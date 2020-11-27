@@ -1169,33 +1169,37 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             }
             if (strcmp(id.data.s, "print") != 0)
             {
-               
-                if (id_data->is_param)
+                if (id_data != NULL)
                 {
+                    if (id_data->is_param)
+                    {
+                        free(m.current_token.data.s);
+                        m.current_token.data.s = malloc(1000);
+                        char buf[3];
+                        int2str(id_data->param_num,buf);
+                        strcpy(m.current_token.data.s,"%param");
+                        strcat(m.current_token.data.s,buf);
+                    }
+                    GENERATE(gen_param_pass(m.current_token, act_param_counter));
                     free(m.current_token.data.s);
-                    m.current_token.data.s = malloc(1000);
-                    char buf[3];
-                    int2str(id_data->param_num,buf);
-                    strcpy(m.current_token.data.s,"%param");
-                    strcat(m.current_token.data.s,buf);
                 }
-                GENERATE(gen_param_pass(m.current_token, act_param_counter));
-                free(m.current_token.data.s);
             }
             else
             {
-                
-                if (id_data->is_param)
+                if (id_data != NULL)
                 {
+                    if (id_data->is_param)
+                    {
+                        free(m.current_token.data.s);
+                        m.current_token.data.s = malloc(1000);
+                        char buf[3];
+                        int2str(id_data->param_num,buf);
+                        strcpy(m.current_token.data.s,"%param");
+                        strcat(m.current_token.data.s,buf);
+                    }
+                    GENERATE(gen_print(m.current_token, act_param_counter));
                     free(m.current_token.data.s);
-                    m.current_token.data.s = malloc(1000);
-                    char buf[3];
-                    int2str(id_data->param_num,buf);
-                    strcpy(m.current_token.data.s,"%param");
-                    strcat(m.current_token.data.s,buf);
                 }
-                GENERATE(gen_print(m.current_token, act_param_counter));
-                free(m.current_token.data.s);
             }
 
             //free(m.current_token.data.s);

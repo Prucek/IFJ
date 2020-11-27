@@ -492,12 +492,18 @@ bool func()
         return false;
     }
 
-    TData *func_data = get_func_data(m.current_func_id);
+    TData *func_data = get_func_data(m.current_func_id); //< current_func_id can be undefined
 
-    if (func_data->ret_counter == 0)
-        m.current_func_ret_success = true; //< No need to check if function returned correct values
-    else
-        m.current_func_ret_success = false; //< Check if function returned correct values
+    if (func_data != NULL) {
+        if (func_data->ret_counter == 0)
+            m.current_func_ret_success = true; //< No need to check if function returned correct values
+        else
+            m.current_func_ret_success = false; //< Check if function returned correct values
+    }
+    else 
+    {
+        m.current_func_ret_success = true; //< No func id - do not care for return success
+    }
 
     // body
     while(statement());
@@ -508,7 +514,8 @@ bool func()
     }
     else
     {
-        GENERATE(gen_func_end(m.current_func_id));
+        if (m.current_func_id != NULL) 
+            GENERATE(gen_func_end(m.current_func_id));
     }
 
     delete_symtable(array_of_trees[tree_index]);

@@ -431,6 +431,7 @@ void program()
         }
     }
 
+    node = NULL;
     node = search_symtable(m.global_table, "main");
     if (node == NULL)
     {
@@ -1233,7 +1234,7 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
 
             if (strcmp(asgn_meta.id_names[i], "_"))
             {
-                type_error(asgn_meta.id_names[i], data_types[expr_type], m.current_line);
+                compatibility_error(data_types[expr_type], m.current_line);
             }
         }
         free(asgn_meta.id_names[i]);

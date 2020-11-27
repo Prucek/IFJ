@@ -202,7 +202,7 @@
     "\n"
 
 dynamic_string code; // code will be stored here and flushed in the end of compilation to stdout if compilation went successful
-char *index;
+char *index3;
 char *els;
 Stack *index_stack;
 char *for_index;
@@ -288,15 +288,15 @@ bool gen_header()
     dynstr_init(&code);
 
     CODE(".IFJcode20\n");
-    index = malloc(sizeof(char));
+    index3 = malloc(sizeof(char));
     index2 = malloc(sizeof(char));
     els = malloc(sizeof(char));
     for_index = malloc(sizeof(char));
-    if (index == NULL || els == NULL || for_index == NULL || index2 == NULL)
+    if (index3 == NULL || els == NULL || for_index == NULL || index2 == NULL)
     {
         intern_error();
     }
-    *index = 64;
+    *index3 = 64;
     *index2 = 64;
     index_stack = createStack(100);
     for_index_stack = createStack(100);
@@ -430,9 +430,9 @@ bool gen_print(Token current_token, unsigned act_param_counter)
  */
 bool if_label()
 {
-    (*index)++;
-    push(index_stack, *index);
-    CODELN("LABEL $if", index, "\n");
+    (*index3)++;
+    push(index_stack, *index3);
+    CODELN("LABEL $if", index3, "\n");
     return true;
 }
 
@@ -451,7 +451,7 @@ bool if_jump()
  */
 bool else_jump()
 {
-    CODELN("JUMPIFEQ $else", index, " GF@expr_result bool@false", "\n");
+    CODELN("JUMPIFEQ $else", index3, " GF@expr_result bool@false", "\n");
     return true;
 }
 
@@ -798,7 +798,7 @@ bool gen_expr_result()
 void gen_dispose()
 {
     dynstr_free(&code);
-    free(index);
+    free(index3);
     free(index2);
     free(els);
     free(for_index);

@@ -10,18 +10,18 @@
     // LP, // Left  Para (
     // RP, // Right Para )
 
-    // ADDS, 
-    // SUBS, 
-    // MULS, 
-    // DIVS, 
+    // ADDS,
+    // SUBS,
+    // MULS,
+    // DIVS,
 
     // GTS, // >
     // LTS, // <
     // NES, // !=
     // LES, // <=
     // GES, // >=
-    // EQS, // ==    
-    
+    // EQS, // ==
+
     // II, // id, float, string, int
     // EN, // $
 
@@ -30,7 +30,7 @@ TabItem precedence_table[TABLE_SIZE][TABLE_SIZE] =
     {SHIFT,EQUAL,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR}, // (
     {T_ERR,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,T_ERR,REDUC}, // )
     {SHIFT,REDUC,REDUC,REDUC,SHIFT,SHIFT,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // +
-    {SHIFT,REDUC,REDUC,REDUC,SHIFT,SHIFT,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // - 
+    {SHIFT,REDUC,REDUC,REDUC,SHIFT,SHIFT,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // -
     {SHIFT,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // *
     {SHIFT,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,REDUC,SHIFT,REDUC}, // /
     {SHIFT,REDUC,SHIFT,SHIFT,SHIFT,SHIFT,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,T_ERR,SHIFT,REDUC}, // >
@@ -72,7 +72,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
     push(s,EN);
 
     bool read = true;
-    
+
     while(true)
     {
         if (read)
@@ -95,7 +95,14 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                     }
                     else
                     {
-                        no_definition_error(previous.token.data.s, previous.current_line);
+                        if (strcmp(previous.token.data.s, "_"))
+                        {
+                            no_definition_error(previous.token.data.s, previous.current_line);
+                        }
+                        else
+                        {
+                            other_error(previous.current_line);
+                        }
                         //free(previous.token.data.s);
                         if (!expr_semerror) expr_semerror = true;
                     }
@@ -128,7 +135,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                             previous = input_terminal;
                         }
                     }
-                    else 
+                    else
                     {
                         if (input_terminal.dataType != *expr_type)
                         {
@@ -137,7 +144,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                             if (!expr_semerror) expr_semerror = true;
                         }
                     }
-           
+
                     if (begin_counter == 0)
                     {
                         GENERATE(gen_expr_begin());
@@ -150,7 +157,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                     {
                         strcpy(type,"string");
                         str2our_str(data,input_terminal.token.data.s);
-                        GENERATE(gen_term(type,data));    
+                        GENERATE(gen_term(type,data));
                     }
                     if (input_terminal.token.type == INT)
                     {
@@ -167,7 +174,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                     if (input_terminal.token.type == ID && !can_be_func)
                     {
                         strcpy(type,"LF");
-                        
+
                         if (num_of_para != 0)
                         {
                             char buf[2];
@@ -175,12 +182,12 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                             int2str(num_of_para,buf);
                             strcat(data,buf);
                         }
-                        else 
+                        else
                             strcpy(data,input_terminal.token.data.s);
 
                         GENERATE(gen_term(type,data));
                     }
-                    
+
                     free(type);
                     free(data);
 
@@ -202,8 +209,8 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                 if (input_terminal.terType == DIVS)
                 {
                     check_zero_div = true;
-                }    
-                if (input_terminal.terType == GTS || input_terminal.terType == NES || input_terminal.terType == GES|| 
+                }
+                if (input_terminal.terType == GTS || input_terminal.terType == NES || input_terminal.terType == GES||
                     input_terminal.terType == LTS || input_terminal.terType == EQS || input_terminal.terType == LES ) //< Logical Operator
                 {
                     if (!expr_isbool) expr_isbool = true;
@@ -212,7 +219,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
         }
 
         int f = find_terminal(s);
-        if (f < 0 || input_terminal.terType < 0) 
+        if (f < 0 || input_terminal.terType < 0)
         {
             deleteStack(s);
             return false;
@@ -237,7 +244,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                         return true;
                     }
                     else return false;
-                }                
+                }
                 else
                 {
                     compatibility_error(data_types[*expr_type], input_terminal.current_line);
@@ -264,7 +271,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
             {
                 push(s,SH);
             }
-            else if (input_terminal.terType != LP && input_terminal.terType != RP && 
+            else if (input_terminal.terType != LP && input_terminal.terType != RP &&
                      input_terminal.terType != II && input_terminal.terType != EN  )
             {
                 int tmp = pop(s);
@@ -272,8 +279,8 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                 push(s,tmp);
             }
             push(s,input_terminal.terType);
-            read = true; 
-            continue;       
+            read = true;
+            continue;
         }
         else if (to_perform == EQUAL)
         {
@@ -282,11 +289,11 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
             {
                 deleteStack(s);
                 return false;
-            }   
+            }
             read = true;
             continue;
         }
-    }      
+    }
 }
 
 /**
@@ -299,13 +306,13 @@ int find_terminal(Stack *s)
         if(s->array[i] != NT)
         {
             return s->array[i];
-        }     
+        }
     }
     return -1;
 }
 
 /**
- * @brief Reduce what is on stack 
+ * @brief Reduce what is on stack
  */
 bool reduce(Stack *s)
 {
@@ -314,7 +321,7 @@ bool reduce(Stack *s)
     do
     {
         i++;
-        if (top(s) == STACK_ERROR) 
+        if (top(s) == STACK_ERROR)
         {
             return false;
         }

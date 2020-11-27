@@ -64,9 +64,9 @@
 bool inc_line_on_next = false;
 
 Metadata m = {
-    .current_line = 1, 
-    .index = 0, 
-    .local_table = NULL, 
+    .current_line = 1,
+    .index = 0,
+    .local_table = NULL,
     .current_func_id = NULL,
     .current_func_ret_success = false
 };
@@ -372,7 +372,7 @@ TData *get_func_data(char *id)
  */
 TData *get_id_data(char *id)
 {
-    for (int idx = 0; idx <= tree_index; idx++)
+    for (int idx = tree_index; idx >= 0; idx--)
     {
         node = search_symtable(array_of_trees[idx], id);
         if (node != NULL)
@@ -434,6 +434,7 @@ void program()
         }
     }
 
+    lasterror_line = -2; // Hotfix        
     node = search_symtable(m.global_table, "main");
     if (node == NULL)
     {
@@ -504,7 +505,7 @@ bool func()
         else
             m.current_func_ret_success = false; //< Check if function returned correct values
     }
-    else 
+    else
     {
         m.current_func_ret_success = true; //< No func id - do not care for return success
     }
@@ -518,7 +519,7 @@ bool func()
     }
     else
     {
-        if (m.current_func_id != NULL) 
+        if (m.current_func_id != NULL)
             GENERATE(gen_func_end(m.current_func_id));
     }
 
@@ -695,42 +696,46 @@ void header_arg()
     //     m.current_line++;
     //     GET_TOKEN();
     // }
-    CHECK_TOKEN(ID);
-    new_data_var = init_new_data(new_data_var);
-    Token prev = m.current_token;
 
-    GET_TOKEN();
-    if (IS_DATA_TYPE())
+    if (CHECK_TOKEN(ID))
     {
-        new_data_var.defined = true;
-        new_data_var.is_var = true;
-        new_data_var.is_param = true;
-        new_data_var.param_num++;
-        new_data_func.param_counter++;
+        new_data_var = init_new_data(new_data_var);
+        Token prev = m.current_token;
 
-        switch (m.current_token.data.k)
+        GET_TOKEN();
+        if (IS_DATA_TYPE())
         {
-            case K_INT:
-                new_data_var.type = T_INT;
-                new_data_func.arg_arr[m.index++] = T_INT;
-                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
-                break;
-            case K_FLOAT64:
-                new_data_var.type = T_FLOAT64;
-                new_data_func.arg_arr[m.index++] = T_FLOAT64;
-                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
-                break;
-            case K_STRING:
-                new_data_var.type = T_STRING;
-                new_data_func.arg_arr[m.index++] = T_STRING;
-                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
-                break;
+            new_data_var.defined = true;
+            new_data_var.is_var = true;
+            new_data_var.is_param = true;
+            new_data_var.param_num++;
+            new_data_func.param_counter++;
 
-            default:
-                break;
+            switch (m.current_token.data.k)
+            {
+                case K_INT:
+                    new_data_var.type = T_INT;
+                    new_data_func.arg_arr[m.index++] = T_INT;
+                    array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
+                    break;
+                case K_FLOAT64:
+                    new_data_var.type = T_FLOAT64;
+                    new_data_func.arg_arr[m.index++] = T_FLOAT64;
+                    array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
+                    break;
+                case K_STRING:
+                    new_data_var.type = T_STRING;
+                    new_data_func.arg_arr[m.index++] = T_STRING;
+                    array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
+                    break;
+
+                default:
+                    break;
+            }
         }
+        free(prev.data.s);      //< free token id
     }
-    free(prev.data.s);      //< free token id
+
     GET_TOKEN();
 
     if (CHECK_NO_ERROR(COMMA))
@@ -770,7 +775,7 @@ bool statement()
     else if (CHECK_NO_ERROR(BRACKET_RIGHT))
     {
         // Function body end
-        if (!m.current_func_ret_success) 
+        if (!m.current_func_ret_success)
             no_return_error(m.current_func_id, m.current_line);
         return false;
     }
@@ -1067,7 +1072,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                 GENERATE(gen_param_pass(m.current_token, act_param_counter));
             }
             else
-            {   
+            {
                 GENERATE(gen_print(m.current_token, act_param_counter));
             }
             previous = INT;
@@ -1094,7 +1099,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                 GENERATE(gen_param_pass(m.current_token, act_param_counter));
             }
             else
-            {   
+            {
                 GENERATE(gen_print(m.current_token, act_param_counter));
             }
             previous = FLOAT64;
@@ -1200,7 +1205,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
         param_type_error(id.data.s, m.current_line);
     }
     if (strcmp(id.data.s, "print") != 0)
-    {   
+    {
         GENERATE(gen_func_call(id.data.s));
     }
 }
@@ -1229,6 +1234,11 @@ void if_s()
     {
         syntax_error(m.current_token.type,m.current_line);
     }
+
+    delete_symtable(array_of_trees[tree_index]);
+    delete_tree();
+    add_tree();
+    array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
     GENERATE(if_jump()); //skips else branch
     GENERATE(else_label());
     GET_AND_CHECK(BRACKET_LEFT);
@@ -1237,6 +1247,7 @@ void if_s()
     while(statement());
     GET_AND_CHECK(EOL);
     GENERATE(if_end_label());
+
     delete_symtable(array_of_trees[tree_index]);
     delete_tree();
 }
@@ -1283,7 +1294,7 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
 
             if (strcmp(asgn_meta.id_names[i], "_"))
             {
-                type_error(asgn_meta.id_names[i], data_types[expr_type], m.current_line);
+                compatibility_error(data_types[expr_type], m.current_line);
             }
         }
         free(asgn_meta.id_names[i]);
@@ -1323,7 +1334,7 @@ void for_s()
         if (expr_type != T_UNDEFINED)
             define_id_type(id_name, expr_type, true);
 
-        
+
         CHECK_TOKEN_NOFREE(SEMICLN);
 
         GENERATE(gen_var_def(id_name));
@@ -1358,11 +1369,16 @@ void for_s()
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
 
+    add_tree();
+    array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
+
     GET_AND_CHECK(EOL);
     GENERATE(for_body());
     // body
     while(statement());
     GENERATE(for_end());
+    delete_symtable(array_of_trees[tree_index]);
+    delete_tree();
     delete_symtable(array_of_trees[tree_index]);
     delete_tree();
 }
@@ -1395,7 +1411,7 @@ void return_s()
                 {
                     if (!ret_multiple)
                     {
-                        if (expr_type == T_UNDEFINED) 
+                        if (expr_type == T_UNDEFINED)
                         {
                             // First retval is of type UNDEFINED - no trailing commas allowed
                             if (!CHECK_NO_ERROR(COMMA))
@@ -1430,18 +1446,18 @@ void return_s()
                         if (expr_type != T_UNDEFINED)
                         {
                             // SUCCESSful return
-                            if (!m.current_func_ret_success) 
+                            if (!m.current_func_ret_success)
                                 m.current_func_ret_success = true;
                             break;
                         }
-                        // ELSE - last expression (that is not first retval) 
+                        // ELSE - last expression (that is not first retval)
                         //        vas undefined - cannot assign T_UNDEFINED
                         // Continue to syntax error
                     }
                     else
                     {
                         // SUCCESSful return
-                        if (!m.current_func_ret_success) 
+                        if (!m.current_func_ret_success)
                             m.current_func_ret_success = true;
                         break;
                     }
@@ -1492,7 +1508,7 @@ void return_s()
                         else
                         {
                             // SUCCESSful return
-                            if (!m.current_func_ret_success) 
+                            if (!m.current_func_ret_success)
                                 m.current_func_ret_success = true;
                         }
                         break;

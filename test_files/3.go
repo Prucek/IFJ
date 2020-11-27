@@ -39,3 +39,5 @@ func main(){
 	g()
 	return
 }
+
+// concat stringov nefunguje este

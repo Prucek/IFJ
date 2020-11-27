@@ -198,7 +198,8 @@
     "MOVE LF@%retval2 int@1\n"      \
     "LABEL $substr&return\n"        \
     "POPFRAME\n" \
-    "RETURN\n"
+    "RETURN\n"  \
+    "\n"
 
 dynamic_string code; // code will be stored here and flushed in the end of compilation to stdout if compilation went successful
 char *index3;
@@ -516,7 +517,7 @@ bool for_header()
 bool for_condition_eval()
 {
     *for_index = top(for_index_stack);
-    CODELN("JUMPIFEQ $end_for", for_index," GF@expr_result bool@true", "\n");
+    CODELN("JUMPIFEQ $end_for", for_index," GF@expr_result bool@false", "\n");
     CODELN("JUMP $for_body", for_index, "\n");
     CODELN("LABEL $increment", for_index, "\n");
     return true;
@@ -553,6 +554,12 @@ bool for_end()
 bool gen_var_def(char *id)
 {
     CODELN(" DEFVAR LF@", id, "\n");
+    CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
+    return true;
+}
+
+bool gen_var_ass(char *id)
+{
     CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
     return true;
 }

@@ -9,7 +9,7 @@
 
 #define GET_TOKEN()  \
         do{ m.current_token = get_next_token(stdin); \
-            if (inc_line_on_next) m.current_line++; inc_line_on_next=false;\
+            if (inc_line_on_next){ m.current_line++; inc_line_on_next=false;}\
             if (m.current_token.type == EOL) inc_line_on_next = true; \
             (m.current_token.type == ERROR)? (lexical_error(m.current_line), 1) : 0 ;\
         }while(0)
@@ -63,7 +63,13 @@
 //global
 bool inc_line_on_next = false;
 
-Metadata m = {.current_line = 1, .index = 0, .local_table = NULL, .current_func_id = NULL};
+Metadata m = {
+    .current_line = 1, 
+    .index = 0, 
+    .local_table = NULL, 
+    .current_func_id = NULL,
+    .current_func_ret_success = false
+};
 
 TNode *node;
 
@@ -85,8 +91,8 @@ char *built_in[] = {"inputs", "inputf", "inputi", "print", "int2float", "float2i
 TData init_new_data(TData new_data)
 {
     new_data.type = T_UNDEFINED;
-    new_data.defined = new_data.is_var = new_data.is_function = new_data.in_block = false;
-    new_data.param_counter = new_data.ret_counter = new_data.line = new_data.id_counter = 0;
+    new_data.defined = new_data.is_var = new_data.is_function = new_data.in_block = new_data.is_param = false;
+    new_data.param_counter = new_data.ret_counter = new_data.line = new_data.id_counter = new_data.param_num = 0;
 
     for (int i = 0; i < MAX_RET_VAL; i++)
     {
@@ -230,7 +236,7 @@ void check_built(TNode *root)
                 }
                 else if ((root->data.id_type[0] != T_FLOAT64 && root->data.id_type[0] != T_UNDEFINED) || (root->data.id_type[1] != T_INT && root->data.id_type[1] != T_UNDEFINED))
                 {
-                    param_error(root->key, root->data.line);
+                    param_error(root->key, root->data.line); // Zavadzajuci error (param_error = deprecated)
                 }
             }
             else if (!strcmp(root->key, "int2float"))
@@ -476,6 +482,7 @@ bool func()
     new_data.is_var = true;
     new_data.is_function = false;
     new_data.in_block = true;
+    new_data.is_param = false;
 
     array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, "_");
     define_id_type("_", T_UNDEFINED, true);
@@ -484,6 +491,19 @@ bool func()
     if(!func_header(&is_main))
     {
         return false;
+    }
+
+    TData *func_data = get_func_data(m.current_func_id); //< current_func_id can be undefined
+
+    if (func_data != NULL) {
+        if (func_data->ret_counter == 0)
+            m.current_func_ret_success = true; //< No need to check if function returned correct values
+        else
+            m.current_func_ret_success = false; //< Check if function returned correct values
+    }
+    else 
+    {
+        m.current_func_ret_success = true; //< No func id - do not care for return success
     }
 
     // body
@@ -495,7 +515,8 @@ bool func()
     }
     else
     {
-        GENERATE(gen_func_end(m.current_func_id));
+        if (m.current_func_id != NULL) 
+            GENERATE(gen_func_end(m.current_func_id));
     }
 
     delete_symtable(array_of_trees[tree_index]);
@@ -556,6 +577,7 @@ bool func_header(bool *is_main)
         new_data_func = init_new_data(new_data_func);
         new_data_func.defined = true;
         new_data_func.is_function = true;
+        new_data_func.is_param = false;
         last_func = m.current_token;   //< to make correct free later
     }
 
@@ -679,6 +701,8 @@ void header_arg()
     {
         new_data_var.defined = true;
         new_data_var.is_var = true;
+        new_data_var.is_param = true;
+        new_data_var.param_num++;
         new_data_func.param_counter++;
 
         switch (m.current_token.data.k)
@@ -743,6 +767,8 @@ bool statement()
     else if (CHECK_NO_ERROR(BRACKET_RIGHT))
     {
         // Function body end
+        if (!m.current_func_ret_success) 
+            no_return_error(m.current_func_id, m.current_line);
         return false;
     }
     else if (CHECK_NO_ERROR(KEYWORD))
@@ -773,6 +799,7 @@ bool statement()
         new_data.in_block = true;
         new_data.defined = true;
         new_data.is_function = false;
+        new_data.is_param = false;
 
         char *id_name;
         id_name = m.current_token.data.s;
@@ -856,7 +883,7 @@ bool statement()
                 re_definition_error(id_name, m.current_line);
             }
 
-            Data_type expr_type = expression(NO_ASSIGN,false);
+            Data_type expr_type = expression(NO_ASSIGN,false,false);
             if (expr_type != T_UNDEFINED)
                 define_id_type(id_name, expr_type, true);
 
@@ -928,6 +955,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
     new_data_func.is_function = true;
     new_data_func.line = m.current_line;
     new_data_func.id_counter = num_of_id;
+    new_data_func.is_param = false;
     for (unsigned i = 0; i < num_of_id; i++)
         new_data_func.id_type[i] = asgn_meta.id_types[i];
 
@@ -1135,7 +1163,7 @@ void if_s()
 
     // Expression must be of type bool
     GENERATE(if_label());
-    expression(NO_ASSIGN,true);
+    expression(NO_ASSIGN,true,false);
     GENERATE(else_jump());
 
     CHECK_TOKEN_NOFREE(BRACKET_LEFT);
@@ -1170,7 +1198,7 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
 {
     for (unsigned i = 0; i <= number_of_id - 1; i++)
     {
-        Data_type expr_type = expression(number_of_id,false);
+        Data_type expr_type = expression(number_of_id,false,false);
         if (i == number_of_id)
         {
             free(asgn_meta.id_names[i]);
@@ -1186,12 +1214,15 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
             break;
         }
 
+        GENERATE(gen_var_ass(asgn_meta.id_names[i]));
+
+       
+
         if (expr_type != asgn_meta.id_types[i])
         {
 
             if (strcmp(asgn_meta.id_names[i], "_"))
             {
-                printf("%s\n", asgn_meta.id_names[i]);
                 type_error(asgn_meta.id_names[i], data_types[expr_type], m.current_line);
             }
         }
@@ -1222,12 +1253,13 @@ void for_s()
         new_data.in_block = true;
         new_data.defined = true;
         new_data.is_function = false;
+        new_data.is_param = false;
 
         GET_AND_CHECK(DEF_OF_VAR);
 
         array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
 
-        Data_type expr_type = expression(NO_ASSIGN,false);
+        Data_type expr_type = expression(NO_ASSIGN,false,false);
         if (expr_type != T_UNDEFINED)
             define_id_type(id_name, expr_type, true);
 
@@ -1243,7 +1275,7 @@ void for_s()
     GENERATE(for_header());
 
     // condition
-    expression(NO_ASSIGN,true);
+    expression(NO_ASSIGN,true,false);
     CHECK_TOKEN_NOFREE(SEMICLN);
 
     GENERATE(for_condition_eval());
@@ -1252,9 +1284,11 @@ void for_s()
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
-        free(m.current_token.data.s);
+        char *tmp = m.current_token.data.s;
         GET_AND_CHECK(VAR_ASSIGN);
-        expression(NO_ASSIGN,false);
+        expression(NO_ASSIGN,false,false);
+        GENERATE(gen_var_ass(tmp));
+        free(tmp);
         CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
@@ -1273,11 +1307,6 @@ void for_s()
  */
 void return_s()
 {
-    // potrebujem datove typy kazdeho vyrazu
-    // idealne v metadatach nejake int pole
-    // kazda bunka bude reprezentovat datovy typ vyrazu(T_INT...)
-    // potom si to uz skontrolujem s danym id funkcie ci je return validny
-
     TData *func_data = get_func_data(m.current_func_id);
 
     if (func_data == NULL)
@@ -1289,10 +1318,74 @@ void return_s()
     else
     {
         GENERATE(gen_func_return(m.current_func_id, func_data->ret_counter));
-        if (func_data->ret_counter == 0) //< return should not be in void func
+        if (func_data->ret_counter == 0) //< return in void function
         {
-            no_return_error(m.current_func_id, m.current_line);
-            CONSUME_LINE();
+            bool ret_multiple = false; //< Check for syntax error if void func has 2+ retvals
+            while (true)
+            {
+                Data_type expr_type = expression(NO_ASSIGN,false,true);
+
+                // Accepts only commas and linefeeds
+                if (CHECK_NO_ERROR(COMMA))
+                {
+                    if (!ret_multiple)
+                    {
+                        if (expr_type == T_UNDEFINED) 
+                        {
+                            // First retval is of type UNDEFINED - no trailing commas allowed
+                            if (!CHECK_NO_ERROR(COMMA))
+                            {
+                                ret_multiple = true;
+                                continue;
+                            }
+                            // ELSE - void return followed by comma
+                            // Continue to syntax error
+                        }
+                        else
+                        {
+                            // First retval has a valid type - allow gathering more retvals
+                            ret_multiple = true;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (expr_type != T_UNDEFINED)
+                        {
+                            continue;
+                        }
+                        // ELSE - return from a void function with undefined n-th retval
+                        // Continue to syntax error
+                    }
+                }
+                else if (CHECK_NO_ERROR(EOL))
+                {
+                    if (ret_multiple)
+                    {
+                        if (expr_type != T_UNDEFINED)
+                        {
+                            // SUCCESSful return
+                            if (!m.current_func_ret_success) 
+                                m.current_func_ret_success = true;
+                            break;
+                        }
+                        // ELSE - last expression (that is not first retval) 
+                        //        vas undefined - cannot assign T_UNDEFINED
+                        // Continue to syntax error
+                    }
+                    else
+                    {
+                        // SUCCESSful return
+                        if (!m.current_func_ret_success) 
+                            m.current_func_ret_success = true;
+                        break;
+                    }
+                }
+
+                // Missing return value or EOF
+                syntax_error(m.current_token.type,m.current_line);
+                break;
+            }
         }
         else
         {
@@ -1301,7 +1394,7 @@ void return_s()
 
             while (true)
             {
-                Data_type expr_type = expression(NO_ASSIGN,false);
+                Data_type expr_type = expression(NO_ASSIGN,false,false);
 
                 // If expr_type is undefined, error was already thrown or an empty expr was parsed
                 if (expr_type != T_UNDEFINED && expr_idx < func_data->ret_counter) {
@@ -1331,9 +1424,14 @@ void return_s()
                             // Insufiicient or too many return values (expressions)
                             return_num_error(m.current_func_id, m.current_line);
                         }
+                        else
+                        {
+                            // SUCCESSful return
+                            if (!m.current_func_ret_success) 
+                                m.current_func_ret_success = true;
+                        }
                         break;
                     }
-
                     // Continue to syntax error
                 }
 
@@ -1351,20 +1449,18 @@ void return_s()
 /**
  * @brief Parses a single expression
  */
-Data_type expression(unsigned num_of_id, bool is_bool)
+Data_type expression(unsigned num_of_id, bool is_bool, bool can_be_empty)
 {
-    /** @todo Implement semantic analysis for FUNCTIONS within expressions */
-
     bool func_call = false;
     Data_type expr_type = T_UNDEFINED;
 
-    if (!expr(&expr_type, &func_call, num_of_id, is_bool))
+    if (!expr(&expr_type, &func_call, num_of_id, is_bool, can_be_empty))
     {
         syntax_error(m.current_token.type,m.current_line);
 
         CONSUME_FAILED_EXPR();
 
-        return T_UNDEFINED; //< Invalid expression's data type ?
+        return T_UNDEFINED; //< Invalid expression's data type
     }
 
     if (func_call)
@@ -1382,7 +1478,7 @@ Data_type expression(unsigned num_of_id, bool is_bool)
  * @param func_call Identifier for function calls - is set to true if input is function call
  * @return true on successful read & data collection, else false
  */
-bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
+bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id, unsigned *param_num)
 {
     m.previous_token = m.current_token;
     GET_TOKEN();
@@ -1416,7 +1512,7 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
         if (m.previous_token.type == ID)
         {
             bool is_built = is_built_fun(m.previous_token.data.s);
-            function_call(m.previous_token,num_of_id,is_built); // todo
+            function_call(m.previous_token,num_of_id,is_built);
             *func_call = true;
 
             m.index = 0;
@@ -1453,6 +1549,9 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
                 else
                     input_terminal->dataType = T_UNDEFINED;
 
+                if (id_data != NULL)
+                    if (id_data->is_param)
+                        *param_num = id_data->param_num;
             }
             else
             {

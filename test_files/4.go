@@ -18,3 +18,5 @@ func main()(){
 		print(a) // 0
 	}
 }
+
+// toto zanorenie tiez nefunguje

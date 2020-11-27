@@ -4,7 +4,7 @@ func main(){
 	f(0)
 }
 
-func f(int a){
+func f(a int){
 	if(a != 0){
 		print("NYEEEEEEEEEE\n")
 	} else{
@@ -17,3 +17,4 @@ func g(){
 	print("YESSS\n")
 	f(3)
 }
+// Tento subor ide

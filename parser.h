@@ -33,7 +33,7 @@ typedef struct
     TNode *local_table;
     int index;          //< for searching of retval_arr and arg_arr
     char *current_func_id;
-    
+    bool current_func_ret_success;
 }Metadata;
 
 
@@ -121,8 +121,8 @@ void for_s();
 
 void return_s();
 
-bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id);
+bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id, unsigned *param_num);
 
-Data_type expression(unsigned num_of_id, bool is_bool);
+Data_type expression(unsigned num_of_id, bool is_bool, bool can_be_empty);
 
 #endif

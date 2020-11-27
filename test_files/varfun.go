@@ -5,7 +5,7 @@ package main
 func foo(x int, y int) (int, int) {
 	i := x
 	j := (y + 2) * 3
-	i, j = j+1, i+1
+	i, j = j+1, i+1 // v tomto subore iba toto nefuguje, vyrazy by sa mali najskor vyhodnotit postupne az potom priradir
 	return i, j
 }
 

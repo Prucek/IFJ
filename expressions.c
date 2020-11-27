@@ -54,7 +54,7 @@ void printStack(Stack *s)
 /**
  * @brief Adding tokens to stack an selecting action to be done by precedence table
  */
-bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_bool)
+bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_bool, bool can_be_empty)
 {
     Terminal input_terminal;
     bool expr_isbool = false; //< Decide wheater exrpessions is type of bool
@@ -64,6 +64,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
     Terminal previous;
     int num_of_reads = 0;
     int begin_counter = 0;
+    unsigned num_of_para = 0;
 
     Stack *s = createStack(STACK_SIZE);
     push(s,EN);
@@ -74,7 +75,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
     {
         if (read)
         {
-            if (!expr_input(&input_terminal,func_call,num_of_id))
+            if (!expr_input(&input_terminal,func_call,num_of_id,&num_of_para))
             {
                 deleteStack(s);
                 return false;
@@ -93,7 +94,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                     else
                     {
                         no_definition_error(previous.token.data.s, previous.current_line);
-                        free(previous.token.data.s);
+                        //free(previous.token.data.s);
                         if (!expr_semerror) expr_semerror = true;
                     }
                     can_be_func = false;
@@ -160,7 +161,17 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                     if (input_terminal.token.type == ID && !can_be_func)
                     {
                         strcpy(type,"LF");
-                        strcpy(data,input_terminal.token.data.s);
+                        
+                        if (num_of_para != 0)
+                        {
+                            char buf[2];
+                            strcpy(data,"%param");
+                            int2str(num_of_para,buf);
+                            strcat(data,buf);
+                        }
+                        else 
+                            strcpy(data,input_terminal.token.data.s);
+
                         GENERATE(gen_term(type,data));
                     }
                     
@@ -170,13 +181,13 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                     /** @todo Free if id came */
                     if (input_terminal.dataType == T_STRING) // || input_terminal.token.type == ID)   not working, invalid read
                     {
-                        free(input_terminal.token.data.s); //< Stop holding on to IDs
+                        //free(input_terminal.token.data.s); //< Stop holding on to IDs
                         input_terminal.token.data.s = NULL;
                     }
                 }
                 if (*expr_type == T_STRING)
                 {
-                    if (input_terminal.terType != ADDS && input_terminal.terType != II && input_terminal.terType != EN)
+                    if (input_terminal.terType == SUBS || input_terminal.terType == MULS || input_terminal.terType == DIVS)
                     {
                         compatibility_error(data_types[*expr_type], input_terminal.current_line);
                         if (!expr_semerror) expr_semerror = true;
@@ -213,9 +224,10 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                 }
                 if (expr_isbool == is_bool)
                 {
-                    if (num_of_reads > 1)
+                    if (num_of_reads > 1 || can_be_empty) // || previous.terType == EN  ?
                     {
-                        GENERATE(gen_expr_result());
+                        if(!can_be_empty)
+                            GENERATE(gen_expr_result());
                         return true;
                     }
                     else return false;

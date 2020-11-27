@@ -16,3 +16,4 @@ func main() {
   print("FLOAT64=", f, ". CHYBA=", err, "\n")
   
 }
+// tento subor je  asi spatne lebo s, err := to sa u nas nepovuluje

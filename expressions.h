@@ -51,7 +51,7 @@ typedef enum
 //  $ || < ||   || <  || <  || < || < || OK|| !!!
 
 
-bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_bool);
+bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_bool, bool can_be_empty);
 
 bool reduce(Stack *s);
 

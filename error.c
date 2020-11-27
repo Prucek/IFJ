@@ -3,8 +3,6 @@
  * @authors Marek Micek, Peter Rucek ....
  * @date 16 OCT 2020
  * @brief Error functions
- *
- * @todo Doplnit parametre funckii na zaklade implementacie scanera a parsera
  */
 
 #include "error.h"
@@ -59,7 +57,7 @@ int lasterror_line = 0;
  */
 void lexical_error(int line)
 {
-    fprintf(stderr, "****  Lexical error on line = '%d' !  ****\n", line);
+    fprintf(stderr, "** Lexical error on line = '%d' ! **\n", line);
     if (error_value == 0)
     {
         error_value = ERR_LEX;
@@ -71,17 +69,17 @@ void syntax_error(int token_type, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Syntax error: token type '%s', line %d!  ****\n", ERR_SYN, array[token_type], line);
+        THROW_ERROR("** Syntax error: token type '%s', line %d! **\n", ERR_SYN, array[token_type], line);
         lasterror_line = line;
     }
 }
 
 
-void no_definition_error(char *id, int line)      //< mozno zlucit s re_definition_error, zavisi na implementacii
+void no_definition_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Identifier: '%s' on line %d was not defined yet !  ****\n", ERR_DEF, id, line);
+        THROW_ERROR("** Semantic error: Identifier: '%s' on line %d was not defined yet ! **\n", ERR_DEF, id, line);
         lasterror_line = line;
     }
 }
@@ -91,7 +89,7 @@ void re_definition_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Identifier: '%s' on line %d is already defined !  ****\n", ERR_DEF, id, line);
+        THROW_ERROR("** Semantic error: Identifier: '%s' on line %d is already defined ! **\n", ERR_DEF, id, line);
         lasterror_line = line;
     }
 }
@@ -101,7 +99,7 @@ void type_error(char *id, char *type, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Cannot assign '%s' to '%s' on line %d !  ****\n", ERR_TYPE, type, id, line);
+        THROW_ERROR("** Semantic error: Cannot assign '%s' to '%s' on line %d ! **\n", ERR_TYPE, type, id, line);
         lasterror_line = line;
     }
 }
@@ -111,7 +109,7 @@ void compatibility_error(char *type, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Invalid operand for expression of type '%s' on line %d !  ****\n", ERR_COMP, type, line);
+        THROW_ERROR("** Semantic error: Invalid operand for expression of type '%s' on line %d ! **\n", ERR_COMP, type, line);
         lasterror_line = line;
     }
 }
@@ -120,7 +118,7 @@ void param_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Unmatched number or type of paramethers/return values in function: '%s' on line: %d !  ****\n", ERR_PARAM, id, line);
+        THROW_ERROR("** Semantic error: Unmatched number or type of paramethers/return values in function: '%s' on line: %d ! **\n", ERR_PARAM, id, line);
         lasterror_line = line;
     }
 }
@@ -129,7 +127,7 @@ void main_definition_error(int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : The function '%s' can not have any parameters or return values !  ****\n", ERR_PARAM, "main");
+        THROW_ERROR("** Semantic error: The function '%s' can not have any parameters or return values ! **\n", ERR_PARAM, "main");
         lasterror_line = line;
     }
 }
@@ -138,7 +136,7 @@ void param_num_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Unmatched number of parameter values in function: '%s' on line: %d !  ****\n", ERR_PARAM, id, line);
+        THROW_ERROR("** Semantic error: Unmatched number of parameter values in function: '%s' on line: %d ! **\n", ERR_PARAM, id, line);
         lasterror_line = line;
     }
 }
@@ -148,7 +146,7 @@ void param_type_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Unmatched type/s of parameter value/s in function: '%s' on line: %d !  ****\n", ERR_PARAM, id, line);
+        THROW_ERROR("** Semantic error: Unmatched type/s of parameter value/s in function: '%s' on line: %d ! **\n", ERR_PARAM, id, line);
         lasterror_line = line;
     }
 }
@@ -158,7 +156,7 @@ void return_num_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Unmatched number of return values in function: '%s' on line: %d !  ****\n", ERR_PARAM, id, line);
+        THROW_ERROR("** Semantic error: Unmatched number of return values in function: '%s' on line: %d ! **\n", ERR_PARAM, id, line);
         lasterror_line = line;
     }
 }
@@ -168,7 +166,7 @@ void return_type_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Unmatched type/s of return value/s in/when calling function: '%s' on line: %d !  ****\n", ERR_PARAM, id, line);
+        THROW_ERROR("** Semantic error: Unmatched type/s of return value/s in/when calling function: '%s' on line: %d ! **\n", ERR_PARAM, id, line);
         lasterror_line = line;
     }
 }
@@ -177,23 +175,26 @@ void return_unpack_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Wrong number of ID's on left side when calling function: '%s' to unpack return values to on line: %d !  ****\n", ERR_PARAM, id, line);
+        THROW_ERROR("** Semantic error: Wrong number of IDs on left side for function: '%s' to unpack return values to. Line: %d ! **\n", ERR_PARAM, id, line);
         lasterror_line = line;
     }
 }
 
+
+// Handles primarily functions that have header retvals specified, yet do not return anything
+// Throws error even when a return error was already thrown
 void no_return_error(char *id, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("****  Semantic error : Function: '%s' does not return anything, yet 'return' statement found on line: %d !  ****\n", ERR_PARAM, id, line);
+        THROW_ERROR("** Semantic error: Function: '%s' does not return what it should on line: %d ! **\n", ERR_PARAM, id, line);
         lasterror_line = line;
     }
 }
 
 void other_error(int line)
 {
-    fprintf(stderr, "****  Another kind of semantic error on line: %d!  ****\n", line);
+    fprintf(stderr, "** Another kind of semantic error on line: %d! **\n", line);
     if (error_value == 0)
     {
         error_value = ERR_OTHR;
@@ -203,7 +204,7 @@ void other_error(int line)
 
 void div_zero_error(int line)
 {
-    fprintf(stderr, "****  Semantic error : Division with zero on line: %d!  ****\n", line);
+    fprintf(stderr, "** Semantic error: Division with zero on line: %d! **\n", line);
     if (error_value == 0)
     {
         error_value = ERR_ZERODIV;
@@ -213,6 +214,6 @@ void div_zero_error(int line)
 
 void intern_error()
 {
-    fprintf(stderr, "****  Intern error of compiler !  ****\n");
+    fprintf(stderr, "** Intern error of compiler ! **\n");
     error_value = ERR_INTRN;
 }

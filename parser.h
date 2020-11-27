@@ -15,7 +15,7 @@
 #include "stack.h"
 #include "expressions.h"
 
-#define ARR_TREE_RANGE 1000 //< range of tree arrays
+#define ARR_TREE_RANGE 1000000 //< range of tree arrays
 #define BUILT_FUNC_NUM 10   //< we have 10 built_in functions
 #define NO_ASSIGN 0 //< if expression is not in assignment
 #define MAX_FUNCNAME_LEN 100 //< Max function length
@@ -43,18 +43,18 @@ typedef enum
     LP, // Left  Para (
     RP, // Right Para )
 
-    ADDS, 
-    SUBS, 
-    MULS, 
-    DIVS, 
+    ADDS,
+    SUBS,
+    MULS,
+    DIVS,
 
     GTS, // >
     LTS, // <
     NES, // !=
     LES, // <=
     GES, // >=
-    EQS, // ==    
-    
+    EQS, // ==
+
     II, // id, float, string, int
     EN, // $
     NT, // Non Terminal
@@ -67,16 +67,16 @@ typedef struct
     Terminal_type terType;
     Data_type dataType;
     int current_line;
-    
+
 } Terminal;
 
 
 //// Utility types ////
-typedef struct 
+typedef struct
 {
     Data_type id_types[MAX_RET_VAL]; //< IDs on left side of assignment - types
     char* id_names[MAX_RET_VAL];     //< IDs on left side of assignment - identifiers
-    char* id_generate[MAX_RET_VAL];  //< IDs for generating 
+    char* id_generate[MAX_RET_VAL];  //< IDs for generating
 } AssignMetadata;
 
 TData new_data_func, new_data_var;

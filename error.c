@@ -94,6 +94,16 @@ void re_definition_error(char *id, int line)
     }
 }
 
+void re_definition_error2(char *id, int line)
+{
+    if (CAN_THROW_ERROR(line))
+    {
+        THROW_ERROR("** Semantic error: Can't call function '%s' on line %d in this scope ! **\n", ERR_DEF, id, line);
+        lasterror_line = line;
+    }
+}
+
+
 
 void type_error(char *id, char *type, int line)
 {

@@ -431,7 +431,7 @@ void program()
         }
     }
 
-    lasterror_line = -2; // Hotfix        
+    lasterror_line = -2; // Hotfix
     node = search_symtable(m.global_table, "main");
     if (node == NULL)
     {
@@ -977,6 +977,13 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             }
             if (!(is_built))
             {
+                TData *id_data;
+                id_data = get_id_data(id.data.s);
+                if (id_data != NULL)  //<var of same name is defined in this scope => function can't be called
+                {
+                    re_definition_error2(id.data.s, m.current_line);
+                }
+
                 if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
                 {
                     if (node->data.param_counter != act_param_counter)  //< unmatched number of parameters
@@ -988,6 +995,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                     {
                         return_unpack_error(id.data.s, m.current_line);
                     }
+
                     else
                     {
                         for (unsigned idx = 0; idx < num_of_id; idx++)

@@ -17,7 +17,7 @@ extern int error_value; //< Represents exit code of compiler
 extern int lasterror_line; //< Represents last line on which error was thrown
 
 enum eError {
-    ERR_LEX = 1, // 
+    ERR_LEX = 1, //
     ERR_SYN,
     ERR_DEF,
     ERR_TYPE,
@@ -34,6 +34,7 @@ void lexical_error(int line);
 void syntax_error(int token_type, int line);
 void no_definition_error(char *id, int line);
 void re_definition_error(char *id, int line);
+void re_definition_error2(char *id, int line);
 void type_error(char *id, char *type, int line);
 void compatibility_error(char *type, int line);
 void param_error(char *id, int line);       // ERR_PARAM 6

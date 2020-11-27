@@ -119,6 +119,8 @@ bool gen_print(Token current_token, unsigned act_param_counter);
 
 bool gen_var_def(char *id);
 
+bool gen_var_ass(char *id);
+
 bool gen_createframe();
 
 bool gen_main_end();

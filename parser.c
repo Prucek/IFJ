@@ -85,8 +85,8 @@ char *built_in[] = {"inputs", "inputf", "inputi", "print", "int2float", "float2i
 TData init_new_data(TData new_data)
 {
     new_data.type = T_UNDEFINED;
-    new_data.defined = new_data.is_var = new_data.is_function = new_data.in_block = false;
-    new_data.param_counter = new_data.ret_counter = new_data.line = new_data.id_counter = 0;
+    new_data.defined = new_data.is_var = new_data.is_function = new_data.in_block = new_data.is_param = false;
+    new_data.param_counter = new_data.ret_counter = new_data.line = new_data.id_counter = new_data.param_num = 0;
 
     for (int i = 0; i < MAX_RET_VAL; i++)
     {
@@ -476,6 +476,7 @@ bool func()
     new_data.is_var = true;
     new_data.is_function = false;
     new_data.in_block = true;
+    new_data.is_param = false;
 
     array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, "_");
     define_id_type("_", T_UNDEFINED, true);
@@ -556,6 +557,7 @@ bool func_header(bool *is_main)
         new_data_func = init_new_data(new_data_func);
         new_data_func.defined = true;
         new_data_func.is_function = true;
+        new_data_func.is_param = false;
         last_func = m.current_token;   //< to make correct free later
     }
 
@@ -679,6 +681,8 @@ void header_arg()
     {
         new_data_var.defined = true;
         new_data_var.is_var = true;
+        new_data_var.is_param = true;
+        new_data_var.param_num++;
         new_data_func.param_counter++;
 
         switch (m.current_token.data.k)
@@ -773,6 +777,7 @@ bool statement()
         new_data.in_block = true;
         new_data.defined = true;
         new_data.is_function = false;
+        new_data.is_param = false;
 
         char *id_name;
         id_name = m.current_token.data.s;
@@ -928,6 +933,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
     new_data_func.is_function = true;
     new_data_func.line = m.current_line;
     new_data_func.id_counter = num_of_id;
+    new_data_func.is_param = false;
     for (unsigned i = 0; i < num_of_id; i++)
         new_data_func.id_type[i] = asgn_meta.id_types[i];
 
@@ -1186,12 +1192,15 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
             break;
         }
 
+        GENERATE(gen_var_ass(asgn_meta.id_names[i]));
+
+       
+
         if (expr_type != asgn_meta.id_types[i])
         {
 
             if (strcmp(asgn_meta.id_names[i], "_"))
             {
-                printf("%s\n", asgn_meta.id_names[i]);
                 type_error(asgn_meta.id_names[i], data_types[expr_type], m.current_line);
             }
         }
@@ -1222,6 +1231,7 @@ void for_s()
         new_data.in_block = true;
         new_data.defined = true;
         new_data.is_function = false;
+        new_data.is_param = false;
 
         GET_AND_CHECK(DEF_OF_VAR);
 
@@ -1252,9 +1262,11 @@ void for_s()
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
-        free(m.current_token.data.s);
+        char *tmp = m.current_token.data.s;
         GET_AND_CHECK(VAR_ASSIGN);
         expression(NO_ASSIGN,false);
+        GENERATE(gen_var_ass(tmp));
+        free(tmp);
         CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
@@ -1382,7 +1394,7 @@ Data_type expression(unsigned num_of_id, bool is_bool)
  * @param func_call Identifier for function calls - is set to true if input is function call
  * @return true on successful read & data collection, else false
  */
-bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
+bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id, unsigned *param_num)
 {
     m.previous_token = m.current_token;
     GET_TOKEN();
@@ -1416,7 +1428,7 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
         if (m.previous_token.type == ID)
         {
             bool is_built = is_built_fun(m.previous_token.data.s);
-            function_call(m.previous_token,num_of_id,is_built); // todo
+            function_call(m.previous_token,num_of_id,is_built);
             *func_call = true;
 
             m.index = 0;
@@ -1453,6 +1465,9 @@ bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id)
                 else
                     input_terminal->dataType = T_UNDEFINED;
 
+                if (id_data != NULL)
+                    if (id_data->is_param)
+                        *param_num = id_data->param_num;
             }
             else
             {

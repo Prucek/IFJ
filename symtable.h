@@ -38,6 +38,8 @@ typedef struct tData
     bool is_var;
     bool is_function;           
     bool in_block;                  //< whether we are in block
+    bool is_param;
+    int param_num;
     unsigned param_counter;         //< num of arguments
     unsigned ret_counter;           //< num of ret values
     Data_type retval_arr[MAX_RET_VAL];    //< stores data types of ret values

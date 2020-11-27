@@ -10,7 +10,7 @@ func main (){
 		print(b, ", ")
 	}
 	if a < 100 {
-		print("Something went Wrong")
+		print("Something went Wrong\n")
 	} else {
 
 	}

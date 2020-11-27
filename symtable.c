@@ -55,6 +55,8 @@ TNode *rewrite_data(TNode *node, TData new_data)
     node->data.ret_counter = new_data.ret_counter;
     node->data.line = new_data.line;
     node->data.id_counter = new_data.id_counter;
+    node->data.is_param = new_data.is_param;
+    node->data.param_num = new_data.param_num;
 
     if (node->data.is_function == true)
     {

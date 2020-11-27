@@ -4,7 +4,7 @@ func main(){
 	f(0)
 }
 
-func f(int a){
+func f(a int){
 	if(a != 0){
 		print("NYEEEEEEEEEE\n")
 	} else{

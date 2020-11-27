@@ -692,42 +692,46 @@ void header_arg()
     //     m.current_line++;
     //     GET_TOKEN();
     // }
-    CHECK_TOKEN(ID);
-    new_data_var = init_new_data(new_data_var);
-    Token prev = m.current_token;
 
-    GET_TOKEN();
-    if (IS_DATA_TYPE())
+    if (CHECK_TOKEN(ID))
     {
-        new_data_var.defined = true;
-        new_data_var.is_var = true;
-        new_data_var.is_param = true;
-        new_data_var.param_num++;
-        new_data_func.param_counter++;
+        new_data_var = init_new_data(new_data_var);
+        Token prev = m.current_token;
 
-        switch (m.current_token.data.k)
+        GET_TOKEN();
+        if (IS_DATA_TYPE())
         {
-            case K_INT:
-                new_data_var.type = T_INT;
-                new_data_func.arg_arr[m.index++] = T_INT;
-                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
-                break;
-            case K_FLOAT64:
-                new_data_var.type = T_FLOAT64;
-                new_data_func.arg_arr[m.index++] = T_FLOAT64;
-                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
-                break;
-            case K_STRING:
-                new_data_var.type = T_STRING;
-                new_data_func.arg_arr[m.index++] = T_STRING;
-                array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
-                break;
+            new_data_var.defined = true;
+            new_data_var.is_var = true;
+            new_data_var.is_param = true;
+            new_data_var.param_num++;
+            new_data_func.param_counter++;
 
-            default:
-                break;
+            switch (m.current_token.data.k)
+            {
+                case K_INT:
+                    new_data_var.type = T_INT;
+                    new_data_func.arg_arr[m.index++] = T_INT;
+                    array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
+                    break;
+                case K_FLOAT64:
+                    new_data_var.type = T_FLOAT64;
+                    new_data_func.arg_arr[m.index++] = T_FLOAT64;
+                    array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
+                    break;
+                case K_STRING:
+                    new_data_var.type = T_STRING;
+                    new_data_func.arg_arr[m.index++] = T_STRING;
+                    array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data_var, prev.data.s);    //< insert parameter
+                    break;
+
+                default:
+                    break;
+            }
         }
+        free(prev.data.s);      //< free token id
     }
-    free(prev.data.s);      //< free token id
+
     GET_TOKEN();
 
     if (CHECK_NO_ERROR(COMMA))

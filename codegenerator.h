@@ -109,7 +109,7 @@ bool gen_func_retval(unsigned ret_counter);
 
 bool gen_func_return(char *func_id, unsigned ret_counter);
 
-bool gen_retval_assign(char *id, unsigned retval_index);
+bool gen_retval_assign(char *id, unsigned retval_index, bool is__);
 
 bool gen_param_pass(Token current_token, int param_index);
 
@@ -119,15 +119,13 @@ bool gen_print(Token current_token, unsigned act_param_counter);
 
 bool gen_var_def(char *id);
 
-bool gen_var_ass(char *id);
+bool gen_var_ass(char *id, bool is__);
 
 bool gen_createframe();
 
 bool gen_main_end();
 
 bool gen_inputs();
-
-bool gen_stack_inst(int instruction, bool is_float);
 
 bool gen_term(char *type, char* constant);
 
@@ -137,7 +135,7 @@ void int2str(int n, char *buf);
 
 void str2our_str(char *dst, char *src);
 
-bool gen_operation(int type);
+bool gen_operation(int type, bool concat, bool idiv);
 
 bool gen_expr_result();
 

@@ -75,7 +75,8 @@ typedef struct
 typedef struct 
 {
     Data_type id_types[MAX_RET_VAL]; //< IDs on left side of assignment - types
-    char* id_names[MAX_RET_VAL];       //< IDs of left side of assignment - identifiers
+    char* id_names[MAX_RET_VAL];     //< IDs on left side of assignment - identifiers
+    char* id_generate[MAX_RET_VAL];  //< IDs for generating 
 } AssignMetadata;
 
 TData new_data_func, new_data_var;

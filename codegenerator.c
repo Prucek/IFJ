@@ -243,10 +243,12 @@ bool gen_createframe()
  */
 bool gen_param_val(Token current_token)
 {
-    dynamic_string tmp_str;
-    dynstr_init(&tmp_str);
+
     char current_val[MAX_INDEX_LEN];
-    unsigned char c;
+
+    char *tmp = malloc(1000);
+    for (int i = 0; i < 1000; i++)
+        tmp[i] = 0;
 
     switch (current_token.type)
     {
@@ -262,48 +264,18 @@ bool gen_param_val(Token current_token)
         // malo by sa optimalizovat, najst vhodnu funkciu na parsovanie stringu..mozno strtok?
         // plus hadze lexikalny error ak dame do stringu len lomitko \ , to by nemalo
         case STRING:
-            for (int i = 0; (c = (unsigned char) (current_token.data.s)[i]) != '\0'; i++)
-            {
-                if  (c == 92)
-                {
-                    unsigned char tmp_char = (unsigned char) (current_token.data.s)[i+1];
-                    if (tmp_char == 'n')
-                    {
-                        tmp_char = '\n';
-                        add_char(&tmp_str, '\\');
-                        sprintf(current_val, "%03d", tmp_char);
-                        add_string(&tmp_str, current_val);
-                        i++;
-                    }
-                    else
-                    {
-                        add_char(&tmp_str, '\\');
-                        sprintf(current_val, "%03d", c);
-                        add_string(&tmp_str, current_val);
-                    }
-                }
-                else if (c <= 32 || c == 35)
-                {
-                    add_char(&tmp_str, '\\');
-                    sprintf(current_val, "%03d", c);
-                    add_string(&tmp_str, current_val);
-                }
-                else
-                {
-                    if (c != '"') add_char(&tmp_str, (char) c);
-                }
-
-            }
-            CODELN("string@", tmp_str.buff, "\n");
+            
+            str2our_str(tmp,current_token.data.s);
+            CODELN("string@", tmp, "\n");
+            free(tmp);
             break;
 
         case ID:
             CODELN("LF@", current_token.data.s, "\n");
-
+            break;
         default:
             break;
     }
-    dynstr_free(&tmp_str);
     return true;
 }
 
@@ -399,9 +371,16 @@ bool gen_func_return(char *func_id, unsigned ret_counter)
  * @param retval_index Index of return value
  * @return True if code generation successful, otherwise false
  */
-bool gen_retval_assign(char *id, unsigned retval_index)
+bool gen_retval_assign(char *id, unsigned retval_index, bool is__)
 {
-    CODE(" MOVE LF@"); CODE(id); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
+    if (is__)
+    {
+        CODE(" MOVE GF@_"); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
+    }
+    else
+    {
+        CODE(" MOVE LF@"); CODE(id); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
+    }
     return true;
 }
 
@@ -558,9 +537,16 @@ bool gen_var_def(char *id)
     return true;
 }
 
-bool gen_var_ass(char *id)
+bool gen_var_ass(char *id, bool is__)
 {
-    CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
+    if (is__)
+    {
+        CODELN(" MOVE GF@_ GF@expr_result", "\n");
+    }
+    else
+    {
+        CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
+    }
     return true;
 }
 
@@ -736,16 +722,33 @@ bool gen_term(char *type, char* constant)
  * @param type should be Terminal_type, but codegenerator.h would have needed parser.h
  * @param type is enum of the operation
  */
-bool gen_operation(int type)
+bool gen_operation(int type, bool concat, bool idiv)
 {
     if (type == 2)
-        CODE("  ADDS\n");
+    {
+        if (concat)
+        {
+            CODE("  POPS GF@tmp2\n");
+            CODE("  POPS GF@tmp1\n");
+            CODE("  CONCAT GF@expr_result GF@tmp1 GF@tmp2\n");
+            CODE("  PUSHS GF@expr_result\n");
+        }
+        else
+            CODE("  ADDS\n");
+    }
     if (type == 3)
         CODE("  SUBS\n");
     if (type == 4)
         CODE("  MULS\n");
-    if (type == 5) // !!!
-        CODE("  DIVS\n");
+    if (type == 5)
+    {
+        if (idiv)
+        {
+            CODE("  IDIVS\n");
+        }
+        else
+            CODE("  DIVS\n");
+    }
     if (type == 6)
         CODE("  GTS\n");
     if (type == 7)

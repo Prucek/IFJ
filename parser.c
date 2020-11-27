@@ -117,6 +117,9 @@ TData init_new_data(TData new_data)
 
     for (int j = 0; j < MAX_RET_VAL; j++)
         asgn_meta.id_names[j] = "";
+    
+     for (int j = 0; j < MAX_RET_VAL; j++)
+        asgn_meta.id_generate[j] = "";
 
     return asgn_meta;
 }
@@ -825,6 +828,15 @@ bool statement()
             if (id_data != NULL) //< Check if first id is defined
             {
                 asgn_meta.id_types[number_of_id - 1] = id_data->type;
+                if (id_data->is_param)
+                {
+                    char buf[3];
+                    char to_gen[1000] = "%param";
+                    int2str(id_data->param_num,buf);
+                    asgn_meta.id_generate[number_of_id -1] = strcat(to_gen,buf);
+                }
+                else
+                    asgn_meta.id_generate[number_of_id - 1] = id_name;
             }
             else
             {
@@ -853,6 +865,15 @@ bool statement()
                 if (id_data != NULL)
                 {
                     asgn_meta.id_types[number_of_id - 1] = id_data->type;
+                    if (id_data->is_param)
+                    {
+                        char buf[3];
+                        char to_gen[1000] = "%param";
+                        int2str(id_data->param_num,buf);
+                        asgn_meta.id_generate[number_of_id -1] = strcat(to_gen,buf);
+                    }
+                    else
+                        asgn_meta.id_generate[number_of_id - 1] = id_name;
                 }
                 else
                 {
@@ -907,6 +928,15 @@ bool statement()
             if (id_data != NULL)
             {
                 asgn_meta.id_types[number_of_id - 1] = id_data->type;
+                if (id_data->is_param)
+                {
+                    char buf[3];
+                    char to_gen[1000] = "%param";
+                    int2str(id_data->param_num,buf);
+                    asgn_meta.id_generate[number_of_id -1] = strcat(to_gen,buf);
+                }
+                else
+                    asgn_meta.id_generate[number_of_id - 1] = id_name;
             }
             else
             {
@@ -1139,14 +1169,36 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             }
             if (strcmp(id.data.s, "print") != 0)
             {
+               
+                if (id_data->is_param)
+                {
+                    free(m.current_token.data.s);
+                    m.current_token.data.s = malloc(1000);
+                    char buf[3];
+                    int2str(id_data->param_num,buf);
+                    strcpy(m.current_token.data.s,"%param");
+                    strcat(m.current_token.data.s,buf);
+                }
                 GENERATE(gen_param_pass(m.current_token, act_param_counter));
+                free(m.current_token.data.s);
             }
             else
             {
+                
+                if (id_data->is_param)
+                {
+                    free(m.current_token.data.s);
+                    m.current_token.data.s = malloc(1000);
+                    char buf[3];
+                    int2str(id_data->param_num,buf);
+                    strcpy(m.current_token.data.s,"%param");
+                    strcat(m.current_token.data.s,buf);
+                }
                 GENERATE(gen_print(m.current_token, act_param_counter));
+                free(m.current_token.data.s);
             }
 
-            free(m.current_token.data.s);
+            //free(m.current_token.data.s);
             previous = ID;
             continue;
         }
@@ -1227,15 +1279,23 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
         {
             for (unsigned j = 0; j < number_of_id; j++)
             {
-                GENERATE(gen_retval_assign(asgn_meta.id_names[j], j+1));
+                bool is__ = false;
+                if (strcmp(asgn_meta.id_generate[j],"_") == 0)
+                {
+                    is__ = true;
+                }
+                GENERATE(gen_retval_assign(asgn_meta.id_generate[j], j+1,is__));
             }
             GET_TOKEN();
             break;
         }
-
-        GENERATE(gen_var_ass(asgn_meta.id_names[i]));
-
-
+        bool is__ = false;
+        if (strcmp(asgn_meta.id_generate[i],"_") == 0)
+        {
+            is__ = true;
+        }
+        GENERATE(gen_var_ass(asgn_meta.id_generate[i],is__));
+       
 
         if (expr_type != asgn_meta.id_types[i])
         {
@@ -1306,7 +1366,12 @@ void for_s()
         char *tmp = m.current_token.data.s;
         GET_AND_CHECK(VAR_ASSIGN);
         expression(NO_ASSIGN,false,false);
-        GENERATE(gen_var_ass(tmp));
+        bool is__ = false;
+        if (strcmp(tmp,"_") == 0)
+        {
+            is__ = true;
+        }
+        GENERATE(gen_var_ass(tmp,is__));
         free(tmp);
         CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     }

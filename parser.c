@@ -431,7 +431,7 @@ void program()
         }
     }
 
-    node = NULL;
+    lasterror_line = -2; // Hotfix        
     node = search_symtable(m.global_table, "main");
     if (node == NULL)
     {

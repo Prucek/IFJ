@@ -73,7 +73,7 @@ Metadata m = {
 
 TNode *node;
 
-TNode *array_of_trees[100]; // this could be macro
+TNode *array_of_trees[100000]; // this could be macro
 int tree_index = -1;
 
 TNode *arr_suspected[ARR_TREE_RANGE];  //< stores all funcs suspected from no_definition
@@ -117,7 +117,7 @@ TData init_new_data(TData new_data)
 
     for (int j = 0; j < MAX_RET_VAL; j++)
         asgn_meta.id_names[j] = "";
-    
+
      for (int j = 0; j < MAX_RET_VAL; j++)
         asgn_meta.id_generate[j] = "";
 
@@ -816,6 +816,8 @@ bool statement()
         unsigned number_of_id = 1;
         TNode* tmp;
         TData *id_data;
+        tmp = NULL;
+        id_data = NULL;
         //AssignMetadata asgn_meta; //< potreboval som to mat globalne dostupne
         asgn_meta = init_asgn_data(asgn_meta);
 
@@ -898,7 +900,7 @@ bool statement()
                 other_error(m.current_line);
             }
             tmp = search_symtable(array_of_trees[tree_index], id_name);
-            if (tmp == false)
+            if (tmp == NULL)
             {
                 new_data.defined = true;
                 new_data.type = T_UNDEFINED;
@@ -1000,56 +1002,59 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
         GET_TOKEN();
         if (CHECK_NO_ERROR(PARENTHESIS_RIGHT))
         {
-            if ((strcmp(m.current_func_id, "main")) != 0 && !strcmp(id.data.s, "main")) //< main can be called only recursively
+            if (m.current_func_id != NULL && id.data.s != NULL)
             {
-                other_error(m.current_line);
-                break;
-            }
-            if (!(is_built))
-            {
-                TData *id_data;
-                id_data = get_id_data(id.data.s);
-                if (id_data != NULL)  //<var of same name is defined in this scope => function can't be called
+                if ((strcmp(m.current_func_id, "main")) != 0 && !strcmp(id.data.s, "main")) //< main can be called only recursively
                 {
-                    re_definition_error2(id.data.s, m.current_line);
+                    other_error(m.current_line);
+                    break;
                 }
-
-                if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
+                if (!(is_built))
                 {
-                    if (node->data.param_counter != act_param_counter)  //< unmatched number of parameters
+                    TData *id_data;
+                    id_data = get_id_data(id.data.s);
+                    if (id_data != NULL)  //<var of same name is defined in this scope => function can't be called
                     {
-                        param_num_error(id.data.s, m.current_line);
+                        re_definition_error2(id.data.s, m.current_line);
                     }
 
-                    if (node->data.ret_counter != num_of_id)    //< unmatched number of ids on left with function return counter
+                    if ((node = search_symtable(m.global_table, id.data.s)) != NULL)    //< func is defined for sure
                     {
-                        return_unpack_error(id.data.s, m.current_line);
-                    }
-
-                    else
-                    {
-                        for (unsigned idx = 0; idx < num_of_id; idx++)
+                        if (node->data.param_counter != act_param_counter)  //< unmatched number of parameters
                         {
-                            if (node->data.retval_arr[idx] != asgn_meta.id_types[idx] && asgn_meta.id_types[idx] != T_UNDEFINED)  //< unmatched data type of id on left side with expected return data type
+                            param_num_error(id.data.s, m.current_line);
+                        }
+
+                        if (node->data.ret_counter != num_of_id)    //< unmatched number of ids on left with function return counter
+                        {
+                            return_unpack_error(id.data.s, m.current_line);
+                        }
+
+                        else
+                        {
+                            for (unsigned idx = 0; idx < num_of_id; idx++)
                             {
-                                return_type_error(id.data.s, m.current_line);
-                                break;
+                                if (node->data.retval_arr[idx] != asgn_meta.id_types[idx] && asgn_meta.id_types[idx] != T_UNDEFINED)  //< unmatched data type of id on left side with expected return data type
+                                {
+                                    return_type_error(id.data.s, m.current_line);
+                                    break;
+                                }
                             }
                         }
                     }
+                    else        //< not sure whether func defined
+                    {
+                        add_suspected_tree();
+                        arr_suspected[suspected_tree_idx] = insert_symtable(arr_suspected[suspected_tree_idx], new_data_func, id.data.s);   //< check this func after whole file read
+                    }
                 }
-                else        //< not sure whether func defined
+                else    //< func is built_in, we insert it to global table and check semantics later
                 {
-                    add_suspected_tree();
-                    arr_suspected[suspected_tree_idx] = insert_symtable(arr_suspected[suspected_tree_idx], new_data_func, id.data.s);   //< check this func after whole file read
+                    m.global_table = insert_symtable(m.global_table, new_data_func, id.data.s);
                 }
-            }
-            else    //< func is built_in, we insert it to global table and check semantics later
-            {
-                m.global_table = insert_symtable(m.global_table, new_data_func, id.data.s);
-            }
 
-            break;
+                break;
+            }
         }
         else if (CHECK_NO_ERROR(COMMA) && previous != COMMA)
         {
@@ -1299,7 +1304,7 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
             is__ = true;
         }
         GENERATE(gen_var_ass(asgn_meta.id_generate[i],is__));
-       
+
 
         if (expr_type != asgn_meta.id_types[i])
         {

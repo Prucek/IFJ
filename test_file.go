@@ -1,5 +1,3 @@
-// PRIDAT testy function_call SEMANTIKY
-
 
         package
 
@@ -53,7 +51,7 @@ func maine (i int, b string)(){
         return ahoj
         if a {
                 j :=1
-                if b {
+                if b { // Zavadzajuca chybova hlaska
                         ahoj = a
                         return ahoj
                 } else{
@@ -147,7 +145,7 @@ func achj(a int, b int) (string, float64, int) {
         // Assignment semantics
         a, b = 1, 1
         a, b = "s", 6.5
-        q := a > b
+        q := a > b // Invalid operand for expression of type 'T_INT' on line 150 !
 
         a = "neno nepo to kurna"
 
@@ -240,7 +238,7 @@ func test_expression_eval(str string, i int, j int, f float64, d float64) {
         // string only concat, is SEM ERROR ??
         a := "ahoj"
 	b := "prde"
-	c := a/b
+	c := a/b // Lepsia chybova hlaska sem
 	b = a-b*b
         e := a != b
         g := a+b
@@ -250,20 +248,10 @@ func test_expression_eval(str string, i int, j int, f float64, d float64) {
         b := 7.0/0.00000
 
         str = str + str + str // ok
-        str = str + str / str - str // isto nie ok - momentalne nefunguje
+        str = str + str / str - str // isto nie ok
 }
 
 func test_brace_bug() {
-        // POKIAL TO NEVYZERA TAKTO, TAK TO UZ JE V P
-
-        // ****  Syntax error: token type 'BRACKET_LEFT', line 144!  ****
-        // ****  Syntax error: token type 'KEYWORD', line 146!  ****
-        // ****  Syntax error: token type 'KEYWORD', line 147!  ****
-        // ****  Syntax error: token type 'KEYWORD', line 148!  ****
-        // ****  Syntax error: token type 'KEYWORD', line 150!  ****
-        // ****  Syntax error: token type 'KEYWORD', line 151!  ****
-        // ****  Syntax error: token type 'KEYWORD', line 152!  ****
-        // ****  Syntax error: token type 'KEYWORD', line 153!  ****
 
         {}
 
@@ -276,4 +264,28 @@ func test_brace_bug() {
         s = s+"s"
 
         s, s, s = funcafds()
+}
+
+// Return Error 3
+func mam_cosi_vratit_ale_serem_na_to() (string, int) {
+
+        // Pri ukonceni funkcie skontrolujem ci som vratil co som mal
+}
+
+// Return Error 1
+func vraciam_cosi_aj_ked_by_som_nemal() {
+        // Ziadne ret_vals v definicii - vrat to co dostanes a poriadku
+        return 123, 123, 123
+}
+
+// Return Error 2
+func no_params_fn_return_syntax_error() {
+        // Prvy retval je undefined
+        return ,1
+}
+
+func return_undefined() {
+        // Dat prednost chybe "afds is undefined" ?
+        return // SHOULD WORK - num_of_reads mechanics forbids empty expr
+        // fix \w @Prucek
 }

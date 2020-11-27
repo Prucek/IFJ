@@ -36,14 +36,15 @@ void no_definition_error(char *id, int line);
 void re_definition_error(char *id, int line);
 void type_error(char *id, char *type, int line);
 void compatibility_error(char *type, int line);
-void param_error(char *id, int line); // ERR_PARAM 6
-void main_definition_error(int line); // ERR_PARAM 6
-void param_num_error(char *id, int line); // ERR_PARAM 6
-void param_type_error(char *id, int line); // ERR_PARAM 6
-void return_num_error(char *id, int line); // ERR_PARAM 6
+void param_error(char *id, int line);       // ERR_PARAM 6
+void main_definition_error(int line);       // ERR_PARAM 6
+void param_num_error(char *id, int line);   // ERR_PARAM 6
+void param_type_error(char *id, int line);  // ERR_PARAM 6
+void return_num_error(char *id, int line);  // ERR_PARAM 6
 void return_type_error(char *id, int line); // ERR_PARAM 6
-void return_unpack_error(char *id, int line); // ERR_PARAM 6
-void no_return_error(char *id, int line); // ERR_PARAM 6
+void return_unpack_error(char *id, int line);       // ERR_PARAM 6
+void void_func_retvals_error(char *id, int line);   // ERR_PARAM 6
+void no_return_error(char *id, int line);           // ERR_PARAM 6
 void other_error(int line);
 void div_zero_error(int line);
 void intern_error();

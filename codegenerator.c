@@ -53,19 +53,106 @@
     "RETURN\n"  \
     "\n"
 
-#define GEN_INPUTS1  \
+#define GEN_INPUTS  \
     "LABEL $inputs\n" \
-    "PUSHFRAME\n"
-
-#define GEN_INPUTS2  \
-    "READ LF@%retval1 string\n" \
+    "PUSHFRAME\n" \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
     "DEFVAR LF@%str_len\n" \
-    "STRLEN LF@%str_len LF@%retval1\n" \
+    "DEFVAR LF@%type_check\n" \
+    "MOVE LF@%retval2 int@0\n" \
+    "READ LF@%retval1 string\n" \
+    "TYPE LF@%type_check LF@%retval1\n" \
+    "STRLEN LF@%str_len LF@%type_check\n" \
     "JUMPIFNEQ $inputs_end LF@%str_len int@0\n" \
+    "JUMPIFEQ $inputs_end LF@type_check string@string\n" \
     "MOVE LF@%retval2 int@1\n" \
     "LABEL $inputs_end\n" \
     "POPFRAME\n" \
     "RETURN\n"  \
+    "\n"
+
+#define GEN_INPUTI  \
+    "LABEL $inputi\n" \
+    "PUSHFRAME\n" \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
+    "MOVE LF@%retval2 int@0\n" \
+    "DEFVAR LF@%str_len\n" \
+    "DEFVAR LF@%type_check\n" \
+    "READ LF@%retval1 int\n" \
+    "TYPE LF@%type_check LF@%retval1\n" \
+    "STRLEN LF@%str_len LF@%type_check\n" \
+    "JUMPIFNEQ $inputi_end LF@%str_len int@0\n" \
+    "JUMPIFEQ $inputi_end LF@type_check string@int\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $inputi_end\n" \
+    "POPFRAME\n" \
+    "RETURN\n" \
+    "\n"
+
+#define GEN_INPUTF  \
+    "LABEL $inputf\n" \
+    "PUSHFRAME\n" \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
+    "MOVE LF@%retval2 int@0\n" \
+    "DEFVAR LF@%str_len\n" \
+    "DEFVAR LF@%type_check\n" \
+    "READ LF@%retval1 float\n" \
+    "TYPE LF@%type_check LF@%retval1\n" \
+    "STRLEN LF@%str_len LF@%type_check\n" \
+    "JUMPIFNEQ $inputf_end LF@%str_len int@0\n" \
+    "JUMPIFEQ $inputf_end LF@type_check string@float\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $inputf_end\n" \
+    "POPFRAME\n" \
+    "RETURN\n" \
+    "\n"
+
+#define GEN_ORD   \
+    "LABEL $ord\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
+    "DEFVAR LF@%tmp_val\n"  \
+    "DEFVAR LF@%tmp_len\n"  \
+    "STRLEN LF@%tmp_len LF@%param1\n"  \
+    "MOVE LF@%retval1 int@0\n" \
+    "MOVE LF@%retval2 int@0\n" \
+    "SUB LF@%retval2 LF@%retval2 int@1\n"  \
+    "LT LF@%tmp_val LF@%param2 int@0\n"  \
+    "JUMPIFEQ $ord_ret LF@%tmp_val bool@true\n"  \
+    "GT LF@%tmp_val LF@%param2 LF@%tmp_len\n"  \
+    "JUMPIFEQ $ord_ret LF@%tmp_val bool@true\n"  \
+    "STRI2INT LF@%retval1 LF@%param1 LF@%param2\n" \
+    "JUMP $ord_end\n" \
+    "LABEL $ord_ret\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $ord_end\n" \
+    "POPFRAME\n" \
+    "RETURN\n" \
+    "\n"
+
+#define GEN_CHR   \
+    "LABEL $chr\n"  \
+    "PUSHFRAME\n"           \
+    "DEFVAR LF@%retval1\n"   \
+    "DEFVAR LF@%retval2\n"   \
+    "DEFVAR LF@%tmp_index\n"  \
+    "MOVE LF@%retval1 int@0\n" \
+    "MOVE LF@%retval2 int@0\n" \
+    "LT LF@%tmp_index LF@%param1 int@0\n" \
+    "JUMPIFEQ $chr_ret LF@%tmp_index bool@true\n" \
+    "GT LF@%tmp_index LF@%param1 int@255\n" \
+    "JUMPIFEQ $chr_ret LF@%tmp_index bool@true\n" \
+    "INT2CHAR LF@%retval1 LF@%param1\n" \
+    "JUMP $chr_end\n" \
+    "LABEL $chr_ret\n" \
+    "MOVE LF@%retval2 int@1\n" \
+    "LABEL $chr_end\n"  \
+    "POPFRAME\n" \
+    "RETURN\n" \
     "\n"
 
 #define GEN_SUBSTR   \
@@ -130,10 +217,13 @@ bool gen_built_func()
     CODE(GEN_INT2FLAOT);
     CODE(GEN_FLOAT2INT);
     CODE(GEN_LEN);
-    CODE(GEN_INPUTS1);
-    gen_func_retval(2);
-    CODE(GEN_INPUTS2);
+    CODE(GEN_INPUTS);
+    CODE(GEN_INPUTI);
+    CODE(GEN_INPUTF);
+    CODE(GEN_ORD);
+    CODE(GEN_CHR);
     CODE(GEN_SUBSTR);
+
     return true;
 }
 
@@ -352,7 +442,7 @@ bool gen_print(Token current_token, unsigned act_param_counter)
     CODE("MOVE TF@%param ");
     if (!gen_param_val(current_token)) return false;
     CODE("WRITE TF@%param\n");
-    
+
     return true;
 }
 
@@ -643,7 +733,7 @@ bool gen_term(char *type, char* constant)
 
 /**
  * @brief Generates operation to be performed on stack
- * @param type should be Terminal_type, but codegenerator.h would have needed parser.h 
+ * @param type should be Terminal_type, but codegenerator.h would have needed parser.h
  * @param type is enum of the operation
  */
 bool gen_operation(int type)
@@ -706,6 +796,7 @@ void gen_dispose()
 {
     dynstr_free(&code);
     free(index);
+    free(index2);
     free(els);
     free(for_index);
 }

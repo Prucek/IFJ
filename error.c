@@ -109,7 +109,7 @@ void compatibility_error(char *type, int line)
 {
     if (CAN_THROW_ERROR(line))
     {
-        THROW_ERROR("** Semantic error: Invalid operand for expression of type '%s' on line %d ! **\n", ERR_COMP, type, line);
+        THROW_ERROR("** Semantic error: Incompatible type assignment '%s' on line %d ! **\n", ERR_COMP, type, line);
         lasterror_line = line;
     }
 }

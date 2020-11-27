@@ -235,7 +235,7 @@ func test_expression_eval(str string, i int, j int, f float64, d float64) {
         f = str + f // COMPATIBILITY ERROR (expression types do not match) before TYPE ERRROR (assignment)
         f = f + str
 
-        // string only concat, is SEM ERROR ??
+        // string only concat
         a := "ahoj"
 	b := "prde"
 	c := a/b // Lepsia chybova hlaska sem
@@ -286,6 +286,5 @@ func no_params_fn_return_syntax_error() {
 
 func return_undefined() {
         // Dat prednost chybe "afds is undefined" ?
-        return // SHOULD WORK - num_of_reads mechanics forbids empty expr
-        // fix \w @Prucek
+        return 
 }

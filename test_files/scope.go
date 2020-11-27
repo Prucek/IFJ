@@ -5,7 +5,7 @@ package main
 func main() {
 	y := 20
 	if 1 == 1 {
-		y := 10
+		y := 10 // tuto chybu nehlasi, prelozi, ale chyba pri generovani, lebo taka ista premenna
 		print(y)
 	} else {
 		print(y)

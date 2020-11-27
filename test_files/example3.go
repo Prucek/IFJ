@@ -3,7 +3,7 @@ package main
 
 func main() {
   s1 := "Toto je nejaky text"
-  s2 := s1 + ", ktery jeste trochu obohatime"
+  s2 := s1 + ", ktery jeste trochu obohatime" // toto este nefunguje
   print(s1, "\n", s2)
   s1len := 0
   s1len = len(s1)

@@ -4,15 +4,15 @@ func main () {
 	print(a)
 	for a:=10;a>0;a=a-1 {
 		print(a)
-		a := 3.14
+		a := 3.14 // @Rucko toto je chyba, iteracna premenna sa moze prekryt
 		print(a)
 		if a>5.0 {
 			print(a)
-			a:="hello"
+			a:="hello" //toto ukazuje spravne chybu
 			print(a)
 		} else {
 			print(a)
-			a:="world"
+			a:="world" // aj toto
 			print(a)
 		}
 	}

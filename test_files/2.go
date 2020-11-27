@@ -15,3 +15,5 @@ func main(){
 
 	foo()
 }
+
+// AJ toto funguje :)

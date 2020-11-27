@@ -95,7 +95,7 @@ func Move (right int, ptr int) (int) {
 	} else {
 		ptr = ptr - 1
 	}
-	return ptr
+	return ptr // @Rucendo vo vsetkych fnckiach kde sa vracia param je chyba @todo aj v tomto subore je toho vyse pod v subore 7.go
 }
 
 func Change (increment int, memory string, ptr int) (string, int) {

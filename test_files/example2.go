@@ -29,3 +29,5 @@ func main() {
     print("Chyba pri nacitani celeho cisla!\n")	
   }
 }
+
+// vypise sa  "Vysledek je true \n"  takze asi rekurizvne volania nam nefunguju

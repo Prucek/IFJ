@@ -14,3 +14,4 @@ func main() {
   }
   
 }
+// tento subor je  asi spatne lebo s, err := to sa u nas nepovuluje

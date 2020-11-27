@@ -17,3 +17,4 @@ func g(){
 	print("YESSS\n")
 	f(3)
 }
+// Tento subor ide

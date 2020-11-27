@@ -15,7 +15,7 @@ func main() {
 	err := 0
 	s1, err = inputs()
 	if err != 1 {
-		for ;s1 != "abcdefgh"; { // error code 5 - bud toto ma fungovat 
+		for ;s1 != "abcdefgh"; { // error code 5 - bud toto ma fungovat  @Hlozan Toto uz funguje
 			print("\n", "Spatne zadana posloupnost, zkuste znovu: ") 
 			s1, _ = inputs() // alebo inputs nenacitalo stdin dobre (3x failed na 3 suboroch)
 		}

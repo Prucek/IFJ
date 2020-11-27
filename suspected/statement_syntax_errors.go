@@ -3,14 +3,14 @@
 package main
 
 func main () {
-	for ;; { // testsuite.py - ma byt syntax error
+	for ;; { // testsuite.py - ma byt syntax error @Boss urcite ano
 	}
 
-	if { // testsuite.py - ma byt syntax error
+	if { // testsuite.py - ma byt syntax error   ^^aj tuto
 
 	} 
 
-	a := 5	a = 0 // testsuite.py - ma byt syntax error 
+	a := 5	a = 0
 
-	return // Stale nefunguje - Petrik + Wimko mutual exclusion
+	return 
 }

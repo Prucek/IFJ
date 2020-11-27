@@ -5,7 +5,7 @@ package main
 func g() {
 	j := 0
 	j = f(3)
-	f(j)
+	f(j) // hlasi chybu, asi spravne, lebo navratova hodn je zahodena
 }
 
 func f(i int) (int) {

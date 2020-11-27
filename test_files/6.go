@@ -16,3 +16,5 @@
 		}
 	}
 }
+
+// for vo fore nefunguje este pri generovani, vykona sa iba prva itaracia vonajsieho cyklu a 20 vnutorneho

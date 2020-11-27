@@ -213,7 +213,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                 }
                 if (expr_isbool == is_bool)
                 {
-                    if (num_of_reads > 1)
+                    if (num_of_reads > 1) // || previous.terType == EN  ?
                     {
                         GENERATE(gen_expr_result());
                         return true;

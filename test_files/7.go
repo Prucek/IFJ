@@ -6,8 +6,10 @@ func main(){
 
 func foo (i int){
 	if i == 0{
-		i = 3 // toto nefunguje v generovani syntax chyba, v 3AC sa nachadza LF@i ale mal by sa LF@%param1
+		i = 3 // toto uz funguje 
 	}else{
 		i = 2
 	}
+	print(i)
 }
+

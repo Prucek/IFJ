@@ -44,6 +44,8 @@ TabItem precedence_table[TABLE_SIZE][TABLE_SIZE] =
                                                                                  //^^^ only ok variation
 };
 
+Data_type curr_data_type = T_UNDEFINED;
+
 // for debugging
 void printStack(Stack *s)
 {
@@ -114,7 +116,11 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                     if (*expr_type == T_UNDEFINED) //< Still not determined expr type
                     {
                         if (input_terminal.dataType != T_UNDEFINED)
+                        {
                             *expr_type = input_terminal.dataType;
+                            curr_data_type = *expr_type;
+                        }
+                            
                         else 
                         {
                             // can be error or func call
@@ -330,8 +336,20 @@ bool reduce(Stack *s)
        (token[0] == NT && token[1] == GTS  && token[2] == NT && token[3] == SH)   )
     {
         push(s,NT);
+
+        bool concat = false;
+        bool idiv = false;
+
+        if (token[1] == ADDS && curr_data_type == T_STRING)
+        {
+            concat = true;
+        }
+        if (token[1] == DIVS && curr_data_type == T_INT)
+        {
+            idiv = true;
+        }
         if (token[1] != NT && token[1] != SH)
-            GENERATE(gen_operation(token[1]));
+            GENERATE(gen_operation(token[1],concat,idiv));
         return true;
     }
     else

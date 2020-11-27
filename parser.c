@@ -130,7 +130,8 @@ TData init_new_data(TData new_data)
 void add_suspected_tree()
 {
     suspected_tree_idx++;
-    arr_suspected[suspected_tree_idx] = init_symtable(arr_suspected[suspected_tree_idx]);
+    if (suspected_tree_idx < ARR_TREE_RANGE)
+        arr_suspected[suspected_tree_idx] = init_symtable(arr_suspected[suspected_tree_idx]);
 }
 
 /**
@@ -327,11 +328,14 @@ void check_built(TNode *root)
  */
 bool is_built_fun(char *func_id)
 {
-    for (int i = 0; i < BUILT_FUNC_NUM; i++)
+    if (func_id != NULL)
     {
-        if (!strcmp(func_id, built_in[i]))
+        for (int i = 0; i < BUILT_FUNC_NUM; i++)
         {
-            return true;
+            if (!strcmp(func_id, built_in[i]))
+            {
+                return true;
+            }
         }
     }
     return false;
@@ -340,17 +344,21 @@ bool is_built_fun(char *func_id)
 void add_tree()
 {
     tree_index++;
-    array_of_trees[tree_index] = NULL;
+    if (tree_index < 100)
+        array_of_trees[tree_index] = NULL;
 }
 
 bool search_all_trees(char *key)
 {
-    for (int i = 0; i <= tree_index; i++)
+    if (key != NULL)
     {
-        if ((node = search_symtable(array_of_trees[i], key)) != NULL)
+        for (int i = 0; i <= tree_index; i++)
         {
+            if ((node = search_symtable(array_of_trees[i], key)) != NULL)
+            {
 
-            return true;
+                return true;
+            }
         }
     }
     return false;
@@ -359,9 +367,12 @@ bool search_all_trees(char *key)
 
 TData *get_func_data(char *id)
 {
-    node = search_symtable(m.global_table, id);
-    if (node != NULL)
-        return &node->data;
+    if (id != NULL)
+    {
+        node = search_symtable(m.global_table, id);
+        if (node != NULL)
+            return &node->data;
+    }
     return NULL;
 }
 
@@ -372,39 +383,45 @@ TData *get_func_data(char *id)
  */
 TData *get_id_data(char *id)
 {
-    for (int idx = tree_index; idx >= 0; idx--)
+    if (id != NULL)
     {
-        node = search_symtable(array_of_trees[idx], id);
-        if (node != NULL)
-            return &node->data;
+        for (int idx = tree_index; idx >= 0; idx--)
+        {
+            node = search_symtable(array_of_trees[idx], id);
+            if (node != NULL)
+                return &node->data;
+        }
     }
-
     return NULL;
 }
 
 TData *get_curscope_id_data(char *id)
 {
-    node = search_symtable(array_of_trees[tree_index], id);
-
-    if (node != NULL)
-        return &node->data;
+    if (id != NULL)
+    {
+        node = search_symtable(array_of_trees[tree_index], id);
+        if (node != NULL)
+            return &node->data;
+    } 
     return NULL;
 }
 
 bool define_id_type(char *id, Data_type type, bool in_curr_scope)
 {
-    TData *id_data;
-    if (in_curr_scope)
-        id_data = get_curscope_id_data(id);
-    else
-        id_data = get_id_data(id);
-
-    if (id_data != NULL)
+    if (id != NULL)
     {
-        id_data->type = type;
-        return true;
-    }
+        TData *id_data;
+        if (in_curr_scope)
+            id_data = get_curscope_id_data(id);
+        else
+            id_data = get_id_data(id);
 
+        if (id_data != NULL)
+        {
+            id_data->type = type;
+            return true;
+        }
+    }
     return false;
 }
 
@@ -1169,7 +1186,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             }
             if (strcmp(id.data.s, "print") != 0)
             {
-               
+
                 if (id_data->is_param)
                 {
                     free(m.current_token.data.s);
@@ -1184,7 +1201,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             }
             else
             {
-                
+
                 if (id_data->is_param)
                 {
                     free(m.current_token.data.s);

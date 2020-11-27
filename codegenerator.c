@@ -261,8 +261,7 @@ bool gen_param_val(Token current_token)
             sprintf(current_val, "%a", current_token.data.d);
             CODELN("float@", current_val, "\n");
             break;
-        // malo by sa optimalizovat, najst vhodnu funkciu na parsovanie stringu..mozno strtok?
-        // plus hadze lexikalny error ak dame do stringu len lomitko \ , to by nemalo
+
         case STRING:
             
             str2our_str(tmp,current_token.data.s);

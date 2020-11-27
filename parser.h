@@ -123,6 +123,6 @@ void return_s();
 
 bool expr_input(Terminal *input_terminal, bool *func_call, unsigned num_of_id, unsigned *param_num);
 
-Data_type expression(unsigned num_of_id, bool is_bool);
+Data_type expression(unsigned num_of_id, bool is_bool, bool can_be_empty);
 
 #endif

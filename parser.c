@@ -9,7 +9,7 @@
 
 #define GET_TOKEN()  \
         do{ m.current_token = get_next_token(stdin); \
-            if (inc_line_on_next) m.current_line++; inc_line_on_next=false;\
+            if (inc_line_on_next){ m.current_line++; inc_line_on_next=false;}\
             if (m.current_token.type == EOL) inc_line_on_next = true; \
             (m.current_token.type == ERROR)? (lexical_error(m.current_line), 1) : 0 ;\
         }while(0)
@@ -883,7 +883,7 @@ bool statement()
                 re_definition_error(id_name, m.current_line);
             }
 
-            Data_type expr_type = expression(NO_ASSIGN,false);
+            Data_type expr_type = expression(NO_ASSIGN,false,false);
             if (expr_type != T_UNDEFINED)
                 define_id_type(id_name, expr_type, true);
 
@@ -1163,7 +1163,7 @@ void if_s()
 
     // Expression must be of type bool
     GENERATE(if_label());
-    expression(NO_ASSIGN,true);
+    expression(NO_ASSIGN,true,false);
     GENERATE(else_jump());
 
     CHECK_TOKEN_NOFREE(BRACKET_LEFT);
@@ -1198,7 +1198,7 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
 {
     for (unsigned i = 0; i <= number_of_id - 1; i++)
     {
-        Data_type expr_type = expression(number_of_id,false);
+        Data_type expr_type = expression(number_of_id,false,false);
         if (i == number_of_id)
         {
             free(asgn_meta.id_names[i]);
@@ -1259,7 +1259,7 @@ void for_s()
 
         array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
 
-        Data_type expr_type = expression(NO_ASSIGN,false);
+        Data_type expr_type = expression(NO_ASSIGN,false,false);
         if (expr_type != T_UNDEFINED)
             define_id_type(id_name, expr_type, true);
 
@@ -1275,7 +1275,7 @@ void for_s()
     GENERATE(for_header());
 
     // condition
-    expression(NO_ASSIGN,true);
+    expression(NO_ASSIGN,true,false);
     CHECK_TOKEN_NOFREE(SEMICLN);
 
     GENERATE(for_condition_eval());
@@ -1286,7 +1286,7 @@ void for_s()
     {
         char *tmp = m.current_token.data.s;
         GET_AND_CHECK(VAR_ASSIGN);
-        expression(NO_ASSIGN,false);
+        expression(NO_ASSIGN,false,false);
         GENERATE(gen_var_ass(tmp));
         free(tmp);
         CHECK_TOKEN_NOFREE(BRACKET_LEFT);
@@ -1323,7 +1323,7 @@ void return_s()
             bool ret_multiple = false; //< Check for syntax error if void func has 2+ retvals
             while (true)
             {
-                Data_type expr_type = expression(NO_ASSIGN,false);
+                Data_type expr_type = expression(NO_ASSIGN,false,true);
 
                 // Accepts only commas and linefeeds
                 if (CHECK_NO_ERROR(COMMA))
@@ -1394,7 +1394,7 @@ void return_s()
 
             while (true)
             {
-                Data_type expr_type = expression(NO_ASSIGN,false);
+                Data_type expr_type = expression(NO_ASSIGN,false,false);
 
                 // If expr_type is undefined, error was already thrown or an empty expr was parsed
                 if (expr_type != T_UNDEFINED && expr_idx < func_data->ret_counter) {
@@ -1449,12 +1449,12 @@ void return_s()
 /**
  * @brief Parses a single expression
  */
-Data_type expression(unsigned num_of_id, bool is_bool)
+Data_type expression(unsigned num_of_id, bool is_bool, bool can_be_empty)
 {
     bool func_call = false;
     Data_type expr_type = T_UNDEFINED;
 
-    if (!expr(&expr_type, &func_call, num_of_id, is_bool))
+    if (!expr(&expr_type, &func_call, num_of_id, is_bool, can_be_empty))
     {
         syntax_error(m.current_token.type,m.current_line);
 

@@ -54,7 +54,7 @@ void printStack(Stack *s)
 /**
  * @brief Adding tokens to stack an selecting action to be done by precedence table
  */
-bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_bool)
+bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_bool, bool can_be_empty)
 {
     Terminal input_terminal;
     bool expr_isbool = false; //< Decide wheater exrpessions is type of bool
@@ -187,7 +187,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                 }
                 if (*expr_type == T_STRING)
                 {
-                    if (input_terminal.terType != ADDS && input_terminal.terType != II && input_terminal.terType != EN)
+                    if (input_terminal.terType == SUBS || input_terminal.terType == MULS || input_terminal.terType == DIVS)
                     {
                         compatibility_error(data_types[*expr_type], input_terminal.current_line);
                         if (!expr_semerror) expr_semerror = true;
@@ -224,9 +224,10 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                 }
                 if (expr_isbool == is_bool)
                 {
-                    if (num_of_reads > 1) // || previous.terType == EN  ?
+                    if (num_of_reads > 1 || can_be_empty) // || previous.terType == EN  ?
                     {
-                        GENERATE(gen_expr_result());
+                        if(!can_be_empty)
+                            GENERATE(gen_expr_result());
                         return true;
                     }
                     else return false;

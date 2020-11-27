@@ -1181,7 +1181,7 @@ void if_s()
     {
         syntax_error(m.current_token.type,m.current_line);
     }
-    
+
     delete_symtable(array_of_trees[tree_index]);
     delete_tree();
     add_tree();
@@ -1303,16 +1303,16 @@ void for_s()
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}
 
-    // add_tree();
-    // array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
+    add_tree();
+    array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
     GET_AND_CHECK(EOL);
     GENERATE(for_body());
     // body
     while(statement());
     GENERATE(for_end());
-    // delete_symtable(array_of_trees[tree_index]);
-    // delete_tree();
+    delete_symtable(array_of_trees[tree_index]);
+    delete_tree();
     delete_symtable(array_of_trees[tree_index]);
     delete_tree();
 }

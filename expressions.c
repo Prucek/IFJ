@@ -151,8 +151,13 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                         begin_counter++;
                     }
 
-                    char *type = malloc(100);
-                    char *data = malloc(1000);
+                    char *type = malloc(MAX_STRING);
+                    for (int i = 0; i < MAX_STRING; i++)
+                        type[i] = 0;
+                    char *data = malloc(MAX_STRING);
+                    for (int i = 0; i < MAX_STRING; i++)
+                        data[i] = 0;
+                    
                     if (input_terminal.token.type == STRING)
                     {
                         strcpy(type,"string");

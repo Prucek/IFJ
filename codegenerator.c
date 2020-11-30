@@ -554,6 +554,7 @@ bool gen_var_ass(char *id, bool is__)
  */
 bool gen_main_end()
 {
+    CODE("LABEL $main&return\n");
     CODE("POPFRAME\n");
     CODE("CLEARS\n");
     CODE("JUMP $end_of_code\n");

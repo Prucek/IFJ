@@ -41,7 +41,6 @@ make compiler-test
  * (5==5) >0
  * rekurizvne volanie
  * assignment vo fore
- * inicialization of arr in MACRO
  * for ;; 
 
 <!-- ## Bugs -->

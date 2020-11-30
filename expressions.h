@@ -22,6 +22,7 @@ typedef enum
 } TabItem;
 
 #define TABLE_SIZE 14
+#define MAX_STRING 1000
 
 // Rules:
 // E -> (E)     

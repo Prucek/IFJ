@@ -40,4 +40,4 @@ func main(){
 	return
 }
 
-// concat stringov nefunguje este
+// uz ide

@@ -245,7 +245,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                     if (num_of_reads > 1 || can_be_empty) // || previous.terType == EN  ?
                     {
                         if(!can_be_empty)
-                            GENERATE(gen_expr_result());
+                            GENERATE(gen_expr_end());
                         return true;
                     }
                     else return false;

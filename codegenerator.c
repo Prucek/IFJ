@@ -357,7 +357,7 @@ bool gen_func_return(char *func_id, unsigned ret_counter)
 {
     for (unsigned i = 0; i < ret_counter; i++)
     {
-        //HERE call for expression result
+        CODE("  POPS GF@expr_result\n");
         CODE(" MOVE LF@%retval"); CODE_INT(i+1); CODE(" GF@expr_result\n");
     }
     CODELN("JUMP $", func_id, "&return", "\n");
@@ -450,6 +450,7 @@ bool if_jump()
  */
 bool else_jump()
 {
+    CODE("  POPS GF@expr_result\n");
     CODELN("JUMPIFEQ $else", index3, " GF@expr_result bool@false", "\n");
     return true;
 }
@@ -495,6 +496,7 @@ bool for_header()
 bool for_condition_eval()
 {
     *for_index = top(for_index_stack);
+    CODE("  POPS GF@expr_result\n");
     CODELN("JUMPIFEQ $end_for", for_index," GF@expr_result bool@false", "\n");
     CODELN("JUMP $for_body", for_index, "\n");
     CODELN("LABEL $increment", for_index, "\n");
@@ -532,6 +534,7 @@ bool for_end()
 bool gen_var_def(char *id)
 {
     CODELN(" DEFVAR LF@", id, "\n");
+    CODE("  POPS GF@expr_result\n");
     CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
     return true;
 }
@@ -540,10 +543,12 @@ bool gen_var_ass(char *id, bool is__)
 {
     if (is__)
     {
+        CODE("  POPS GF@expr_result\n");
         CODELN(" MOVE GF@_ GF@expr_result", "\n");
     }
     else
     {
+        CODE("  POPS GF@expr_result\n");
         CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
     }
     return true;
@@ -702,7 +707,7 @@ bool gen_expr_begin()
 // for debugging
 bool gen_expr_end()
 {
-    CODE("# EXPR END\n")
+    CODE("# EXPR END\n");
     return true;
 }
 
@@ -782,15 +787,6 @@ bool gen_operation(int type, bool concat, bool idiv)
     return true;
 }
 
-/**
- * @brief expression result is poped into global GF@expr_result, where others can read it form
- */
-bool gen_expr_result()
-{
-    CODE("  POPS GF@expr_result\n");
-    gen_expr_end();
-    return true;
-}
 
 /**
  * @brief free allocated code buffers

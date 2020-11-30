@@ -30,4 +30,4 @@ func main() {
   }
 }
 
-// vypise sa  "Vysledek je true \n"  takze asi rekurizvne volania nam nefunguju
+// Novinka : vypocita ^2 nie faktorial XDDD

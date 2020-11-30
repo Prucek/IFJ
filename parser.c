@@ -68,7 +68,8 @@ Metadata m = {
     .index = 0,
     .local_table = NULL,
     .current_func_id = NULL,
-    .current_func_ret_success = false
+    .current_func_ret_success = false,
+    .param_counter = 0
 };
 
 TNode *node;
@@ -725,7 +726,7 @@ void header_arg()
             new_data_var.defined = true;
             new_data_var.is_var = true;
             new_data_var.is_param = true;
-            new_data_var.param_num++;
+            new_data_var.param_num = ++m.param_counter;
             new_data_func.param_counter++;
 
             switch (m.current_token.data.k)
@@ -1293,6 +1294,8 @@ void if_s()
  */
 void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
 {
+    bool was_func = false;
+
     for (unsigned i = 0; i <= number_of_id - 1; i++)
     {
         Data_type expr_type = expression(number_of_id,false,false);
@@ -1303,6 +1306,7 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
         }
         if (expr_type == T_FCALL)
         {
+            was_func = true;
             for (unsigned j = 0; j < number_of_id; j++)
             {
                 bool is__ = false;
@@ -1315,13 +1319,6 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
             GET_TOKEN();
             break;
         }
-        bool is__ = false;
-        if (strcmp(asgn_meta.id_generate[i],"_") == 0)
-        {
-            is__ = true;
-        }
-        GENERATE(gen_var_ass(asgn_meta.id_generate[i],is__));
-
 
         if (expr_type != asgn_meta.id_types[i])
         {
@@ -1331,11 +1328,24 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
                 compatibility_error(data_types[expr_type], m.current_line);
             }
         }
-        free(asgn_meta.id_names[i]);
 
         if (i != number_of_id-1) // Was the last expr assigned ?
             CHECK_TOKEN_NOFREE(COMMA);
     }
+    if (!was_func)
+    {
+        for (unsigned i = 0; i <= number_of_id - 1; i++)
+        {
+            bool is__ = false;
+            if (strcmp(asgn_meta.id_generate[i],"_") == 0)
+            {
+                is__ = true;
+            }
+            GENERATE(gen_var_ass(asgn_meta.id_generate[i],is__));
+            free(asgn_meta.id_names[i]);
+        }
+    }
+    
     CHECK_TOKEN_NOFREE(EOL);
 }
 
@@ -1432,7 +1442,6 @@ void return_s()
     }
     else
     {
-        GENERATE(gen_func_return(m.current_func_id, func_data->ret_counter));
         if (func_data->ret_counter == 0) //< return in void function
         {
             bool ret_multiple = false; //< Check for syntax error if void func has 2+ retvals
@@ -1558,6 +1567,7 @@ void return_s()
             if (ret_type_error)
                 return_type_error(m.current_func_id, m.current_line);
         }
+        GENERATE(gen_func_return(m.current_func_id, func_data->ret_counter));
     }
 }
 

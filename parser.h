@@ -32,6 +32,7 @@ typedef struct
     TNode *global_table;
     TNode *local_table;
     int index;          //< for searching of retval_arr and arg_arr
+    int param_counter;
     char *current_func_id;
     bool current_func_ret_success;
 }Metadata;

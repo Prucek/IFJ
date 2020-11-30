@@ -30,4 +30,18 @@ make compiler-test
 * Add customized test failure messages by defining a new `TESTFAIL_*` macros
 * Add customized test cases by implementing new `test_*` functions inside of respective test suites
 
+
+## Job Pool
+
+ * return param - Wimko
+ * i,j = j+1, i+1 - Petrik
+ * for vo fore - Rebeka
+ * zatieňovanie - Micko
+## Be free to choose
+ * (5==5) >0
+ * rekurizvne volanie
+ * assignment vo fore
+ * inicialization of arr in MACRO
+ * for ;; 
+
 <!-- ## Bugs -->

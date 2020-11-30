@@ -10,6 +10,18 @@ IFJ20 is a simplified version of the programming language Go.
 * Marek Micek, xmicek08
 * Peter Rucek, xrucek00
 
+## Assignemnt
+
+ * return param + return ma aj ine problemy (/suspected/5,6,7.go) - Wimko
+ * for vo fore - Rebeka
+ * zatieňovanie - Micko
+ * for ;; - Petrik
+ * assignment vo fore - Petrik
+
+### Job pool
+ * (5==5) >0
+ * rekurizvne volanie
+
 ## Testing
 
 All module tests are stored inside of `~/tests` subfolder
@@ -30,17 +42,5 @@ make compiler-test
 * Add customized test failure messages by defining a new `TESTFAIL_*` macros
 * Add customized test cases by implementing new `test_*` functions inside of respective test suites
 
-
-## Job Pool
-
- * return param - Wimko
- * i,j = j+1, i+1 - Petrik
- * for vo fore - Rebeka
- * zatieňovanie - Micko
-## Be free to choose
- * (5==5) >0
- * rekurizvne volanie
- * assignment vo fore
- * for ;; 
 
 <!-- ## Bugs -->

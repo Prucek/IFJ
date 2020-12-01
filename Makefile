@@ -38,8 +38,37 @@ compiler : parser.o parser-test.o error.o lexer.o dynamicstring.o symtable.o cod
 # 	./codegenerator-test >out
 # 	./ic20int out
 
-# pars-test: parser-test
-# 	./parser-test <test_file.go
+test: compiler
+	./compiler <test_files/1.go >out
+	./ic20int out
+	./compiler <test_files/2.go >out
+	./ic20int out
+	./compiler <test_files/3.go >out
+	./ic20int out
+#	./compiler <test_files/4.go >out // prekryvanie
+#	./ic20int out
+	./compiler <test_files/5.go >out
+	./ic20int out
+	./compiler <test_files/6.go >out
+	./ic20int out
+	./compiler <test_files/7.go >out
+	./ic20int out
+#	./compiler <test_files/8.go >out // prekryvanie
+#	./ic20int out
+#	./compiler <test_files/9.go >out // delenie 0 riesit ?
+#	./ic20int out
+#	./compiler <test_files/10.go >out //kopu chyb
+#	./ic20int out
+	./compiler <test_files/example1.go >out
+	./ic20int out
+	./compiler <test_files/example2.go >out
+	./ic20int out
+	./compiler <test_files/example3.go >out
+	./ic20int out
+#	./compiler <test_files/two-pass.go >out // see file
+#	./ic20int out
+	./compiler <test_files/varfun.go >out
+	./ic20int out
 
 clean:
 	rm -rf *.o

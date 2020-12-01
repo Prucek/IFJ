@@ -12,15 +12,14 @@ IFJ20 is a simplified version of the programming language Go.
 
 ## Assignemnt
 
- * return param + return ma aj ine problemy (/suspected/5,6,7.go) - Wimko
+ * return param + return ma aj ine problemy (/suspected/6,7.go) - Wimko
  * for vo fore - Rebeka
  * zatieňovanie - Micko
- * for ;; - Petrik
- * assignment vo fore - Petrik
 
 ### Job pool
  * (5==5) >0
  * rekurizvne volanie
+ * leaky (my_malloc?)
 
 ## Testing
 

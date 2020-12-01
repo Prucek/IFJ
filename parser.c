@@ -851,12 +851,15 @@ bool statement()
                 if (id_data->is_param)
                 {
                     char buf[3];
-                    char to_gen[1000] = "%param";
+                    char *to_gen = malloc(15);
+                    strcpy(to_gen,"%param");
                     int2str(id_data->param_num,buf);
                     asgn_meta.id_generate[number_of_id -1] = strcat(to_gen,buf);
                 }
                 else
+                {
                     asgn_meta.id_generate[number_of_id - 1] = id_name;
+                }
             }
             else
             {
@@ -888,7 +891,8 @@ bool statement()
                     if (id_data->is_param)
                     {
                         char buf[3];
-                        char to_gen[1000] = "%param";
+                        char *to_gen = malloc(15);
+                        strcpy(to_gen,"%param");
                         int2str(id_data->param_num,buf);
                         asgn_meta.id_generate[number_of_id -1] = strcat(to_gen,buf);
                     }
@@ -907,7 +911,7 @@ bool statement()
                 GET_TOKEN();
             }
 
-            assignment_s(asgn_meta, number_of_id);
+            assignment_s(number_of_id,false);
             return true; // Don't perform free on last_id (already freed)
         }
         // definition of var statement
@@ -951,12 +955,15 @@ bool statement()
                 if (id_data->is_param)
                 {
                     char buf[3];
-                    char to_gen[1000] = "%param";
+                    char *to_gen = malloc(15);
+                    strcpy(to_gen,"%param");
                     int2str(id_data->param_num,buf);
                     asgn_meta.id_generate[number_of_id -1] = strcat(to_gen,buf);
                 }
                 else
+                {
                     asgn_meta.id_generate[number_of_id - 1] = id_name;
+                }
             }
             else
             {
@@ -964,7 +971,7 @@ bool statement()
                 no_definition_error(id_name, m.current_line);
             }
 
-            assignment_s(asgn_meta, number_of_id);
+            assignment_s(number_of_id,false);
             return true; // Don't perform free on last_id (already free'd)
         }
         else if (CHECK_NO_ERROR(PARENTHESIS_LEFT))
@@ -1292,7 +1299,7 @@ void if_s()
  * @param asgn_meta Assignment metadata - left side identifiers and their data types
  * @param number_of_id Number of left side identifiers
  */
-void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
+void assignment_s(unsigned number_of_id, bool in_for)
 {
     bool was_func = false;
 
@@ -1342,11 +1349,14 @@ void assignment_s(AssignMetadata asgn_meta, unsigned number_of_id)
                 is__ = true;
             }
             GENERATE(gen_var_ass(asgn_meta.id_generate[i],is__));
+            if (asgn_meta.id_names[i] != asgn_meta.id_generate[i])
+                free(asgn_meta.id_generate[i]);
+
             free(asgn_meta.id_names[i]);
         }
     }
-    
-    CHECK_TOKEN_NOFREE(EOL);
+    if (!in_for)
+        CHECK_TOKEN_NOFREE(EOL);
 }
 
 /**
@@ -1399,16 +1409,112 @@ void for_s()
     GET_TOKEN();
     if(CHECK_NO_ERROR(ID))
     {
-        char *tmp = m.current_token.data.s;
-        GET_AND_CHECK(VAR_ASSIGN);
-        expression(NO_ASSIGN,false,false);
-        bool is__ = false;
-        if (strcmp(tmp,"_") == 0)
+        // same code as in assignment_s
+        char *id_name;
+        id_name = m.current_token.data.s;
+
+        GET_TOKEN();
+        unsigned number_of_id = 1;
+
+        TData *id_data;
+        id_data = NULL;
+        asgn_meta = init_asgn_data(asgn_meta);
+
+        // assignment to var statement with multiple IDs
+        if (CHECK_NO_ERROR(COMMA))
         {
-            is__ = true;
+            asgn_meta.id_names[number_of_id - 1] = id_name; //< First id on left side of assignment
+
+            id_data = get_id_data(id_name);
+            if (id_data != NULL) //< Check if first id is defined
+            {
+                asgn_meta.id_types[number_of_id - 1] = id_data->type;
+                if (id_data->is_param)
+                {
+                    char buf[3];
+                    char *to_gen = malloc(15);
+                    strcpy(to_gen,"%param");
+                    int2str(id_data->param_num,buf);
+                    asgn_meta.id_generate[number_of_id -1] = strcat(to_gen,buf);
+                }
+                else
+                    asgn_meta.id_generate[number_of_id - 1] = id_name;
+            }
+            else
+            {
+                asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
+                no_definition_error(id_name, m.current_line);
+            }
+
+            while(!CHECK_NO_ERROR(VAR_ASSIGN))
+            {
+                if (!CHECK_TOKEN(COMMA))
+                {
+                    break;
+                }
+                GET_TOKEN();
+                if (!CHECK_TOKEN(ID))
+                {
+                    break;
+                }
+
+                number_of_id++;
+
+                id_name = m.current_token.data.s;
+                asgn_meta.id_names[number_of_id - 1] = id_name;
+                id_data = get_id_data(id_name);
+
+                if (id_data != NULL)
+                {
+                    asgn_meta.id_types[number_of_id - 1] = id_data->type;
+                    if (id_data->is_param)
+                    {
+                        char buf[3];
+                        char *to_gen = malloc(15);
+                        strcpy(to_gen,"%param");
+                        int2str(id_data->param_num,buf);
+                        asgn_meta.id_generate[number_of_id -1] = strcat(to_gen,buf);                    
+                    }
+                    else
+                        asgn_meta.id_generate[number_of_id - 1] = id_name;
+                }
+                else
+                {
+                    asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
+                    no_definition_error(id_name, m.current_line);
+                }
+
+                GET_TOKEN();
+            }
+            assignment_s(number_of_id, true);
         }
-        GENERATE(gen_var_ass(tmp,is__));
-        free(tmp);
+        else if (CHECK_NO_ERROR(VAR_ASSIGN))
+        {
+            asgn_meta.id_names[number_of_id - 1] = id_name;
+            id_data = get_id_data(id_name);
+            if (id_data != NULL)
+            {
+                asgn_meta.id_types[number_of_id - 1] = id_data->type;
+                if (id_data->is_param)
+                {
+                    char buf[3];
+                    char *to_gen = malloc(15);
+                    strcpy(to_gen,"%param");
+                    int2str(id_data->param_num,buf);
+                    asgn_meta.id_generate[number_of_id -1] = strcat(to_gen,buf);
+                }
+                else
+                    asgn_meta.id_generate[number_of_id - 1] = id_name;
+            }
+            else
+            {
+                asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
+                no_definition_error(id_name, m.current_line);
+            }
+
+            assignment_s(number_of_id,true);
+        }
+
         CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     }
     else if (CHECK_TOKEN(BRACKET_LEFT)){;}

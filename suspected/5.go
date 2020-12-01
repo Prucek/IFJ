@@ -9,16 +9,16 @@ func main () {
 	a := 30
 	print(a)
 	for a:=10;a>0;a=a-1 {
-		print(a)
-		a := 3.14 // @Rucko toto je chyba, iteracna premenna sa moze prekryt
+		print(a) // neprekryje vypise 30
+		a := 3.14 // neprekryje
 		print(a)
 		if a>5.0 {
 			print(a)
-			a:="hello" //toto ukazuje spravne chybu
+			a:="hello" // neprekryje
 			print(a)
 		} else {
 			print(a)
-			a:="world" // aj toto
+			a:="world" // neprekryje
 			print(a)
 		}
 	}

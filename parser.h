@@ -117,7 +117,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built);
 
 void if_s();
 
-void assignment_s(AssignMetadata assignment, unsigned number_of_id);
+void assignment_s(unsigned number_of_id, bool in_for);
 
 void for_s();
 

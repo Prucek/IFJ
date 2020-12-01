@@ -1,6 +1,6 @@
 # Failing tests archive
 
-This directory stores source codes for which our compiler fails to create corresponding assembly instructions
+This directory stores source codes which our compiler fails to compile correctly.
 
 ## Navigating through this archive
 

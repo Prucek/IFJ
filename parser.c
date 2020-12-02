@@ -1349,7 +1349,8 @@ void assignment_s(unsigned number_of_id, bool in_for)
                 is__ = true;
             }
             GENERATE(gen_var_ass(asgn_meta.id_generate[i],is__));
-            if (asgn_meta.id_names[i] != asgn_meta.id_generate[i])
+
+            if (strcmp(asgn_meta.id_names[i], asgn_meta.id_generate[i]) != 0 && strcmp(asgn_meta.id_generate[i],"") != 0)
                 free(asgn_meta.id_generate[i]);
 
             free(asgn_meta.id_names[i]);

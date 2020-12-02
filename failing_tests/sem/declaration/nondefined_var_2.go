@@ -1,4 +1,4 @@
-/*
+/* CURRENTLY PASSING (CAN BE REMOVED)
 
 Compiler error output:
 ** Semantic error: Identifier: 'a' on line 8 was not defined yet ! **

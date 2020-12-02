@@ -1,4 +1,4 @@
-/*
+/* 
 Interpret error output:
 Error at line: 187
 Symbol already exists!

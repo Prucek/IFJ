@@ -764,6 +764,8 @@ bool gen_operation(int type, bool concat, bool idiv)
     {
         CODE("  POPS GF@tmp1\n");
         CODE("  POPS GF@tmp2\n");
+        CODE("  PUSHS GF@tmp1\n");
+        CODE("  PUSHS GF@tmp2\n");
         CODE("  LTS\n");
         CODE("  PUSHS GF@tmp1\n");
         CODE("  PUSHS GF@tmp2\n");
@@ -775,6 +777,8 @@ bool gen_operation(int type, bool concat, bool idiv)
     {
         CODE("  POPS GF@tmp1\n");
         CODE("  POPS GF@tmp2\n");
+        CODE("  PUSHS GF@tmp1\n");
+        CODE("  PUSHS GF@tmp2\n");
         CODE("  GTS\n");
         CODE("  PUSHS GF@tmp1\n");
         CODE("  PUSHS GF@tmp2\n");

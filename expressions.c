@@ -140,8 +140,11 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                         if (input_terminal.dataType != *expr_type)
                         {
                             // Invalid operand types
-                            compatibility_error(data_types[*expr_type], input_terminal.current_line);
-                            if (!expr_semerror) expr_semerror = true;
+                            if (input_terminal.dataType != T_UNDEFINED)
+                            {
+                                compatibility_error(data_types[*expr_type], input_terminal.current_line);
+                                if (!expr_semerror) expr_semerror = true;    
+                            }
                         }
                     }
 

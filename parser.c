@@ -1311,8 +1311,6 @@ void if_s()
 
     CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
-    //var_deep++;
-    //is_if_head = false;
 
     while(statement());
     if (tmp_var_deep != var_deep)
@@ -1345,22 +1343,8 @@ void if_s()
     if (else_shadow)
     {
         var_deep--;
-        /*else {
-            var_deep -= 2;
-        }*/
     }
-    /*
-        if(tmp_var_deep != (var_deep - 1))
-        {
-            if (!if_shadow) {
-                var_deep--;
-            }
-            else {
-                var_deep -= 2;  //< to reduce deep of if scope and also else scope
-            }
-        }*/
     
-    //block_counter--;
     delete_symtable(array_of_trees[tree_index]);
     delete_tree();
 }

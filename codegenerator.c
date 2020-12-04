@@ -208,7 +208,7 @@ Stack *index_stack;
 char *for_index;
 char *index2;
 Stack *for_index_stack;
-
+char *label_index;
 /**
  * @brief Generates all built_in functions
  */
@@ -270,7 +270,8 @@ bool gen_param_val(Token current_token)
             break;
 
         case ID:
-            CODELN("LF@", current_token.data.s, "\n");
+            //CODELN("LF@", current_token.data.s, "\n");
+            CODE("LF@"); CODE(current_token.data.s); CODE_INT(var_deep); CODE("\n");
             break;
         default:
             break;
@@ -291,20 +292,27 @@ bool gen_header()
     index2 = malloc(sizeof(char));
     els = malloc(sizeof(char));
     for_index = malloc(sizeof(char));
-    if (index3 == NULL || els == NULL || for_index == NULL || index2 == NULL)
+    label_index = malloc(sizeof(char));
+    if (index3 == NULL || els == NULL || for_index == NULL || index2 == NULL || label_index == NULL)
     {
         intern_error();
     }
     *index3 = 64;
     *index2 = 64;
+    *label_index = 64;
     index_stack = createStack(100);
     for_index_stack = createStack(100);
+
     // constants needed, to add
     CODE("DEFVAR GF@_\n");
     CODE("DEFVAR GF@expr_result\n");
     CODE("DEFVAR GF@tmp1\n");
     CODE("DEFVAR GF@tmp2\n");
+    CODE("DEFVAR GF@iteration\n");
+    CODE("DEFVAR GF@tmp_iteration\n");
+    CODE("DEFVAR GF@iter_condition\n");
     CODE("MOVE GF@expr_result bool@true\n");
+    CODE("MOVE GF@iteration int@0\n");
     CODE("JUMP $main\n");
     CODE("\n");
 
@@ -498,6 +506,7 @@ bool for_condition_eval()
     *for_index = top(for_index_stack);
     CODE("  POPS GF@expr_result\n");
     CODELN("JUMPIFEQ $end_for", for_index," GF@expr_result bool@false", "\n");
+    CODE("ADD GF@iteration GF@iteration int@1\n");
     CODELN("JUMP $for_body", for_index, "\n");
     CODELN("LABEL $increment", for_index, "\n");
     return true;
@@ -527,15 +536,85 @@ bool for_end()
 }
 
 /**
+ * @brief Stores current iter value before entering nested for
+ */
+bool gen_start_nested_for()
+{
+    (*label_index)++;
+    CODE("MOVE GF@tmp_iteration GF@iteration\n");
+    CODE("GT GF@iter_condition GF@iteration int@1\n");
+    CODELN("JUMPIFEQ $jump_iter_assign", label_index ," GF@iter_condition bool@true", "\n");
+    
+    CODE("MOVE GF@iteration int@0\n"); 
+    CODELN("LABEL $jump_iter_assign", label_index, "\n");
+    return true;
+}
+
+/**
+ * @brief Restores the old iter value of parent for
+ */
+bool gen_end_nested_for()
+{
+    CODE("MOVE GF@iteration GF@tmp_iteration\n");
+    return true;
+}
+
+// sets global iterator to zero when out of last for in current scope
+bool gen_clear_iter()
+{
+    CODE("MOVE GF@iteration int@0\n");
+    return true;
+}
+
+/**
+ * @brief Generates jump to define var only in first iteration of for loop
+ */
+bool gen_jump_def(char *var_id)
+{
+    CODE("GT GF@iter_condition GF@iteration int@1\n");    //< jump over definition when in bigger iteration than first
+    if (!is_else)
+    {
+        CODE("JUMPIFEQ $"); CODE(var_id); CODE_INT(var_deep); CODE("&redefinition"); CODE(" GF@iter_condition bool@true\n"); 
+    }
+    else
+    {
+        CODE("JUMPIFEQ $else_"); CODE(var_id); CODE_INT(var_deep); CODE("&redefinition"); CODE(" GF@iter_condition bool@true\n"); 
+    }
+    return true;  
+}
+
+/**
+ * @brief Special function for definition of var in for loop to avoid interpret redefinition
+ */
+bool gen_var_in_for(char *var_id)
+{
+    CODE(" DEFVAR LF@"); CODE(var_id); CODE_INT(var_deep); CODE("\n");
+    if (!is_else)
+    {
+        CODE("LABEL $"); CODE(var_id); CODE_INT(var_deep); CODE("&redefinition\n");
+    }
+    else
+    {
+        CODE("LABEL $else_"); CODE(var_id); CODE_INT(var_deep); CODE("&redefinition\n");   
+    }
+    
+    CODE("  POPS GF@expr_result\n");
+    CODE(" MOVE LF@"); CODE(var_id); CODE_INT(var_deep); CODE(" GF@expr_result\n");
+    return true;
+}
+
+/**
  * @brief Defines new var in LF
  * @param id Id of new var
  * @return True if generation successful, else false
  */
 bool gen_var_def(char *id)
 {
-    CODELN(" DEFVAR LF@", id, "\n");
+    //CODELN(" DEFVAR LF@", id, "\n");
+    CODE(" DEFVAR LF@"); CODE(id); CODE_INT(var_deep); CODE("\n");
     CODE("  POPS GF@expr_result\n");
-    CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
+    //CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
+    CODE(" MOVE LF@"); CODE(id); CODE_INT(var_deep); CODE(" GF@expr_result\n");
     return true;
 }
 
@@ -549,7 +628,8 @@ bool gen_var_ass(char *id, bool is__)
     else
     {
         CODE("  POPS GF@expr_result\n");
-        CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
+        //CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
+        CODE(" MOVE LF@"); CODE(id); CODE_INT(var_deep); CODE(" GF@expr_result\n");
     }
     return true;
 }
@@ -764,6 +844,8 @@ bool gen_operation(int type, bool concat, bool idiv)
     {
         CODE("  POPS GF@tmp1\n");
         CODE("  POPS GF@tmp2\n");
+        CODE("  PUSHS GF@tmp1\n");
+        CODE("  PUSHS GF@tmp2\n");
         CODE("  LTS\n");
         CODE("  PUSHS GF@tmp1\n");
         CODE("  PUSHS GF@tmp2\n");
@@ -775,6 +857,8 @@ bool gen_operation(int type, bool concat, bool idiv)
     {
         CODE("  POPS GF@tmp1\n");
         CODE("  POPS GF@tmp2\n");
+        CODE("  PUSHS GF@tmp1\n");
+        CODE("  PUSHS GF@tmp2\n");
         CODE("  GTS\n");
         CODE("  PUSHS GF@tmp1\n");
         CODE("  PUSHS GF@tmp2\n");
@@ -798,6 +882,7 @@ void gen_dispose()
     free(index2);
     free(els);
     free(for_index);
+    free(label_index);
 }
 
 /**

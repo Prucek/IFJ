@@ -97,6 +97,8 @@ bool is_built_fun(char *func_id);
 
 void check_built(TNode *root);
 
+bool search_all_last_trees(char *key);
+
 void program();
 
 bool func();
@@ -117,7 +119,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built);
 
 void if_s();
 
-void assignment_s(AssignMetadata assignment, unsigned number_of_id);
+void assignment_s(unsigned number_of_id);
 
 void for_s();
 

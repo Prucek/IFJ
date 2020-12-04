@@ -93,6 +93,20 @@
 #include <string.h>
 #include <ctype.h>
 
+extern int var_deep;
+extern bool is_else;
+extern bool is_in_for;
+
+bool gen_jump_def(char *var_id);
+
+bool gen_var_in_for(char *var_id);
+
+bool gen_start_nested_for();
+
+bool gen_end_nested_for();
+
+bool gen_clear_iter();
+
 bool gen_built_func();
 
 bool gen_header();

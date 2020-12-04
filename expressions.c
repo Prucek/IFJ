@@ -179,17 +179,21 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                     if (input_terminal.token.type == ID && !can_be_func)
                     {
                         strcpy(type,"LF");
+                        char buf[2];
 
                         if (num_of_para != 0)
                         {
-                            char buf[2];
+                            //char buf[2];
                             strcpy(data,"%param");
                             int2str(num_of_para,buf);
                             strcat(data,buf);
                         }
                         else
+                        {
                             strcpy(data,input_terminal.token.data.s);
-
+                            int2str(var_deep, buf);
+                            strcat(data, buf);
+                        }
                         GENERATE(gen_term(type,data));
                     }
 

@@ -97,6 +97,8 @@ bool is_built_fun(char *func_id);
 
 void check_built(TNode *root);
 
+bool search_all_last_trees(char *key);
+
 void program();
 
 bool func();

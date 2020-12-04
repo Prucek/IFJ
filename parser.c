@@ -62,6 +62,8 @@
 
 //global
 bool inc_line_on_next = false;
+bool else_shadow = false;
+bool is_in_nested_for = false;
 
 Metadata m = {
     .current_line = 1,
@@ -83,6 +85,10 @@ int suspected_tree_idx = -1;
 char *built_in[] = {"inputs", "inputf", "inputi", "print", "int2float", "float2int",
 "len", "substr", "ord", "chr"};
 
+//extern vars of code_generator
+int var_deep = 0;
+bool is_else = false;
+bool is_in_for = false;
 
 /**
  * @brief Inits data structure of symtable to eliminate multi. insertion of one symbol
@@ -365,6 +371,21 @@ bool search_all_trees(char *key)
     return false;
 }
 
+// search all trees except the current tree
+bool search_all_last_trees(char *key)
+{
+    if(key != NULL)
+    {
+        for (int i = 0; i < tree_index; i++)
+        {
+            if ((node = search_symtable(array_of_trees[i], key)) != NULL)
+            { 
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 TData *get_func_data(char *id)
 {
@@ -437,7 +458,6 @@ void delete_tree() //deletes youngest tree
  */
 void program()
 {
-
     m.global_table = init_symtable(m.global_table);
 
     GENERATE(gen_header());
@@ -530,6 +550,7 @@ bool func()
 
     // body
     while(statement());
+    var_deep = 0;
 
     if(is_main)
     {
@@ -805,6 +826,10 @@ bool statement()
         }
         else if (m.current_token.data.k == K_FOR)
         {
+            if (is_in_for) {
+                is_in_nested_for = true;
+                GENERATE(gen_start_nested_for());
+            }
             for_s();
         }
         else if (m.current_token.data.k == K_RETURN)
@@ -941,7 +966,25 @@ bool statement()
             if (!CHECK_TOKEN_NOFREE(EOL))
                 syntax_error(m.current_token.type,m.current_line);
 
-            GENERATE(gen_var_def(id_name));
+            bool shadowed = search_all_last_trees(id_name);
+            bool for_id_shadowed = search_symtable(m.global_table, id_name);
+            if (shadowed || for_id_shadowed)
+            { 
+                var_deep++;
+                if (is_else){       //< shadowed var is in else
+                    else_shadow = true;
+                }
+            }
+
+            if (!is_in_for)
+            { 
+                GENERATE(gen_var_def(id_name));
+            }
+            else    //< defvar in for loop will be generated differently
+            {
+                GENERATE(gen_jump_def(id_name));
+                GENERATE(gen_var_in_for(id_name));
+            }
             return true;
         }
         // assignment to var statement
@@ -1257,6 +1300,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
  */
 void if_s()
 {
+    int tmp_var_deep = var_deep;
     add_tree();
     array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
@@ -1267,8 +1311,14 @@ void if_s()
 
     CHECK_TOKEN_NOFREE(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
+    //var_deep++;
+    //is_if_head = false;
 
     while(statement());
+    if (tmp_var_deep != var_deep)
+    {
+        var_deep--;     //ideme do else tak znizime hlbku
+    }
 
     // else
     GET_AND_CHECK(KEYWORD);
@@ -1285,18 +1335,38 @@ void if_s()
     GENERATE(else_label());
     GET_AND_CHECK(BRACKET_LEFT);
     GET_AND_CHECK(EOL);
+    is_else = true;
 
     while(statement());
     GET_AND_CHECK(EOL);
     GENERATE(if_end_label());
+    is_else = false;
 
+    if (else_shadow)
+    {
+        var_deep--;
+        /*else {
+            var_deep -= 2;
+        }*/
+    }
+    /*
+        if(tmp_var_deep != (var_deep - 1))
+        {
+            if (!if_shadow) {
+                var_deep--;
+            }
+            else {
+                var_deep -= 2;  //< to reduce deep of if scope and also else scope
+            }
+        }*/
+    
+    //block_counter--;
     delete_symtable(array_of_trees[tree_index]);
     delete_tree();
 }
 
 /**
  * @brief Checks syntax of assignment to var statement
- * @param asgn_meta Assignment metadata - left side identifiers and their data types
  * @param number_of_id Number of left side identifiers
  */
 void assignment_s(unsigned number_of_id, bool in_for)
@@ -1365,6 +1435,7 @@ void assignment_s(unsigned number_of_id, bool in_for)
  */
 void for_s()
 {
+    is_in_for = true;
     add_tree();
     array_of_trees[tree_index] = init_symtable(array_of_trees[tree_index]);
 
@@ -1384,16 +1455,27 @@ void for_s()
         GET_AND_CHECK(DEF_OF_VAR);
 
         array_of_trees[tree_index] = insert_symtable(array_of_trees[tree_index], new_data, id_name);
+        m.global_table = insert_symtable(m.global_table, new_data, id_name);    //< we need to have it acessable also when for is not actual
 
         Data_type expr_type = expression(NO_ASSIGN,false,false);
         if (expr_type != T_UNDEFINED)
             define_id_type(id_name, expr_type, true);
 
-
         CHECK_TOKEN_NOFREE(SEMICLN);
 
-        GENERATE(gen_var_def(id_name));
+        bool is_shadowed = search_all_last_trees(id_name);
+        if(is_shadowed)
+            var_deep++;
 
+        if (!is_in_nested_for) {
+            GENERATE(gen_var_def(id_name));
+        }
+        else
+        {
+            GENERATE(gen_jump_def(id_name));
+            GENERATE(gen_var_in_for(id_name));
+        }
+        
         free(id_name);
     }
     else if (CHECK_TOKEN(SEMICLN)){;}
@@ -1532,6 +1614,17 @@ void for_s()
     delete_tree();
     delete_symtable(array_of_trees[tree_index]);
     delete_tree();
+    if (is_in_nested_for)
+    {
+        is_in_nested_for = false;
+        is_in_for = true;
+        GENERATE(gen_end_nested_for());
+    }
+    else
+    {
+        is_in_for = false;
+        GENERATE(gen_clear_iter());
+    }   
 }
 
 /**

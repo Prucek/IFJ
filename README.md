@@ -18,7 +18,6 @@ IFJ20 is a simplified version of the programming language Go.
 
 ### Job pool
  * (5==5) >0
- * rekurizvne volanie
  * leaky (my_malloc?)
 
 ## Testing

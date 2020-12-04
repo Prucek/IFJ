@@ -32,7 +32,6 @@ func foo(){
 	}
 }
 
-// zacykli sa
 func hardcore(i int, j int){
 	res := 0
 	a := 0

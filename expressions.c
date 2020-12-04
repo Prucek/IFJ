@@ -189,6 +189,7 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
                             strcpy(data,"%param");
                             int2str(num_of_para,buf);
                             strcat(data,buf);
+                            num_of_para = 0;
                         }
                         else
                             strcpy(data,input_terminal.token.data.s);

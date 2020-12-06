@@ -386,7 +386,7 @@ bool gen_retval_assign(char *id, unsigned retval_index, bool is__)
     }
     else
     {
-        CODE(" MOVE LF@"); CODE(id); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
+        CODE(" MOVE LF@"); CODE(id); CODE_INT(var_deep); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
     }
     return true;
 }

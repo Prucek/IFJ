@@ -1,64 +1,67 @@
-1  <program>     -> <prolog> <func>
-2  <prolog>      -> package ID EOL
-3  <func>        -> <func_header> <statement> <func>
-4  <func>        -> EOF
+1   <program>     -> <prolog> <func>
+2   <prolog>      -> package "main" EOL
+3   <prolog>      -> EOL <prolog>
+4   <func>        -> <func_header> <statement> <func>
+5   <func>        -> EOL <func>
+6   <func>        -> EOF
 
-5  <func_header> -> func ID ( <header_arg> ) <header_ret> { EOL
-6  <header_arg>  -> eps
-7  <header_arg>  -> ID <data_type> <header_args>
-8  <header_args> -> eps
-9  <header_args> -> , ID <data_type> <header_args>
+7   <func_header> -> func ID ( <header_arg> ) <header_ret> { EOL
+8   <header_arg>  -> eps
+9   <header_arg>  -> ID <data_type> <header_args>
+10  <header_args> -> eps
+11  <header_args> -> , ID <data_type> <header_args>
 
-10  <header_ret>  -> (<header_reta>)
-11  <header_ret>  -> eps
-12  <header_reta>  -> <data_type> <header_rets>
-13  <header_rets> -> eps
-14  <header_rets> -> , <data_type> <header_rets>
+12  <header_ret>  -> ( <header_reta> )
+13  <header_ret>  -> eps
+14  <header_reta> -> <data_type> <header_rets>
+15  <header_reta> -> eps
+16  <header_rets> -> , <data_type> <header_rets>
+17  <header_rets> -> eps
 
-15  <statement>   -> EOL <statement>
-16  <statement>   -> <if_s> <statement>
-17  <statement>   -> <for_s> <statement>
-18  <statement>   -> <return_s> <statement>
-19  <statement>   -> ID <id>
-20  <id>          -> <def_of_var> <statement>
-21  <id>          -> <assignment_s> <statement>
-22  <id>          -> <fun_call> <statement>
-23  <statement>   -> }
+18  <statement>   -> EOL <statement>
+19  <statement>   -> <if_s> <statement>
+20  <statement>   -> <for_s> <statement>
+21  <statement>   -> <return_s> <statement>
+22  <statement>   -> ID <id>
+23  <id>          -> <def_of_var> <statement>
+24  <id>          -> <assignment_s> <statement>
+25  <id>          -> <fun_call> <statement>
+26  <statement>   -> }
 
-24  <if_s>        -> if <expression> { EOL <statement> else { EOL <statement>
+27  <if_s>        -> if <expression> { EOL <statement> else { EOL <statement>
 
-25  <for_s>       -> for <def> ; <expression> ; <ass> { EOL <statement>
-26  <def>         -> eps
-27  <def>         -> ID := <expression>
-28  <ass>         -> eps
-29  <ass>         -> ID = <expression>
+28  <for_s>       -> for <def> ; <expression> ; <ass> { EOL <statement>
+29  <def>         -> eps
+30  <def>         -> ID := <expression>
+31  <ass>         -> eps
+32  <ass>         -> ID <ids> = <ex>
 
-30  <return_s>    -> return <val> EOL
-31  <val>         -> eps
-32  <val>         -> <expression> <vals>
-33  <vals>        -> , <expression> <vals>
-34  <vals>        -> eps
+33  <return_s>    -> return <val> EOL
+34  <val>         -> eps
+35  <val>         -> <expression> <vals>
+36  <vals>        -> , <expression> <vals>
+37  <vals>        -> eps
 
-35  <def_of_var>  -> := <expression> EOL
+38  <def_of_var>  -> := <expression> EOL
 
-36  <assignment_s>-> <ids> = <ex> EOL
-37  <ids>         -> , ID <ids>
-38  <ids>         -> eps
-39  <ex>          -> <expression> <exs>
-40  <exs>         -> , <expression> <exs>
-41  <exs>         -> eps
+39  <assignment_s>-> <ids> = <ex> EOL
+40  <ids>         -> , ID <ids>
+41  <ids>         -> eps
+42  <ex>          -> <expression> <exs>
+43  <exs>         -> , <expression> <exs>
+44  <exs>         -> eps
 
-42  <fun_call>    -> ( <arg> ) EOL
-43  <arg>         -> eps
-44  <arg>         -> <term> <args>
-45  <args>        -> , <term> <args>
-46  <args>        -> eps
+45  <fun_call>    -> ( <arg> ) EOL
+46  <arg>         -> eps
+47  <arg>         -> <term> <args>
+48  <args>        -> , <term> <args>
+49  <args>        -> eps
 
-47  <data_type>   -> int
-48  <data_type>   -> string
-49  <data_type>   -> float64
+50  <data_type>   -> int
+51  <data_type>   -> string
+52  <data_type>   -> float64
 
-50  <term>        -> int_value
-51  <term>        -> string_value
-52  <term>        -> float_value
-53  <term>        -> ID
+53  <term>        -> int_value
+54  <term>        -> string_value
+55  <term>        -> float_value
+56  <term>        -> ID

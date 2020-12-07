@@ -1,6 +1,6 @@
 /**
  * @file expressions.h
- * @authors Peter Rucek ...
+ * @authors Peter Rucek
  * @date 16 Nov 2020
  * @brief Interface for expressions
  */

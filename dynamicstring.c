@@ -1,6 +1,6 @@
 /**
  * @file dynamicstring.c
- * @authors Rebeka Cernianska, Peter Rucek...
+ * @authors Rebeka Cernianska, Peter Rucek, Matej Jurik
  * @date 16 Oct 2020
  * @brief Flexible buffer for saving token data
  */

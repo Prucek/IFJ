@@ -1,6 +1,6 @@
 /**
  * @file error.c
- * @authors Marek Micek, Peter Rucek ....
+ * @authors Marek Micek, Matej Jurik
  * @date 16 OCT 2020
  * @brief Error functions
  */
@@ -49,8 +49,6 @@ int error_value = 0; //< in case of no error
 int lasterror_line = 0;
 
 /**
- * PLACEHOLDER - Documentation may not be necessary here!
- *
  * @brief Inform about lexical error occurrence
  * @param line Line of error causing lexeme
  * @post error_value = 1

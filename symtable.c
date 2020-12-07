@@ -1,12 +1,13 @@
 /**
  * @file symtable.c
- * @authors Marek Micek, ...
+ * @authors Marek Micek
  * @date 24 OCT 2020
  * @brief Implementation of the table of symbols
  */
 
 #include "symtable.h"
 
+// extern array to remove cyclic dependency, not used in symtable
 char *data_types[] = 
 {
     "T_UNDEFINED",
@@ -15,6 +16,7 @@ char *data_types[] =
     "T_FLOAT64",
     "T_NIL"
 };
+
 
 TNode* init_symtable(TNode *root)
 {
@@ -43,7 +45,11 @@ TNode* search_symtable(TNode *root, char *k)
     }
 }
 
-
+/**
+ * @brief Supportive function which rewrites all data when incoming key is same as existing one
+ *        Function is called also when creating new node
+ * @return Node with rewrote data
+ */
 TNode *rewrite_data(TNode *node, TData new_data)
 {
     node->data.type = new_data.type;
@@ -127,7 +133,6 @@ void delete_symtable(TNode *root)
     root = NULL;
 }
 
-/* funkcie na implemetaciu vymazania jedneho uzla, mozno nepotrebne */
 
 TNode* most_left_node(TNode *root)
 {
@@ -170,7 +175,6 @@ TNode *delete_node(TNode *root, char *k)
         {
             TNode *min = most_left_node(root->rptr);
             root->key = (char *) realloc(root->key, sizeof(strlen(min->key)+1));
-            //root->key = min->key;
             strcpy(root->key, min->key);
             root = rewrite_data(root, min->data);
             root->rptr = delete_node(root->rptr, min->key);

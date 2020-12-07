@@ -1,6 +1,6 @@
 /**
  * @file dynamicstring.h
- * @authors Rebeka Cernianska ...
+ * @authors Rebeka Cernianska
  * @date 16 Oct 2020
  * @brief Inteface for dynamicstring.c program
  */

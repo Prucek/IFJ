@@ -42,16 +42,11 @@
     || (toktype) == BRACKET_LEFT \
     || (toktype) == EoF )
 
-/**
- * for i:=(((())));i<5;i = i+1 {
- *      // Valid example for CONSUME_FAILED_EXPR()
- * }
- */
 #define CONSUME_FAILED_EXPR() \
         while (!IS_EXPR_END(m.current_token.type)) \
         { \
             GET_TOKEN(); \
-        } // LEAKS ?
+        }
 
 #define CONSUME_LINE() \
         while (!CHECK_NO_ERROR(EOL) && !CHECK_NO_ERROR(EoF)) \
@@ -76,10 +71,10 @@ Metadata m = {
 
 TNode *node;
 
-TNode *array_of_trees[100000]; // this could be macro
+TNode *array_of_trees[ARR_TREE_RANGE];      //< stores all blocks with their variables + params of current func
 int tree_index = -1;
 
-TNode *arr_suspected[ARR_TREE_RANGE];  //< stores all funcs suspected from no_definition
+TNode *arr_suspected[ARR_TREE_RANGE];       //< stores all funcs suspected from no_definition
 int suspected_tree_idx = -1;
 
 char *built_in[] = {"inputs", "inputf", "inputi", "print", "int2float", "float2int",
@@ -247,7 +242,7 @@ void check_built(TNode *root)
                 }
                 else if ((root->data.id_type[0] != T_FLOAT64 && root->data.id_type[0] != T_UNDEFINED) || (root->data.id_type[1] != T_INT && root->data.id_type[1] != T_UNDEFINED))
                 {
-                    param_error(root->key, root->data.line); // Zavadzajuci error (param_error = deprecated)
+                    param_error(root->key, root->data.line);
                 }
             }
             else if (!strcmp(root->key, "int2float"))
@@ -472,7 +467,7 @@ void program()
         }
     }
 
-    lasterror_line = -2; // Hotfix
+    lasterror_line = -2;
     node = search_symtable(m.global_table, "main");
     if (node == NULL)
     {
@@ -670,7 +665,6 @@ bool func_header(bool *is_main)
         free(last_func.data.s);     //< to free token id
 
         GENERATE(gen_func_retval(new_data_func.ret_counter));
-        // GENERATION of params when func_call
     }
 
     GET_AND_CHECK(EOL);
@@ -728,14 +722,6 @@ void header_ret()
  */
 void header_arg()
 {
-    // BONUS FUNEXP not on purpose
-    // static int i = 0; // EOL cannot be before first parameter
-    // if (CHECK_NO_ERROR(EOL) && i) // EOL can be after parameter
-    // {
-    //     m.current_line++;
-    //     GET_TOKEN();
-    // }
-
     if (CHECK_TOKEN(ID))
     {
         new_data_var = init_new_data(new_data_var);
@@ -779,7 +765,6 @@ void header_arg()
 
     if (CHECK_NO_ERROR(COMMA))
     {
-        //i++; part of FUNEXP
         GET_TOKEN();
         header_arg();
     }
@@ -861,7 +846,6 @@ bool statement()
         TData *id_data;
         tmp = NULL;
         id_data = NULL;
-        //AssignMetadata asgn_meta; //< potreboval som to mat globalne dostupne
         asgn_meta = init_asgn_data(asgn_meta);
 
         // assignment to var statement with multiple IDs
@@ -926,7 +910,6 @@ bool statement()
                 }
                 else
                 {
-                    //mozno je nelegalne - ESTE FURT ? Neviem, povec mi
                     asgn_meta.id_types[number_of_id - 1] = T_UNDEFINED;
                     no_definition_error(id_name, m.current_line);
                 }
@@ -1129,9 +1112,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             previous = COMMA;
             continue;
         }
-        // EOL's not implemented, not sure if FUNEXP or obligatory
-        // can only be terms
-        // TODO potrebujem dvojfazovy priechod...funkcia uz musi byt v symtable
+
         else if (CHECK_NO_ERROR(INT))
         {
             act_param_counter++;
@@ -1159,6 +1140,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             previous = INT;
             continue;
         }
+
         else if (CHECK_NO_ERROR(FLOAT64))
         {
             act_param_counter++;
@@ -1186,6 +1168,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             previous = FLOAT64;
             continue;
         }
+
         else if (CHECK_NO_ERROR(STRING))
         {
             act_param_counter++;
@@ -1215,6 +1198,7 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
             previous = STRING;
             continue;
         }
+
         else if (CHECK_NO_ERROR(ID))
         {
             act_param_counter++;
@@ -1275,7 +1259,6 @@ void function_call(Token id, unsigned num_of_id, bool is_built)
                 }
             }
 
-            //free(m.current_token.data.s);
             previous = ID;
             continue;
         }
@@ -1315,7 +1298,7 @@ void if_s()
     while(statement());
     if (tmp_var_deep != var_deep)
     {
-        var_deep--;     //ideme do else tak znizime hlbku
+        var_deep--;     //< reduce deep cause entering else block
     }
 
     // else
@@ -1621,7 +1604,6 @@ void return_s()
     if (func_data == NULL)
     {
         // Consume the rest of the line (cannot determine how many expressions are required)
-        // Is this a valid use case ?
         CONSUME_LINE();
     }
     else

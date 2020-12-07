@@ -1,23 +1,20 @@
 /**
  * @file codegenerator.c
- * @authors Peter Rucek ...
+ * @authors Peter Rucek, Marek Micek, Rebeka Cernianska
  * @date 13 Nov 2020
  * @brief Imlemenatation of code generator
  */
 
-//zvolil som konvencie mien premennych na generovanie labelov, parametrov, retval
-// LABEL $name, %param(i), %retval(i)
 #include "codegenerator.h"
 #include "stack.h"
 
-#define MAX_INDEX_LEN 100
+#define MAX_INDEX_LEN 500
+#define MAX 100
 
 #define CODE(_code) if(!add_string(&code,(_code)))return false;
 
 // Variadic args MUST be strings (otherwise segfault) & last arg must be "\n" (otherwise infinite cycle)
 #define CODELN(...) if(!add_strings(&code, ##__VA_ARGS__)) return false;
-
-#define MAX 100
 
 #define CODE_INT(_code) \
     do{ \
@@ -209,6 +206,7 @@ char *for_index;
 char *index2;
 Stack *for_index_stack;
 char *label_index;
+
 /**
  * @brief Generates all built_in functions
  */
@@ -270,7 +268,6 @@ bool gen_param_val(Token current_token)
             break;
 
         case ID:
-            //CODELN("LF@", current_token.data.s, "\n");
             CODE("LF@"); CODE(current_token.data.s); CODE_INT(var_deep); CODE("\n");
             break;
         default:
@@ -278,7 +275,6 @@ bool gen_param_val(Token current_token)
     }
     return true;
 }
-
 
 /**
  * @brief Generate needed header and alloc code buffer
@@ -337,7 +333,6 @@ bool gen_main_start()
 bool gen_func_header(char *func_name)
 {
     CODELN("LABEL $", func_name, "\n");
-    //CODE("CREATEFRAME\n");    // vymazali by sme TF s posielajucimi parametrami
     CODE(" PUSHFRAME\n");
     return true;
 }
@@ -610,10 +605,8 @@ bool gen_var_in_for(char *var_id)
  */
 bool gen_var_def(char *id)
 {
-    //CODELN(" DEFVAR LF@", id, "\n");
     CODE(" DEFVAR LF@"); CODE(id); CODE_INT(var_deep); CODE("\n");
     CODE("  POPS GF@expr_result\n");
-    //CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
     CODE(" MOVE LF@"); CODE(id); CODE_INT(var_deep); CODE(" GF@expr_result\n");
     return true;
 }
@@ -628,7 +621,6 @@ bool gen_var_ass(char *id, bool is__)
     else
     {
         CODE("  POPS GF@expr_result\n");
-        //CODELN(" MOVE LF@", id, " GF@expr_result", "\n");
         CODE(" MOVE LF@"); CODE(id); CODE_INT(var_deep); CODE(" GF@expr_result\n");
     }
     return true;

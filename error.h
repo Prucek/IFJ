@@ -1,6 +1,6 @@
 /**
  * @file error.h
- * @authors Marek Micek, Peter Rucek ....
+ * @authors Marek Micek, Matej Jurik
  * @date 16 OCT 2020
  * @brief Interface for the error program
  */

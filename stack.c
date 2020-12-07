@@ -1,6 +1,6 @@
 /**
  * @file stack.c
- * @authors Peter Rucek ...
+ * @authors Peter Rucek
  * @date 16 Nov 2020
  * @brief Imlemenatation of stack
  */
@@ -44,7 +44,6 @@ int isEmpty(Stack* stack)
 // Function to add an item to stack.  It increases top by 1 
 void push(Stack* stack, int item) 
 { 
-    //printf("Number of itmes in stack: %d\n",stack->top+1);
     if (isFull(stack)) 
         return; 
     stack->array[++stack->top] = item; 
@@ -53,7 +52,6 @@ void push(Stack* stack, int item)
 // Function to remove an item from stack.  It decreases top by 1 
 int pop(Stack* stack) 
 { 
-    //printf("Number of itmes in stack: %d\n",stack->top+1);
     if (isEmpty(stack)) 
         return STACK_ERROR; 
     return stack->array[stack->top--]; 

@@ -124,6 +124,5 @@ typedef struct token
 
 Token get_next_token(FILE *f);
 Keyword get_keywordID(char *str);
-//void copy_token_string(Token *token, char *string);
 
 #endif

@@ -1,6 +1,6 @@
 /**
  * @file expressions.c
- * @authors Peter Rucek ...
+ * @authors Peter Rucek
  * @date 16 Nov 2020
  * @brief Imlemenatation of expressions
  */
@@ -59,9 +59,9 @@ void printStack(Stack *s)
 bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_bool, bool can_be_empty)
 {
     Terminal input_terminal;
-    bool expr_isbool = false; //< Decide wheater exrpessions is type of bool
-    bool expr_semerror = false; //< Wait for data type collisions or undefined IDs and if any occur, be sure to return false
-    bool can_be_func = false; //< Will not print error if ID is not defined, can still be a func call, and if not then print error
+    bool expr_isbool = false;       //< Decide wheater exrpessions is type of bool
+    bool expr_semerror = false;     //< Wait for data type collisions or undefined IDs and if any occur, be sure to return false
+    bool can_be_func = false;       //< Will not print error if ID is not defined, can still be a func call, and if not then print error
     bool check_zero_div = false;
     Terminal previous;
     int num_of_reads = 0;
@@ -186,7 +186,6 @@ bool expr(Data_type *expr_type, bool *func_call, unsigned num_of_id, bool is_boo
 
                         if (num_of_para != 0)
                         {
-                            //char buf[2];
                             strcpy(data,"%param");
                             int2str(num_of_para,buf);
                             strcat(data,buf);

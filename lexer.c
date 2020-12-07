@@ -13,7 +13,7 @@
 const char *keywords[] = {"int", "string", "float64", "if", "else",
 "for", "func", "package", "return"};
 
-dynamic_string buffer, error_buffer; //< buffers for correct and incorrect lexems
+dynamic_string buffer;
 
 /**
  * @brief Determine whether the passed string is a keyword
@@ -327,10 +327,6 @@ Token get_next_token(FILE *f)
                     add_char(&buffer, c);
                     state = S_EXPO_1;
                 }
-                // else if (isalpha(c))
-                // {
-                //     state = S_ERROR;
-                // }
                 else
                 {
                     state = S_INT;
@@ -360,10 +356,6 @@ Token get_next_token(FILE *f)
                     add_char(&buffer, c);
                     state = S_EXPO_1;
                 }
-                // else if (isalpha(c))
-                // {
-                //     state = S_ERROR;
-                // }
                 else
                 {
                     ungetc(c, f);

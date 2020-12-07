@@ -1,6 +1,6 @@
 /**
  * @file parser.h
- * @authors Peter Rucek ...
+ * @authors Peter Rucek, Matej Jurik, Rebeka Cernianska, Marek Micek
  * @date 25 Oct 2020
  * @brief Interface for the parser
  */
@@ -15,7 +15,7 @@
 #include "stack.h"
 #include "expressions.h"
 
-#define ARR_TREE_RANGE 1000000 //< range of tree arrays
+#define ARR_TREE_RANGE 100000 //< range of tree arrays
 #define BUILT_FUNC_NUM 10   //< we have 10 built_in functions
 #define NO_ASSIGN 0 //< if expression is not in assignment
 #define MAX_FUNCNAME_LEN 100 //< Max function length

@@ -1,5 +1,5 @@
 /**
- * @file parser-test.c
+ * @file compiler.c
  * @authors Rebeka Cernianska, Marek Micek, Matej Jurik, Peter Rucek
  * @date 25 Oct 2020
  * @brief Parser Tests

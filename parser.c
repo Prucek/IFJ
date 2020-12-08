@@ -545,6 +545,9 @@ bool func()
 
     // body
     while(statement());
+    if (!m.current_func_ret_success)
+        no_return_error(m.current_func_id, m.current_line);
+        
     var_deep = 0;
 
     if(is_main)
@@ -730,6 +733,7 @@ void header_arg()
         GET_TOKEN();
         if (IS_DATA_TYPE())
         {
+
             new_data_var.defined = true;
             new_data_var.is_var = true;
             new_data_var.is_param = true;
@@ -799,8 +803,7 @@ bool statement()
     else if (CHECK_NO_ERROR(BRACKET_RIGHT))
     {
         // Function body end
-        if (!m.current_func_ret_success)
-            no_return_error(m.current_func_id, m.current_line);
+        m.param_counter = 0;
         return false;
     }
     else if (CHECK_NO_ERROR(KEYWORD))

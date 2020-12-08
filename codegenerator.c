@@ -268,7 +268,14 @@ bool gen_param_val(Token current_token)
             break;
 
         case ID:
-            CODE("LF@"); CODE(current_token.data.s); CODE_INT(var_deep); CODE("\n");
+            if (current_token.data.s[0] == '%')
+            {
+                CODE("LF@"); CODE(current_token.data.s); CODE("\n");
+            }
+            else
+            {
+                CODE("LF@"); CODE(current_token.data.s); CODE_INT(var_deep); CODE("\n");
+            }
             break;
         default:
             break;
@@ -381,7 +388,14 @@ bool gen_retval_assign(char *id, unsigned retval_index, bool is__)
     }
     else
     {
-        CODE(" MOVE LF@"); CODE(id); CODE_INT(var_deep); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
+        if (id[0] == '%')
+        {
+            CODE(" MOVE LF@"); CODE(id); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
+        }
+        else
+        {
+            CODE(" MOVE LF@"); CODE(id); CODE_INT(var_deep); CODE(" TF@%retval"); CODE_INT(retval_index); CODE("\n");
+        }
     }
     return true;
 }
@@ -594,7 +608,16 @@ bool gen_var_in_for(char *var_id)
     }
     
     CODE("  POPS GF@expr_result\n");
-    CODE(" MOVE LF@"); CODE(var_id); CODE_INT(var_deep); CODE(" GF@expr_result\n");
+    if(var_id[0] == '%')
+    {
+        CODE(" MOVE LF@"); CODE(var_id); CODE(" GF@expr_result\n");
+    }
+    else
+    {
+        CODE(" MOVE LF@"); CODE(var_id); CODE_INT(var_deep); CODE(" GF@expr_result\n");
+    }
+    
+    
     return true;
 }
 
@@ -621,7 +644,14 @@ bool gen_var_ass(char *id, bool is__)
     else
     {
         CODE("  POPS GF@expr_result\n");
-        CODE(" MOVE LF@"); CODE(id); CODE_INT(var_deep); CODE(" GF@expr_result\n");
+        if(id[0] == '%')
+        {
+            CODE(" MOVE LF@"); CODE(id); CODE(" GF@expr_result\n");
+        }
+        else
+        {
+            CODE(" MOVE LF@"); CODE(id); CODE_INT(var_deep); CODE(" GF@expr_result\n");
+        }
     }
     return true;
 }

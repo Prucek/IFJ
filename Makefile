@@ -45,8 +45,8 @@ test: compiler
 	./ic20int out
 	./compiler <test_files/3.go >out
 	./ic20int out
-#	./compiler <test_files/4.go >out // prekryvanie
-#	./ic20int out
+	./compiler <test_files/4.go >out // prekryvanie
+	./ic20int out
 	./compiler <test_files/5.go >out
 	./ic20int out
 	./compiler <test_files/6.go >out

@@ -545,6 +545,9 @@ bool func()
 
     // body
     while(statement());
+    if (!m.current_func_ret_success)
+        no_return_error(m.current_func_id, m.current_line);
+        
     var_deep = 0;
 
     if(is_main)
@@ -801,8 +804,6 @@ bool statement()
     {
         // Function body end
         m.param_counter = 0;
-        if (!m.current_func_ret_success)
-            no_return_error(m.current_func_id, m.current_line);
         return false;
     }
     else if (CHECK_NO_ERROR(KEYWORD))

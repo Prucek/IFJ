@@ -5,7 +5,7 @@ CFLAGS=-std=c99 -Wall -Wextra -Werror -pedantic
 
 FILES = codegenerator.c codegenerator.h dynamicstring.c dynamicstring.h error.c error.h
 FILES += expressions.c expressions.h lexer.c lexer.h parser.c parser.h compiler.c
-FILES += stack.c stack.h symtable.c symtable.h Makefile rozdeleni
+FILES += stack.c stack.h symtable.c symtable.h Makefile rozdeleni dokumentace.pdf
 
 all: compiler
 
